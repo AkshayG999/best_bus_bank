@@ -10,7 +10,7 @@ app.use(express.json());
 
 // Routes
 app.use('/user', userRoutes);
-
+app.use("/api/people", require("./src/controllers/userController"));
 
 const pool = new ConnectionPool(dbConfig);
 
