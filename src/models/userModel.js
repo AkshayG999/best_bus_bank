@@ -1,43 +1,16 @@
-// const { DataTypes } = require('sequelize');
-// const sequelize = require('../config/db');
-
-// const User = sequelize.define('User', {
-//   loginID: {
-//     type: DataTypes.STRING,
-//     allowNull: false,
-//     unique: true
-//   },
-//   name: {
-//     type: DataTypes.STRING,
-//     allowNull: false
-//   },
-//   password: {
-//     type: DataTypes.STRING,
-//     allowNull: false
-//   },
-//   systemID: {
-//     type: DataTypes.STRING,
-//     allowNull: false
-//   }
-// });
-
-// module.exports = User;
-
-
 const { DataTypes } = require("sequelize");
 
 module.exports = model;
 
 function model(sequelize) {
   const attributes = {
-    loginID: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true
-    },
     name: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING(30),
+      allowNull: true,
     },
     password: {
       type: DataTypes.STRING,
@@ -45,13 +18,16 @@ function model(sequelize) {
     },
     systemID: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      primaryKey: true, // Set systemID as the primary key
+      autoIncrement: false, // Disable auto-increment
     }
   };
 
   const options = {
     freezeTableName: true,
-    timestamps: true,
+    timestamps: false,
   };
+
   return sequelize.define("user", attributes, options);
 }

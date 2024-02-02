@@ -1,25 +1,54 @@
 const { Sequelize } = require("sequelize");
-const personModel = require("../models/userModel");
+const { dbConfig } = require('./config');
+const fs = require('fs');
+const cert = fs.readFileSync('src/best-bus-pem.pem');
 require("dotenv").config();
+const user = require("../models/userModel");
+const parentGroup = require("../models/parentGroupModel");
+const group = require("../models/groupModel");
+const ledger = require("../models/ledgerModel");
 
 
 const sequelize = new Sequelize(
-    'best-bus-database',
-    'Best_bus_db',
-    'best-bus-123',
+    dbConfig.database, // database name
+    dbConfig.user,     // username
+    dbConfig.password, // password
     {
-        host: 'db-best-bus.cxvnuvhxv2yf.ap-south-1.rds.amazonaws.com',
-        port: 1433,
-        dialect: 'mssql',
+        host: dbConfig.server,
+        dialect: 'mssql', // specify the dialect explicitly
         dialectOptions: {
-            options: { encrypt: false },
-        },
+            encrypt: false,
+            trustServerCertificate: false,
+            cryptoCredentialsDetails: {
+                minVersion: 'TLSv1'
+            },
+            ssl: {
+                ca: cert
+            }
+        }
     }
 );
 
 const db = {};
-db.Person = personModel(sequelize);
-// sync all models with database
-sequelize.sync({ alter: true });
 
-module.exports = db;
+
+const userModel = user(sequelize);
+const parentGroupModel = parentGroup(sequelize);
+const groupModel = group(sequelize);
+const ledgerModel = ledger(sequelize);
+
+
+// Define associations
+groupModel.belongsTo(parentGroupModel, { foreignKey: 'groupUnder', as: 'parentgroup' });
+
+
+sequelize.sync({ alter: true })
+    .then(() => {
+        console.log('Database synchronized successfully.');
+    })
+    .catch(err => {
+        console.error('Error synchronizing database:', err);
+    });
+
+    
+module.exports = { db, sequelize, userModel, groupModel, parentGroupModel, ledgerModel };

@@ -1,20 +1,34 @@
-const db = require("../config/db");
+const { db, sequelize, userModel } = require("../config/db");
+
+
 
 const getAll = async () => {
-  return await db.Person.findAll();
+  return await userModel.findAll();
 };
 
-const findPersonById = async (id) => {
-  return await db.Person.findByPk(id);
+const findPersonBySystemID = async (systemID) => {
+  return await userModel.findOne({
+    where: {
+      systemID: systemID
+    }
+  });
 };
 
-const createPerson = async ({ Name, Email }) => {
-  const newPerson = await db.Person.create({ Name, Email });
+const findPersonByEmail = async (email) => {
+  return await userModel.findOne({
+    where: {
+      email: email
+    }
+  });
+};
+
+const createPerson = async ({ name, email, password, systemID }) => {
+  const newPerson = await userModel.create({ name, email, password, systemID });
   return newPerson;
 };
 
 const updatePerson = async ({ Id, Name, Email }) => {
-  await db.Person.update(
+  await userModel.update(
     { Name, Email },
     {
       where: {
@@ -26,14 +40,15 @@ const updatePerson = async ({ Id, Name, Email }) => {
 };
 
 const deletePerson = async (Id) => {
-  await db.Person.destroy({
+  await userModel.destroy({
     where: { Id: Id },
   });
 };
 
 module.exports = {
   getAll,
-  findPersonById,
+  findPersonBySystemID,
+  findPersonByEmail,
   createPerson,
   updatePerson,
   deletePerson,

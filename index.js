@@ -1,27 +1,28 @@
 const express = require('express');
 const app = express();
 const userRoutes = require('./src/routes/userRoutes');
-const { dbConfig } = require('./src/config/config');
-const { ConnectionPool } = require('mssql');
-
-
-// Middleware
+const { sequelize } = require('./src/config/db');
 app.use(express.json());
+
+
 
 // Routes
 app.use('/user', userRoutes);
 app.use("/api/people", require("./src/controllers/userController"));
+app.use("/api/parent-group", require("./src/routes/parentGroupRoute"));
+app.use("/api/group", require("./src/routes/groupRoute"));
+app.use("/api/ledger", require("./src/routes/ledgerRoute"));
 
-const pool = new ConnectionPool(dbConfig);
 
-pool.connect()
+
+
+sequelize.sync({ alter: true })
     .then(() => {
-        console.log('Connected to the database successfully');
+        console.log('Database synchronized successfully.');
     })
     .catch(err => {
-        console.error('Failed to connect to the database:', err);
+        console.error('Error synchronizing database:', err);
     });
-
 
 // Start server
 const PORT = process.env.PORT || 3000;

@@ -1,0 +1,186 @@
+CREATE PROCEDURE GenerateUniqueCode
+AS
+BEGIN
+    DECLARE @Year CHAR(2)
+    DECLARE @Month CHAR(2)
+    DECLARE @Increment INT
+
+    -- Get the current year and month
+    SET @Year = RIGHT(YEAR(GETDATE()), 2)
+    SET @Month = RIGHT('0' + CAST(MONTH(GETDATE()) AS VARCHAR(2)), 2)
+
+    -- Initialize increment if it's a new month
+    IF NOT EXISTS (SELECT * FROM IncrementTable WHERE [Month] = @Month)
+    BEGIN
+        INSERT INTO IncrementTable ([Month], Increment) VALUES (@Month, 0)
+    END
+
+    -- Increment the value for the current month
+    UPDATE IncrementTable SET Increment = Increment + 1 WHERE [Month] = @Month
+
+    -- Get the current increment value
+    SET @Increment = (SELECT Increment FROM IncrementTable WHERE [Month] = @Month)
+
+    -- Format the unique code
+    DECLARE @UniqueCode VARCHAR(20)
+    SET @UniqueCode = 'BR' + @Year + @Month + '-' + RIGHT('000000' + CAST(@Increment AS VARCHAR(6)), 6)
+
+    -- Return the generated unique code
+    SELECT @UniqueCode AS UniqueCode
+END
+
+
+const { Sequelize } = require('sequelize');
+
+const sequelize = new Sequelize('your_database', 'your_username', 'your_password', {
+  dialect: 'mssql',
+  host: 'your_server',
+  dialectOptions: {
+    options: {
+      encrypt: true, // For Azure SQL Database
+      trustServerCertificate: true // For Azure SQL Database
+    }
+  }
+});
+
+// Test the database connection
+async function testConnection() {
+  try {
+    await sequelize.authenticate();
+    console.log('Connection has been established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+}
+
+// Call the testConnection function to test the connection
+testConnection();
+
+
+
+const { Model, DataTypes } = require('sequelize');
+
+class Increment extends Model {}
+
+Increment.init({
+  month: {
+    type: DataTypes.STRING(2),
+    allowNull: false,
+    primaryKey: true
+  },
+  increment: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  }
+}, {
+  sequelize,
+  modelName: 'Increment',
+  tableName: 'IncrementTable',
+  timestamps: false
+});
+
+// Sync the model with the database (create the table if it doesn't exist)
+async function syncModel() {
+  try {
+    await Increment.sync();
+    console.log('Increment model synced with the database.');
+  } catch (error) {
+    console.error('Error syncing Increment model:', error);
+  }
+}
+
+// Call the syncModel function to sync the model with the database
+syncModel();
+
+
+async function generateUniqueCode() {
+  try {
+    const [result, _] = await sequelize.query('EXEC GenerateUniqueCode');
+    const uniqueCode = result[0][0].UniqueCode;
+    return uniqueCode;
+  } catch (error) {
+    console.error('Error generating unique code:', error);
+    throw error;
+  }
+}
+
+// Example usage
+generateUniqueCode().then(code => {
+  console.log('Generated code:', code);
+}).catch(error => {
+  console.error('Error generating code:', error);
+});
+
+
+
+
+
+
+
+const { Model, DataTypes } = require('sequelize');
+
+class SerialNumber extends Model {}
+
+SerialNumber.init({
+  srNo: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    primaryKey: true,
+    autoIncrement: true
+  }
+}, {
+  sequelize,
+  modelName: 'SerialNumber',
+  tableName: 'SerialNumberTable',
+  timestamps: false
+});
+
+// Sync the model with the database (create the table if it doesn't exist)
+async function syncModel() {
+  try {
+    await SerialNumber.sync();
+    console.log('SerialNumber model synced with the database.');
+  } catch (error) {
+    console.error('Error syncing SerialNumber model:', error);
+  }
+}
+
+// Call the syncModel function to sync the model with the database
+syncModel();
+
+
+
+
+async function getNextSrNo() {
+  try {
+    const lastRecord = await SerialNumber.findOne({
+      order: [['srNo', 'DESC']]
+    });
+    const nextSrNo = lastRecord ? lastRecord.srNo + 1 : 101; // Start from 101 if no records exist
+    return nextSrNo;
+  } catch (error) {
+    console.error('Error getting next SrNo:', error);
+    throw error;
+  }
+}
+
+
+
+async function createRecord() {
+  try {
+    const nextSrNo = await getNextSrNo();
+    await SerialNumber.create({ srNo: nextSrNo });
+    console.log('New record created with SrNo:', nextSrNo);
+  } catch (error) {
+    console.error('Error creating record:', error);
+    throw error;
+  }
+}
+
+
+// Example usage
+createRecord().then(() => {
+  console.log('Record created successfully.');
+}).catch(error => {
+  console.error('Error creating record:', error);
+});
