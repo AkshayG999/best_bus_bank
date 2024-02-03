@@ -1,4 +1,4 @@
-const { ledgerModel } = require('../config/db');
+const { ledgerModel, groupModel } = require('../config/db');
 
 
 
@@ -28,22 +28,20 @@ async function createLedger(TRNo, code, accountName, groupID, acc_Sr_No, op_acc_
 
 async function getLedgers(filters) {
     try {
-        // Construct options object for Sequelize query
-        const options = {
-            where: {}
-        };
+        // const options = {
+        //     where: {}
+        // };
 
-        // Add filters to the where clause based on the provided parameters
-        if (filters.code) {
-            options.where.code = filters.code;
-        }
-        if (filters.groupID) {
-            options.where.groupID = filters.groupID;
-        }
-        // Add more filters as needed
+        // if (filters.code) {
+        //     options.where.code = filters.code;
+        // }
+        // if (filters.groupID) {
+        //     options.where.groupID = filters.groupID;
+        // }
 
         // Perform the query
-        const ledgers = await ledgerModel.findAll(options);
+        const ledgers = await ledgerModel.findAll({ include: [{ model: groupModel, as: 'group', attributes: ['TRNo', 'groupName', 'groupUnder', 'grp_srNo'] }] });
+        // const ledgers = await ledgerModel.findAll();
         return ledgers;
     } catch (error) {
         throw error;

@@ -40,6 +40,7 @@ const ledgerModel = ledger(sequelize);
 
 // Define associations
 groupModel.belongsTo(parentGroupModel, { foreignKey: 'groupUnder', as: 'parentgroup' });
+ledgerModel.belongsTo(groupModel, { foreignKey: 'groupID', as: 'group' });
 
 
 sequelize.sync({ alter: true })

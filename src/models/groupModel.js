@@ -7,7 +7,6 @@ function model(sequelize) {
         TRNo: {
             type: DataTypes.STRING,
             allowNull: false,
-            primaryKey: true,
             autoIncrement: false,
         },
         groupName: {

@@ -31,8 +31,9 @@ async function createLedger(req, res) {
 
 async function getLedgers(req, res) {
     try {
-        const filters = req.query; // Retrieve filters from query parameters
-        const ledgers = await ledgerService.getLedgers(filters);
+        const filters = req.query;
+
+        const ledgers = await ledgerService.getLedgers();
         res.status(200).json(ledgers);
     } catch (error) {
         console.error('Error fetching ledgers:', error);

@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 
+
 module.exports = model;
 
 function model(sequelize) {
@@ -7,7 +8,6 @@ function model(sequelize) {
         TRNo: {
             type: DataTypes.STRING,
             allowNull: false,
-            primaryKey: true,
             autoIncrement: false,
         },
         code: {

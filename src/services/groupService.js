@@ -7,6 +7,7 @@ const createGroup = async ({ TRNo, groupName, groupUnder, grp_srNo }) => {
     return newgroup;
 };
 
+
 const findByGrp_srNo = async (grp_srNo) => {
     return await groupModel.findOne({
         where: {
