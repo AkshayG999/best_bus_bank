@@ -11,7 +11,7 @@ function model(sequelize) {
             autoIncrement: false,
         },
         code: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         accountName: {

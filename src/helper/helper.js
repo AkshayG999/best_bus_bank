@@ -15,7 +15,7 @@ function writeIncrementToFile(increment) {
     fs.writeFileSync('increment.txt', increment.toString(), 'utf8');
 }
 
-function generateUniqueCode() {
+function generateUniqueCode(code) {
     const currentDate = new Date();
     const year = currentDate.getFullYear().toString().substring(2); // Get last 2 digits of the year
     const month = ('0' + (currentDate.getMonth() + 1)).slice(-2); // Get month with leading zero
@@ -30,7 +30,7 @@ function generateUniqueCode() {
     writeIncrementToFile(increment);
 
     const paddedIncrement = increment.toString().padStart(6, '0');
-    return `BR${year}${month}-${paddedIncrement}`;
+    return `${code}${year}${month}-${paddedIncrement}`;
 }
 
 function readMonthFromFile() {
@@ -77,7 +77,7 @@ function writeIncrementToFile(increment) {
 }
 
 // Function to generate unique code
-function generateUniqueCode() {
+function generateUniqueCode(code) {
     const currentDate = new Date();
     const year = currentDate.getFullYear().toString().substring(2); // Get last 2 digits of the year
     const month = ('0' + (currentDate.getMonth() + 1)).slice(-2); // Get month with leading zero
@@ -92,7 +92,7 @@ function generateUniqueCode() {
     writeIncrementToFile(increment);
 
     const paddedIncrement = increment.toString().padStart(6, '0');
-    return `BR${year}${month}-${paddedIncrement}`;
+    return `${code}${year}${month}-${paddedIncrement}`;
 }
 
 // Function to read month value from file

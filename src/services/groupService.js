@@ -7,6 +7,14 @@ const createGroup = async ({ TRNo, groupName, groupUnder, grp_srNo }) => {
     return newgroup;
 };
 
+const findByGrp_srNo = async (grp_srNo) => {
+    return await groupModel.findOne({
+        where: {
+            grp_srNo: grp_srNo
+        }
+    });
+};
+
 
 const getAllGroups = async () => {
     try {
@@ -21,4 +29,4 @@ const getAllGroups = async () => {
 
 
 
-module.exports = { createGroup, getAllGroups }
+module.exports = { createGroup, findByGrp_srNo, getAllGroups }

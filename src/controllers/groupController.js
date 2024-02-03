@@ -12,7 +12,7 @@ const createGroup = async (req, res) => {
         const findParentGroup = await findById(groupUnder);
 
         // TRNo create function
-        const TRNo = await generateUniqueCode();
+        const TRNo = await generateUniqueCode('BR');
         console.log(TRNo);
 
         // srNo

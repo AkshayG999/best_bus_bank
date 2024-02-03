@@ -15,6 +15,10 @@ app.use("/api/ledger", require("./src/routes/ledgerRoute"));
 
 
 
+app.get('/', (req, res) => {
+    res.send("server is running..")
+});
+
 
 sequelize.sync({ alter: true })
     .then(() => {
