@@ -5,7 +5,7 @@ const { authenticateToken } = require("../middleware/authMid");
 
 
 router.post("/", groupController.createGroup)
-router.get("/", authenticateToken, groupController.getGroups)
+router.get("/", groupController.getGroups)
 
 
 module.exports = router
