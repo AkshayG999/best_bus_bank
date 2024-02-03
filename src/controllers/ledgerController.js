@@ -6,6 +6,13 @@ const ledgerService = require('../services/ledgerService');
 async function createLedger(req, res) {
     try {
         const { accountName, groupID, op_acc_DR_CR, op_acc_balance, ly_acc_DR_CR, ly_cl_balance, loan_deduct, loan_deduct_amount, exception_checking, exception_amount } = req.body;
+        
+        const findGroup = await findByGrp_srNo(groupID);
+        console.log(findGroup)
+
+        if (!findGroup) {
+            return res.status(400).send({ success: false, mesaage: "Group Id is Incorrect" });
+        }
 
         const TRNo = await generateUniqueCode('AC');
         console.log(TRNo);
@@ -15,9 +22,6 @@ async function createLedger(req, res) {
 
         const acc_Sr_No = await createRecord();
         console.log(acc_Sr_No);
-
-        const findGroup = await findByGrp_srNo(groupID);
-        console.log(findGroup)
 
 
         const ledger = await ledgerService.createLedger(TRNo, code[1], accountName, groupID, acc_Sr_No, op_acc_DR_CR, op_acc_balance, ly_acc_DR_CR, ly_cl_balance, loan_deduct, loan_deduct_amount, exception_checking, exception_amount);

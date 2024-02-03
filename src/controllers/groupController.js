@@ -10,7 +10,9 @@ const createGroup = async (req, res) => {
         let { groupName, groupUnder } = req.body;
 
         const findParentGroup = await findById(groupUnder);
-
+        if (!findParentGroup) {
+            return res.status(400).send({ success: false, mesaage: "Parent Group Id Incorrect" });
+        }
         // TRNo create function
         const TRNo = await generateUniqueCode('BR');
         console.log(TRNo);
