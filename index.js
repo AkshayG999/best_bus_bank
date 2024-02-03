@@ -1,8 +1,10 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const userRoutes = require('./src/routes/userRoutes');
 const { sequelize } = require('./src/config/db');
 app.use(express.json());
+app.use(cors());
 
 
 
