@@ -14,6 +14,7 @@ app.use("/api/people", require("./src/controllers/userController"));
 app.use("/api/parent-group", require("./src/routes/parentGroupRoute"));
 app.use("/api/group", require("./src/routes/groupRoute"));
 app.use("/api/ledger", require("./src/routes/ledgerRoute"));
+app.use("/api/role", require("./src/routes/roleRoute"));
 
 
 

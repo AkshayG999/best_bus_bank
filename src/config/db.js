@@ -7,6 +7,8 @@ const user = require("../models/userModel");
 const parentGroup = require("../models/parentGroupModel");
 const group = require("../models/groupModel");
 const ledger = require("../models/ledgerModel");
+const roles = require("../models/rolesModel");
+const branch = require("../models/branchModel");
 
 
 const sequelize = new Sequelize(
@@ -36,6 +38,8 @@ const userModel = user(sequelize);
 const parentGroupModel = parentGroup(sequelize);
 const groupModel = group(sequelize);
 const ledgerModel = ledger(sequelize);
+const roleModel = roles(sequelize);
+const branchModel = branch(sequelize);
 
 
 // Define associations
@@ -51,5 +55,5 @@ sequelize.sync({ alter: true })
         console.error('Error synchronizing database:', err);
     });
 
-    
-module.exports = { db, sequelize, userModel, groupModel, parentGroupModel, ledgerModel };
+
+module.exports = { db, sequelize, userModel, groupModel, parentGroupModel, ledgerModel, roleModel, branchModel };

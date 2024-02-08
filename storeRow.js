@@ -1,33 +1,43 @@
-CREATE PROCEDURE GenerateUniqueCode
-AS
-BEGIN
-    DECLARE @Year CHAR(2)
-    DECLARE @Month CHAR(2)
-    DECLARE @Increment INT
+// CREATE PROCEDURE GenerateUniqueCode
+// AS
+// BEGIN
+//     DECLARE @NextValue INT;
+//     DECLARE @Year CHAR(2);
+//     DECLARE @Month CHAR(2);
+//     DECLARE @PaddedIncrement CHAR(6);
+//     DECLARE @UniqueCode VARCHAR(20);
 
-    -- Get the current year and month
-    SET @Year = RIGHT(YEAR(GETDATE()), 2)
-    SET @Month = RIGHT('0' + CAST(MONTH(GETDATE()) AS VARCHAR(2)), 2)
+//     -- Get current year and month
+//     SET @Year = RIGHT(YEAR(GETDATE()), 2);
+//     SET @Month = FORMAT(GETDATE(), 'MM');
 
-    -- Initialize increment if it's a new month
-    IF NOT EXISTS (SELECT * FROM IncrementTable WHERE [Month] = @Month)
-    BEGIN
-        INSERT INTO IncrementTable ([Month], Increment) VALUES (@Month, 0)
-    END
+//     -- Check if the current month is different from the last generated code's month
+//     DECLARE @LastGeneratedMonth CHAR(2);
+//     SELECT @LastGeneratedMonth = COALESCE(RIGHT(month, 2), '00')
+//     FROM LastGeneratedCode; -- Assuming you have a table to store the last generated code
 
-    -- Increment the value for the current month
-    UPDATE IncrementTable SET Increment = Increment + 1 WHERE [Month] = @Month
+//     IF @Month <> @LastGeneratedMonth
+//     BEGIN
+//         -- Reset increment if it's a new month
+//         SET @NextValue = 1;
+//         UPDATE LastGeneratedCode SET month = CONCAT('0', @Month); -- Update last generated month
+//     END
+//     ELSE
+//     BEGIN
+//         -- Get next value from the sequence
+//         SELECT @NextValue = NEXT VALUE FOR UniqueCodeSequence;
+//     END
 
-    -- Get the current increment value
-    SET @Increment = (SELECT Increment FROM IncrementTable WHERE [Month] = @Month)
+//     -- Pad increment
+//     SET @PaddedIncrement = RIGHT('000000' + CAST(@NextValue AS VARCHAR(6)), 6);
 
-    -- Format the unique code
-    DECLARE @UniqueCode VARCHAR(20)
-    SET @UniqueCode = 'BR' + @Year + @Month + '-' + RIGHT('000000' + CAST(@Increment AS VARCHAR(6)), 6)
+//     -- Construct unique code
+//     SET @UniqueCode = 'YourCode' + @Year + @Month + '-' + @PaddedIncrement;
 
-    -- Return the generated unique code
-    SELECT @UniqueCode AS UniqueCode
-END
+//     -- Return unique code
+//     SELECT @UniqueCode AS UniqueCode;
+// END;
+
 
 
 const { Sequelize } = require('sequelize');
@@ -60,7 +70,7 @@ testConnection();
 
 const { Model, DataTypes } = require('sequelize');
 
-class Increment extends Model {}
+class Increment extends Model { }
 
 Increment.init({
   month: {
@@ -119,7 +129,7 @@ generateUniqueCode().then(code => {
 
 const { Model, DataTypes } = require('sequelize');
 
-class SerialNumber extends Model {}
+class SerialNumber extends Model { }
 
 SerialNumber.init({
   srNo: {
@@ -184,3 +194,7 @@ createRecord().then(() => {
 }).catch(error => {
   console.error('Error creating record:', error);
 });
+
+
+
+
