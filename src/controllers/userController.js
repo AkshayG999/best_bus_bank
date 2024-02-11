@@ -1,5 +1,3 @@
-const express = require("express");
-const router = express.Router();
 const shortId = require('shortid')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -7,7 +5,7 @@ const personService = require("../services/userService");
 
 
 
-router.post("/sign-up", async (req, res) => {
+const signUp = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     console.log(req.body);
@@ -27,9 +25,10 @@ router.post("/sign-up", async (req, res) => {
     console.log(error);
     return res.status(500).json({ statusCode: 500, error: "Something went wrong" });
   }
-});
+}
 
-router.post("/login", async (req, res) => {
+
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -48,18 +47,19 @@ router.post("/login", async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign({ systemID: user.systemID }, 'best_bus_bank', { expiresIn: '4h' });
+    const token = jwt.sign({ systemID: user.systemID, role: user.role }, 'best_bus_bank', { expiresIn: '4h' });
 
     // Return the token
-    return res.status(200).send({ systemId: user.systemID, token: token });
+    return res.status(200).send({ systemID: user.systemID, token: token });
 
   } catch (error) {
     console.log(error);
     return res.status(500).json({ statusCode: 500, error: "Something went wrong" });
   }
-});
+}
 
-router.get("/:systemID", async (req, res) => {
+
+const getBySystemID = async (req, res) => {
   try {
     const person = await personService.findPersonBySystemID(req.params.systemID);
     if (!person) {
@@ -73,9 +73,9 @@ router.get("/:systemID", async (req, res) => {
       .statusCode(500)
       .json({ statusCode: 500, error: "Something went wrong" });
   }
-});
+}
 
-router.get("/", async (req, res) => {
+const getAll = async (req, res) => {
   try {
     const people = await personService.getAll();
     res.json(people);
@@ -83,11 +83,11 @@ router.get("/", async (req, res) => {
     console.log(error);
     res.status(500).json({ statusCode: 500, error: "Something went wrong" });
   }
-});
+}
 
 
 
-router.put("/:id", async (req, res) => {
+const updateByID = async (req, res) => {
   try {
     const exisitingPerson = await personService.findPersonBySystemID(req.params.id);
     console.log(exisitingPerson);
@@ -103,9 +103,9 @@ router.put("/:id", async (req, res) => {
       .statusCode(500)
       .json({ statusCode: 500, error: "Something went wrong" });
   }
-});
+}
 
-router.delete("/:id", async (req, res) => {
+const deleteByID = async (req, res) => {
   try {
     const exisitingPerson = await personService.findPersonBySystemID(req.params.id);
     if (!exisitingPerson) {
@@ -124,6 +124,14 @@ router.delete("/:id", async (req, res) => {
       .statusCode(500)
       .json({ statusCode: 500, error: "Something went wrong" });
   }
-});
+}
 
-module.exports = router;
+
+module.exports = {
+  signUp,
+  login,
+  getBySystemID,
+  getAll,
+  updateByID,
+  deleteByID
+};

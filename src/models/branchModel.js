@@ -4,15 +4,15 @@ const { DataTypes } = require('sequelize');
 module.exports = function (sequelize) {
 
     const attributes = {
+        code: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
         branchName: {
             type: DataTypes.STRING,
             allowNull: false
         },
-        userName: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        userAddress: {
+        address: {
             type: DataTypes.STRING,
             allowNull: false
         },
@@ -20,11 +20,11 @@ module.exports = function (sequelize) {
             type: DataTypes.STRING,
             allowNull: false
         },
-        pincode: {
+        district: {
             type: DataTypes.STRING,
             allowNull: false
         },
-        district: {
+        pincode: {
             type: DataTypes.STRING,
             allowNull: false
         },
@@ -48,17 +48,21 @@ module.exports = function (sequelize) {
             type: DataTypes.STRING,
             allowNull: false
         },
-        cashAccount: {
+        bankName: {
             type: DataTypes.STRING,
             allowNull: false
         },
-        bankName: {
+        cashAccount: {
             type: DataTypes.STRING,
             allowNull: false
         },
         pettyCash: {
             type: DataTypes.DECIMAL(10, 2),
             allowNull: false
+        },
+        createdBy: {
+            type: DataTypes.STRING,
+            allowNull: true
         }
     };
 

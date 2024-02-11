@@ -1,7 +1,15 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const authController = require('../controllers/userController');
+const userController = require("../controllers/userController");
+const { authenticateToken } = require("../middleware/authMid");
 
-// router.post('/login', authController.login);
+
+router.post("/sign-up", userController.signUp);
+router.post("/login", userController.login);
+router.get("/:systemID", authenticateToken, userController.getBySystemID);
+router.get("/", userController.getAll);
+router.put("/:id", userController.updateByID);
+router.delete("/:id", userController.deleteByID);
+
 
 module.exports = router;

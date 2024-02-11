@@ -10,11 +10,13 @@ app.use(cors());
 
 // Routes
 app.use('/user', userRoutes);
-app.use("/api/people", require("./src/controllers/userController"));
+app.use("/api/people", require("./src/routes/userRoutes"));
+app.use("/api/admin", require("./src/routes/adminRoute"));
 app.use("/api/parent-group", require("./src/routes/parentGroupRoute"));
 app.use("/api/group", require("./src/routes/groupRoute"));
 app.use("/api/ledger", require("./src/routes/ledgerRoute"));
 app.use("/api/role", require("./src/routes/roleRoute"));
+app.use("/api/branch", require("./src/routes/branchRoute"));
 
 
 

@@ -8,6 +8,7 @@ const createGroup = async (req, res) => {
 
     try {
         let { groupName, groupUnder } = req.body;
+        const createdBy = req.systemID;
 
         const findParentGroup = await findById(groupUnder);
         if (!findParentGroup) {
@@ -22,13 +23,13 @@ const createGroup = async (req, res) => {
         console.log(grp_srNo);
 
         groupName = groupName.toUpperCase();
-        const createNewgroup = await groupService.createGroup({ TRNo, groupName, groupUnder, grp_srNo });
+        const createNewgroup = await groupService.createGroup({ TRNo, groupName, groupUnder, grp_srNo, createdBy });
 
         return res.status(201).json(createNewgroup);
 
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ statusCode: 500, error: "Something went wrong" });
+        return res.status(500).json({ statusCode: 500, error: error });
     }
 }
 

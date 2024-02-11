@@ -12,12 +12,12 @@ const branch = require("../models/branchModel");
 
 
 const sequelize = new Sequelize(
-    dbConfig.database, // database name
-    dbConfig.user,     // username
-    dbConfig.password, // password
+    dbConfig.database,
+    dbConfig.user,
+    dbConfig.password,
     {
         host: dbConfig.server,
-        dialect: 'mssql', // specify the dialect explicitly
+        dialect: 'mssql',
         dialectOptions: {
             encrypt: false,
             trustServerCertificate: false,

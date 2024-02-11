@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const personService = require("../services/userService");
 
 
-const secretKey =  'best_bus_bank';
+const secretKey = 'best_bus_bank';
 
 const authenticateToken = async (req, res, next) => {
     const authHeader = req.header('Authorization');
@@ -20,8 +20,8 @@ const authenticateToken = async (req, res, next) => {
         // Verify the access token
         const decoded = jwt.verify(token, secretKey);
 
-        const session = await personService.findPersonBySystemID(decoded.systemID).exec();
-
+        const session = await personService.findPersonBySystemID(decoded.systemID);
+        console.log({ session })
         if (!session) {
             return res.status(401).json({
                 success: false,
@@ -38,11 +38,13 @@ const authenticateToken = async (req, res, next) => {
             });
 
         } else {
-            req.userId = decoded.userId;
+            req.systemID = decoded.systemID;
+            req.role = decoded.role;
             next();
         }
 
     } catch (error) {
+        console.log(error);
         return res.status(403).json({
             success: false,
             message: 'Forbidden: Invalid token',

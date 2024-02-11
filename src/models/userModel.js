@@ -19,9 +19,15 @@ function model(sequelize) {
     systemID: {
       type: DataTypes.STRING,
       allowNull: false,
-      primaryKey: true, // Set systemID as the primary key
-      autoIncrement: false, // Disable auto-increment
-    }
+      primaryKey: true,
+      autoIncrement: false,
+    },
+    role: {
+      type: DataTypes.STRING,
+      DEFAULT: "user",
+      allowNull: true,
+    },
+
   };
 
   const options = {

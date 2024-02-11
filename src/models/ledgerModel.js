@@ -58,6 +58,10 @@ function model(sequelize) {
         exception_amount: {
             type: DataTypes.INTEGER,
             allowNull: false,
+        },
+        createdBy: {
+            type: DataTypes.STRING,
+            allowNull: true
         }
 
     }, {

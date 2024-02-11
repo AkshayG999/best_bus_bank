@@ -39,6 +39,18 @@ const updatePerson = async ({ Id, Name, Email }) => {
   return { Id, Name, Email };
 };
 
+const updatePersonRole = async (systemID, role) => {
+  await userModel.update(
+    { role },
+    {
+      where: {
+        systemID: systemID,
+      },
+    }
+  );
+   { systemID, role };
+};
+
 const deletePerson = async (Id) => {
   await userModel.destroy({
     where: { Id: Id },
@@ -51,5 +63,6 @@ module.exports = {
   findPersonByEmail,
   createPerson,
   updatePerson,
+  updatePersonRole,
   deletePerson,
 };

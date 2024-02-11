@@ -1,12 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const groupController = require('../controllers/groupController');
+const userController = require("../controllers/adminController");
 const { authenticateToken } = require("../middleware/authMid");
 const { roleAuth } = require("../middleware/roleAuth");
 
 
-router.post("/", authenticateToken, roleAuth(['ADMIN', 'GROUP MANAGER']), groupController.createGroup);
-router.get("/", groupController.getGroups);
+router.put("/:systemID", authenticateToken, roleAuth(['ADMIN']), userController.updateUserRole);
 
 
 module.exports = router;

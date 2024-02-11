@@ -22,6 +22,10 @@ function model(sequelize) {
             allowNull: false,
             primaryKey: true,
         },
+        createdBy: {
+            type: DataTypes.STRING,
+            allowNull: true
+        }
     }, {
         freezeTableName: true,
         timestamps: true,

@@ -2,8 +2,8 @@ const { db, sequelize, groupModel, parentGroupModel } = require("../config/db");
 
 
 
-const createGroup = async ({ TRNo, groupName, groupUnder, grp_srNo }) => {
-    const newgroup = await groupModel.create({ TRNo, groupName, groupUnder, grp_srNo });
+const createGroup = async ({ TRNo, groupName, groupUnder, grp_srNo, createdBy }) => {
+    const newgroup = await groupModel.create({ TRNo, groupName, groupUnder, grp_srNo, createdBy });
     return newgroup;
 };
 
