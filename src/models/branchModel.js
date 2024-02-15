@@ -4,6 +4,10 @@ const { DataTypes } = require('sequelize');
 module.exports = function (sequelize) {
 
     const attributes = {
+        branchNumber: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
         code: {
             type: DataTypes.INTEGER,
             allowNull: false

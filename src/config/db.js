@@ -45,6 +45,7 @@ const branchModel = branch(sequelize);
 // Define associations
 groupModel.belongsTo(parentGroupModel, { foreignKey: 'groupUnder', as: 'parentgroup' });
 ledgerModel.belongsTo(groupModel, { foreignKey: 'groupID', as: 'group' });
+branchModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
 
 
 sequelize.sync({ alter: true })

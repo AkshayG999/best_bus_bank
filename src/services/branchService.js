@@ -1,14 +1,15 @@
-const { branchModel } = require("../config/db");
+const { branchModel, userModel } = require("../config/db");
 
 async function getAllBranches() {
     return await branchModel.findAll();
 }
 
 async function getBranchById(id) {
-    return await branchModel.findByPk(id);
+    return await branchModel.findByPk(id, { include: [{ model: userModel, as: 'user', attributes: ['name', 'email', 'systemID'] }] });
 }
 
 async function createBranch(
+    branchNumber,
     code,
     branchName,
     address,
@@ -26,6 +27,7 @@ async function createBranch(
     createdBy
 ) {
     return await branchModel.create({
+        branchNumber,
         code,
         branchName,
         address,
