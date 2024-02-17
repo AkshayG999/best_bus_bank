@@ -1,3 +1,4 @@
+const { createRecord } = require('../helper/helper');
 const branchService = require('../services/branchService');
 
 
@@ -5,7 +6,6 @@ async function createBranch(req, res, next) {
     try {
         const createdBy = req.systemID;
         const {
-            branchNumber,
             code,
             branchName,
             address,
@@ -20,6 +20,8 @@ async function createBranch(req, res, next) {
             bankName,
             cashAccount,
             pettyCash } = req.body;
+
+        const branchNumber = await createRecord();
 
         const newBranch = await branchService.createBranch(
             branchNumber,

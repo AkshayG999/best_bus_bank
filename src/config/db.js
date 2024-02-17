@@ -9,6 +9,7 @@ const group = require("../models/groupModel");
 const ledger = require("../models/ledgerModel");
 const roles = require("../models/rolesModel");
 const branch = require("../models/branchModel");
+const department = require("../models/departmentModel");
 
 
 const sequelize = new Sequelize(
@@ -40,12 +41,15 @@ const groupModel = group(sequelize);
 const ledgerModel = ledger(sequelize);
 const roleModel = roles(sequelize);
 const branchModel = branch(sequelize);
+const departmentModel = department(sequelize);
 
 
 // Define associations
 groupModel.belongsTo(parentGroupModel, { foreignKey: 'groupUnder', as: 'parentgroup' });
 ledgerModel.belongsTo(groupModel, { foreignKey: 'groupID', as: 'group' });
 branchModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
+departmentModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
+departmentModel.belongsTo(branchModel, { foreignKey: 'branchCode', as: 'branch' });
 
 
 sequelize.sync({ alter: true })
@@ -57,4 +61,4 @@ sequelize.sync({ alter: true })
     });
 
 
-module.exports = { db, sequelize, userModel, groupModel, parentGroupModel, ledgerModel, roleModel, branchModel };
+module.exports = { db, sequelize, userModel, groupModel, parentGroupModel, ledgerModel, roleModel, branchModel,departmentModel };

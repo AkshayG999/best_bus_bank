@@ -17,6 +17,7 @@ app.use("/api/group", require("./src/routes/groupRoute"));
 app.use("/api/ledger", require("./src/routes/ledgerRoute"));
 app.use("/api/role", require("./src/routes/roleRoute"));
 app.use("/api/branch", require("./src/routes/branchRoute"));
+app.use("/api/department", require("./src/routes/departmentRoute"));
 
 
 
