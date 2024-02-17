@@ -4,6 +4,12 @@ module.exports = model;
 
 function model(sequelize) {
     const department = sequelize.define("department", {
+        id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            primaryKey: true,
+            autoIncrement: true
+        },
         enteryNo: {
             type: DataTypes.INTEGER,
             allowNull: true,

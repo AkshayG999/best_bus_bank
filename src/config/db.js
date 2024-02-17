@@ -44,12 +44,15 @@ const branchModel = branch(sequelize);
 const departmentModel = department(sequelize);
 
 
-// Define associations
 groupModel.belongsTo(parentGroupModel, { foreignKey: 'groupUnder', as: 'parentgroup' });
 ledgerModel.belongsTo(groupModel, { foreignKey: 'groupID', as: 'group' });
 branchModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
+
 departmentModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
 departmentModel.belongsTo(branchModel, { foreignKey: 'branchCode', as: 'branch' });
+
+userModel.belongsTo(branchModel, { foreignKey: 'branchId', as: 'branch' });
+userModel.belongsTo(departmentModel, { foreignKey: 'departmentId', as: 'department' });
 
 
 sequelize.sync({ alter: true })

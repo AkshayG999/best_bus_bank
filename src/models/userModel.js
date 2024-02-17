@@ -4,9 +4,21 @@ module.exports = model;
 
 function model(sequelize) {
   const attributes = {
+    // firstName: {
+    //   type: DataTypes.STRING,
+    //   allowNull: false,
+    // },
+    // middleName: {
+    //   type: DataTypes.STRING,
+    //   allowNull: false,
+    // },
+    // lastName: {
+    //   type: DataTypes.STRING,
+    //   allowNull: false,
+    // },
     name: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     email: {
       type: DataTypes.STRING(30),
@@ -27,7 +39,22 @@ function model(sequelize) {
       DEFAULT: "user",
       allowNull: true,
     },
-
+    bankId: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    branchId: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    departmentId: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    allocatedBy: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
   };
 
   const options = {

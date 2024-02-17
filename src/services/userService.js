@@ -1,9 +1,9 @@
-const { db, sequelize, userModel } = require("../config/db");
+const { db, sequelize, userModel, branchModel, departmentModel } = require("../config/db");
 
 
 
 const getAll = async () => {
-  return await userModel.findAll();
+  return await userModel.findAll({ include: [{ model: branchModel, as: 'branch' }, { model: departmentModel, as: 'department' }] });
 };
 
 const findPersonBySystemID = async (systemID) => {
@@ -40,7 +40,7 @@ const updatePerson = async ({ Id, Name, Email }) => {
 };
 
 const updatePersonRole = async (systemID, role) => {
-  await userModel.update(
+  return await userModel.update(
     { role },
     {
       where: {
@@ -48,7 +48,18 @@ const updatePersonRole = async (systemID, role) => {
       },
     }
   );
-   { systemID, role };
+};
+
+const updateDepartmentAllocation = async (systemID, bankId, branchId, departmentId, role) => {
+  return await userModel.update(
+    { bankId, branchId, departmentId, role },
+    {
+      where: {
+        systemID: systemID,
+      },
+    }
+  );
+  { systemID, role };
 };
 
 const deletePerson = async (Id) => {
@@ -64,5 +75,6 @@ module.exports = {
   createPerson,
   updatePerson,
   updatePersonRole,
+  updateDepartmentAllocation,
   deletePerson,
 };
