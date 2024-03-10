@@ -19,12 +19,6 @@ app.use("/api/role", require("./src/routes/roleRoute"));
 app.use("/api/branch", require("./src/routes/branchRoute"));
 app.use("/api/department", require("./src/routes/departmentRoute"));
 
-app.use("/api/features_master", require("./src/routes/featuresMasterRoutes"));
-app.use("/api/features_A", require("./src/routes/features_A_routes"));
-app.use("/api/features_B", require("./src/routes/features_B_routes"));
-app.use("/api/features_C", require("./src/routes/features_C_routes"));
-app.use("/api/features_permission", require("./src/routes/featuresPermissionRoute"));
-
 
 
 app.get('/', (req, res) => {

@@ -1,0 +1,79 @@
+.
+├── increment.txt
+├── index.js
+├── migrations
+│   └── 20240202035327-remove-loginID-column.js
+├── month.txt
+├── package.json
+├── package-lock.json
+├── projectStructure.txt
+├── src
+│   ├── best-bus-pem.pem
+│   ├── config
+│   │   ├── config.js
+│   │   └── db.js
+│   ├── controllers
+│   │   ├── adminController.js
+│   │   ├── branchController.js
+│   │   ├── departmentController.js
+│   │   ├── featurePermissionsController.js
+│   │   ├── features_A_controller.js
+│   │   ├── features_B_controller.js
+│   │   ├── features_C_controller.js
+│   │   ├── featuresMasterController.js
+│   │   ├── groupController.js
+│   │   ├── ledgerController.js
+│   │   ├── parentGroupController.js
+│   │   ├── roleController.js
+│   │   └── userController.js
+│   ├── helper
+│   │   └── helper.js
+│   ├── middleware
+│   │   ├── authMid.js
+│   │   └── roleAuth.js
+│   ├── models
+│   │   ├── branchModel.js
+│   │   ├── departmentModel.js
+│   │   ├── features_A_model.js
+│   │   ├── features_B_model.js
+│   │   ├── features_C_model.js
+│   │   ├── features_master_model.js
+│   │   ├── features_permission_model.js
+│   │   ├── groupModel.js
+│   │   ├── ledgerModel.js
+│   │   ├── parentGroupModel.js
+│   │   ├── rolesModel.js
+│   │   └── userModel.js
+│   ├── routes
+│   │   ├── adminRoute.js
+│   │   ├── branchRoute.js
+│   │   ├── departmentRoute.js
+│   │   ├── features_A_routes.js
+│   │   ├── features_B_routes.js
+│   │   ├── features_C_routes.js
+│   │   ├── featuresMasterRoutes.js
+│   │   ├── featuresPermissionRoute.js
+│   │   ├── groupRoute.js
+│   │   ├── ledgerRoute.js
+│   │   ├── parentGroupRoute.js
+│   │   ├── roleRoute.js
+│   │   └── userRoutes.js
+│   ├── services
+│   │   ├── branchService.js
+│   │   ├── departmentService.js
+│   │   ├── featuresAService.js
+│   │   ├── featuresBService.js
+│   │   ├── featuresCService.js
+│   │   ├── featuresMasterService.js
+│   │   ├── featuresPermissionService.js
+│   │   ├── groupService.js
+│   │   ├── ledgerService.js
+│   │   ├── parentGroupService.js
+│   │   ├── roleService.js
+│   │   └── userService.js
+│   └── utils
+│       └── errorHandler.js
+├── srno.txt
+└── storeRow.js
+
+10 directories, 66 files
