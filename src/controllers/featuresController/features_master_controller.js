@@ -1,4 +1,4 @@
-const { getAllFeatures, getFeatureById, createFeature, updateFeature, deleteFeature } = require('../services/featuresMasterService');
+const { getAllFeatures, getFeatureById, createFeature, updateFeature, deleteFeature } = require('../../services/featuresService/featuresMasterService');
 
 // Controller functions for CRUD operations
 async function getAll(req, res) {

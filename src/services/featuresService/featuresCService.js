@@ -1,4 +1,4 @@
-const { features_C } = require("../config/db");
+const { features_C } = require("../../config/db");
 
 
 async function getAllFeaturesC() {

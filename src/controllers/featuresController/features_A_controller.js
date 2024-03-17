@@ -1,9 +1,10 @@
-const { createFeatureC, getAllFeaturesC, getFeatureCById, deleteFeatureC, updateFeatureC } = require("../services/featuresCService");
+const { createFeatureA, getAllFeaturesA, getFeatureAById, updateFeatureA } = require("../../services/featuresService/featuresAService");
 
 
-exports.createFeatureC = async (req, res) => {
+
+exports.createFeatureA = async (req, res) => {
     try {
-        const featureA = await createFeatureC(req.body);
+        const featureA = await createFeatureA(req.body);
         res.status(201).json(featureA);
     } catch (error) {
         console.error(error);
@@ -11,10 +12,9 @@ exports.createFeatureC = async (req, res) => {
     }
 };
 
-
-exports.getAllFeatureC = async (req, res) => {
+exports.getAllFeatureA = async (req, res) => {
     try {
-        const featureAList = await getAllFeaturesC();
+        const featureAList = await getAllFeaturesA();
         res.json(featureAList);
     } catch (error) {
         console.error(error);
@@ -23,10 +23,10 @@ exports.getAllFeatureC = async (req, res) => {
 };
 
 
-exports.getFeatureCById = async (req, res) => {
+exports.getFeatureAById = async (req, res) => {
     const { id } = req.params;
     try {
-        const featureA = await getFeatureCById(id);
+        const featureA = await getFeatureAById(id);
         if (!featureA) {
             return res.status(404).json({ message: 'Feature A not found' });
         }
@@ -38,14 +38,14 @@ exports.getFeatureCById = async (req, res) => {
 };
 
 
-exports.updateFeatureCById = async (req, res) => {
+exports.updateFeatureAById = async (req, res) => {
     const { id } = req.params;
     try {
-        let featureA = await getFeatureCById(id);
+        let featureA = await getFeatureAById(id);
         if (!featureA) {
             return res.status(404).json({ message: 'Feature A not found' });
         }
-        featureA = await updateFeatureC(req.body);
+        featureA = await updateFeatureA(req.body);
         res.json(featureA);
     } catch (error) {
         console.error(error);
@@ -54,10 +54,10 @@ exports.updateFeatureCById = async (req, res) => {
 };
 
 
-exports.deleteFeatureCById = async (req, res) => {
+exports.deleteFeatureAById = async (req, res) => {
     const { id } = req.params;
     try {
-        const deletedCount = await deleteFeatureC(id);
+        const deletedCount = await deleteFeatureA(id);
         if (deletedCount === 0) {
             return res.status(404).json({ message: 'Feature A not found' });
         }

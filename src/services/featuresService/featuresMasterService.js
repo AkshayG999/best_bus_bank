@@ -1,4 +1,4 @@
-const { features_master, features_A, features_B, features_C } = require("../config/db");
+const { features_master, features_A, features_B, features_C } = require("../../config/db");
 
 
 async function getFeatureById(id) {

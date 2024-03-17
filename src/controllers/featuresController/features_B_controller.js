@@ -1,4 +1,4 @@
-const { createFeatureB, getAllFeaturesB, getFeatureBById, updateFeatureB, deleteFeatureB } = require("../services/featuresBService");
+const { createFeatureB, getAllFeaturesB, getFeatureBById, updateFeatureB, deleteFeatureB } = require("../../services/featuresService/featuresBService");
 
 
 

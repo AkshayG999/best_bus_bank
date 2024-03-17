@@ -1,5 +1,5 @@
-const { features_B, features_master, features_A, features_C } = require("../config/db");
-const model = require("../models/userModel");
+const { features_B, features_master, features_A, features_C } = require("../../config/db");
+const model = require("../../models/userModel");
 
 
 async function getAllFeaturesB() {

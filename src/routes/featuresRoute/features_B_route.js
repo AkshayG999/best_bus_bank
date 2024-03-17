@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const featuresBController = require('../controllers/features_B_controller');
+const featuresBController = require('../../controllers/featuresController/features_B_controller');
 
 // Define routes
 router.post('/', featuresBController.createFeatureB);

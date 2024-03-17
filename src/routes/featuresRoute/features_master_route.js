@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAll, getById, create, update, remove } = require('../controllers/featuresMasterController');
+const { getAll, getById, create, update, remove } = require('../../controllers/featuresController/features_master_controller');
 
 
 router.get('/', getAll);

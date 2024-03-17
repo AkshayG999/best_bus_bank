@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const featuresCController = require('../controllers/features_C_controller');
+const featuresCController = require('../../controllers/featuresController/features_C_controller');
 
 // Define routes
 router.post('/', featuresCController.createFeatureC);
