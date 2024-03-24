@@ -15,6 +15,12 @@ module.exports = {
 
     async findAll(req, res) {
         try {
+            const { systemID } = req.body;
+
+            if (systemID) {
+                const featuresMasterPermissions = await featuresMasterPermissionService.findAllBySystemID(systemID);
+                res.status(200).json(featuresMasterPermissions);
+            }
             const featuresMasterPermissions = await featuresMasterPermissionService.findAll();
             res.status(200).json(featuresMasterPermissions);
         } catch (error) {

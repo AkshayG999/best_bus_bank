@@ -17,8 +17,13 @@ async function getFeatureBById(id) {
     });
 }
 
-async function createFeatureB(data) {
-    return await features_B.create(data);
+// async function createFeatureB(data) {
+//     return await features_B.create(data);
+// }
+
+async function createFeatureB(dataArray) {
+    const creationPromises = dataArray.map(data => features_B.create(data));
+    return await Promise.all(creationPromises);
 }
 
 async function updateFeatureB(id, data) {

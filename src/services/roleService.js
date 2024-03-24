@@ -1,11 +1,14 @@
 const { roleModel } = require('../config/db');
 
-async function createRole(roleName, accessibility) {
-    return await roleModel.create({ roleName, accessibility });
+async function createRole(roleName) {
+    return await roleModel.create({ roleName });
 }
 
 async function getAllRoles() {
     return await roleModel.findAll();
+}
+async function getRoleByName(roleName) {
+    return await roleModel.findAll({ where: { roleName: roleName } });
 }
 
 async function getRoleById(id) {
@@ -34,6 +37,7 @@ async function deleteRole(id) {
 module.exports = {
     createRole,
     getAllRoles,
+    getRoleByName,
     getRoleById,
     updateRole,
     deleteRole

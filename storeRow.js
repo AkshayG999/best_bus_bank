@@ -479,3 +479,80 @@
     "features_A": []
   }
 ]
+
+
+
+// Feartures_B
+[
+  {
+    "name": "Account-2",
+    "description": "Account-2",
+    "featuresAId": "18e66eda80cvjnz9x"
+  },
+  {
+    "name": "Setup-2",
+    "description": "Setup-2",
+    "featuresAId": "18e66eda80cvjnz9x"
+  },
+  {
+    "name": "Inward/Outward-2",
+    "description": "Inward/Outward-2",
+    "featuresAId": "18e66eda80cvjnz9x"
+  },
+  {
+    "name": "SMS-2",
+    "description": "SMS-2",
+    "featuresAId": "18e66eda80cvjnz9x"
+  },
+  {
+    "name": "Security-2",
+    "description": "Security-2",
+    "featuresAId": "18e66eda80cvjnz9x"
+  },
+  {
+    "name": "Master-2",
+    "description": "Master-2",
+    "featuresAId": "18e66eda80cvjnz9x"
+  },
+  {
+    "name": "Import-2",
+    "description": "Import-2",
+    "featuresAId": "18e66eda80cvjnz9x"
+  },
+  {
+    "name": "YearEnd-2",
+    "description": "YearEnd-2",
+    "featuresAId": "18e66eda80cvjnz9x"
+  }
+]
+
+
+
+// Feartures_C
+[
+  {
+    "name": "Group Creation-3",
+    "description": "Group Creation-3",
+    "featuresBId": "18e6721b9ff08erky"
+  },
+  {
+    "name": "Ledger Creation-3",
+    "description": "Ledger Creation-3",
+    "featuresBId": "18e6721b9ff08erky"
+  },
+  {
+    "name": "Bank Creation-3",
+    "description": "Bank Creation-3",
+    "featuresBId": "18e6721b9ff08erky"
+  },
+  {
+    "name": "Branch Creation-3",
+    "description": "Branch Creation-3",
+    "featuresBId": "18e6721b9ff08erky"
+  },
+  {
+    "name": "Department Creation-3",
+    "description": "Department Creation-3",
+    "featuresBId": "18e6721b9ff08erky"
+  }
+]

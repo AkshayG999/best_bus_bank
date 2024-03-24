@@ -1,4 +1,4 @@
-const { features_A_permission, features_master } = require('../../config/db');
+const { features_A_permission, features_master, features_A, features_B, features_C, features_B_permission, features_C_permission } = require('../../config/db');
 
 const FeaturesMasterPermission = require('../../config/db').features_master_permission;
 
@@ -9,17 +9,94 @@ module.exports = {
         return await FeaturesMasterPermission.create(featuresMasterPermissionData);
     },
 
-    async findAll() {
+    // async findAll(systemID) {
+    //     return await FeaturesMasterPermission.findAll({
+    //         where: { userSystemID: systemID },
+    //         attributes: ["id", "read", "write", "userSystemID"],
+    //         include: [
+    //             {
+    //                 model: features_master,
+    //                 as: 'features_master'
+    //             },
+    //             {   
+    //                 model: features_A_permission,
+    //                 as: 'features_A_permissions',
+    //                 include: [
+    //                     {
+    //                         model: features_A,
+    //                         as: 'features_A',
+    //                     },
+    //                     {
+    //                         model: features_B_permission,
+    //                         as: 'features_B_permissions',
+    //                         include: [
+    //                             {
+    //                                 model: features_B,
+    //                                 as: 'features_B',
+    //                             },
+    //                         ]
+    //                     }
+    //                 ]
+
+    //             }
+    //         ]
+    //     });
+    // },
+
+    async findAllBySystemID(systemID) {
         return await FeaturesMasterPermission.findAll({
+            where: { userSystemID: systemID },
+            // attributes: ["id", "read", "write", "userSystemID"],
             include: [
-                features_master,
-                features_A_permission
+                {
+                    model: features_master,
+                    as: 'features_master'
+                },
+                {
+                    model: features_A_permission,
+                    as: 'a_permission',
+                    include: [
+                        {
+                            model: features_A,
+                            as: 'features_A',
+                        },
+                        {
+                            model: features_B_permission,
+                            as: 'b_permission', // Unique alias for features_B_permission
+                            include: [
+                                {
+                                    model: features_B,
+                                    as: 'features_B',
+                                },
+                                {
+                                    model: features_C_permission,
+                                    as: 'c_permission',
+                                    // attributes: ["id", "read", "write",],
+
+                                    include: [
+                                        {
+                                            model: features_C,
+                                            as: 'features_C',
+                                            // attributes: ['id', 'name', 'description', 'createdAt', 'updatedAt', 'featuresBId']
+                                        }
+                                    ],
+                                }
+                            ]
+                        }
+                    ]
+                },
             ],
         });
     },
 
+
+
     async findOne(id) {
         return await FeaturesMasterPermission.findByPk(id);
+    },
+
+    async findAll() {
+        return await FeaturesMasterPermission.findAll();
     },
 
     async update(id, featuresMasterPermissionData) {

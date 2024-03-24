@@ -3,18 +3,26 @@ const { features_master, features_A, features_B, features_C } = require("../../c
 
 async function getFeatureById(id) {
     const featuresMasterWithAssociations = await features_master.findByPk(id, {
+        attributes: ["id", "name", "description"],
+
         include: [
             {
                 model: features_A,
                 as: 'features_A',
+                attributes: ["id", "name", "description"],
+
                 include: [
                     {
                         model: features_B,
                         as: 'features_B',
+                        attributes: ["id", "name", "description"],
+
                         include: [
                             {
                                 model: features_C,
-                                as: 'features_C'
+                                as: 'features_C',
+                                attributes: ["id", "name", "description"],
+
                             }
                         ]
                     },
@@ -29,18 +37,24 @@ async function getFeatureById(id) {
 
 async function getAllFeatures() {
     return await features_master.findAll({
+        attributes: ["id", "name", "description"],
         include: [
             {
                 model: features_A,
                 as: 'features_A',
+                attributes: ["id", "name", "description"],
                 include: [
                     {
                         model: features_B,
                         as: 'features_B',
+                        attributes: ["id", "name", "description"],
+
                         include: [
                             {
                                 model: features_C,
-                                as: 'features_C'
+                                as: 'features_C',
+                                attributes: ["id", "name", "description"],
+
                             }
                         ]
                     },

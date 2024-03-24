@@ -14,28 +14,8 @@ const { features_model_master } = require("../models/featuresModel/features_mast
 const { features_model_A } = require("../models/featuresModel/features_A_model");
 const { features_model_B } = require("../models/featuresModel/features_B_model");
 const { features_model_C } = require("../models/featuresModel/features_C_model");
-const { features_master_permission_model, features_B_permission_model, features_C_permission_model, features_A_permission_model } = require("../models/features_permission_model");
+const { features_master_permission_model, features_B_permission_model, features_C_permission_model, features_A_permission_model } = require("../models/featuresPermissionModel/features_permission_model");
 
-
-// const sequelize = new Sequelize(
-//     dbConfig.database,
-//     dbConfig.user,
-//     dbConfig.password,
-//     {
-//         host: dbConfig.server,
-//         dialect: 'mssql',
-//         dialectOptions: {
-//             encrypt: false,
-//             trustServerCertificate: false,
-//             cryptoCredentialsDetails: {
-//                 minVersion: 'TLSv1'
-//             },
-//             ssl: {
-//                 ca: cert
-//             }
-//         }
-//     }
-// );
 
 const sequelize = new Sequelize(
     dbConfig.database,
@@ -43,8 +23,8 @@ const sequelize = new Sequelize(
     dbConfig.password,
     {
         host: dbConfig.server,
-        port: dbConfig.port, // Use the specified port
-        dialect: 'postgres', // Use the correct dialect for PostgreSQL
+        port: dbConfig.port,
+        dialect: 'postgres',
         dialectOptions: {
             encrypt: dbConfig.options.encrypt,
             trustServerCertificate: dbConfig.options.trustServerCertificate,
@@ -55,6 +35,25 @@ const sequelize = new Sequelize(
         }
     }
 );
+
+// const sequelize = new Sequelize(
+//     dbConfig.database,
+//     dbConfig.user,
+//     dbConfig.password,
+//     {
+//         host: dbConfig.server,
+//         port: dbConfig.port, // Use the specified port
+//         dialect: 'postgres', // Use the correct dialect for PostgreSQL
+//         dialectOptions: {
+//             encrypt: dbConfig.options.encrypt,
+//             trustServerCertificate: dbConfig.options.trustServerCertificate,
+//             cryptoCredentialsDetails: {
+//                 minVersion: dbConfig.options.cryptoCredentialsDetails.minVersion
+//             },
+//             // ssl: dbConfig.options.ssl // Optionally provide SSL configuration
+//         }
+//     }
+// );
 
 
 const db = {};
@@ -84,14 +83,15 @@ const features_C_permission = features_C_permission_model(sequelize);
 // ledgerModel.belongsTo(groupModel, { foreignKey: 'groupID', as: 'group' });
 // branchModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
 
-// departmentModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
-// departmentModel.belongsTo(branchModel, { foreignKey: 'branchCode', as: 'branch' });
+departmentModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
+departmentModel.belongsTo(branchModel, { foreignKey: 'branchCode', as: 'branch' });
 
 // userModel.belongsTo(branchModel, { foreignKey: 'branchId', as: 'branch' });
 // userModel.belongsTo(departmentModel, { foreignKey: 'departmentId', as: 'department' });
 
 // userModel.belongsToMany(features_permission, { foreignKey: 'featuresPermissionId', as: 'features_permission' });
 // features_permission.belongsToMany(userModel, { foreignKey: 'userId', as: 'user' });
+
 
 features_master.hasMany(features_A, { as: 'features_A' });
 features_A.belongsTo(features_master, { foreignKey: 'featuresMasterId', as: 'features_master' });
@@ -102,27 +102,53 @@ features_B.belongsTo(features_A, { foreignKey: 'featuresAId', as: 'features_A' }
 features_B.hasMany(features_C, { as: 'features_C' });
 features_C.belongsTo(features_B, { foreignKey: 'featuresBId', as: 'features_B' });
 
-
-userModel.belongsToMany(features_master, { through: features_master_permission });
-userModel.belongsToMany(features_A, { through: features_A_permission });
-userModel.belongsToMany(features_B, { through: features_B_permission });
-userModel.belongsToMany(features_C, { through: features_C_permission });
-
-features_master_permission.belongsTo(features_master);
 features_master.belongsToMany(userModel, { through: features_master_permission });
 features_A.belongsToMany(userModel, { through: features_A_permission });
 features_B.belongsToMany(userModel, { through: features_B_permission });
 features_C.belongsToMany(userModel, { through: features_C_permission });
 
-features_A_permission.belongsTo(features_master_permission);
-features_master_permission.hasMany(features_A_permission);
+// features_master.belongsToMany(roleModel, { through: features_master_permission });
+// features_A.belongsToMany(roleModel, { through: features_A_permission });
+// features_B.belongsToMany(roleModel, { through: features_B_permission });
+// features_C.belongsToMany(roleModel, { through: features_C_permission });
 
+// ---
+roleModel.hasMany(features_master_permission);
+roleModel.hasMany(features_A_permission);
+roleModel.hasMany(features_B_permission);
+roleModel.hasMany(features_C_permission);
+
+features_master_permission.belongsTo(roleModel);
+features_A_permission.belongsTo(roleModel);
+features_B_permission.belongsTo(roleModel);
+features_C_permission.belongsTo(roleModel);
+// ---
+
+features_master_permission.hasMany(features_A_permission, { as: 'a_permission' });
+features_master_permission.belongsTo(features_master);
+
+// features_A_permission.hasMany(features_B_permission);
+features_A_permission.hasMany(features_B_permission, { as: 'b_permission' });
+features_A_permission.belongsTo(features_master_permission);
+features_A_permission.belongsTo(features_A);
+
+// features_B_permission.hasMany(features_C_permission);
+features_B_permission.hasMany(features_C_permission, { as: 'c_permission' });
 features_B_permission.belongsTo(features_A_permission);
-features_A_permission.hasMany(features_B_permission);
+features_B_permission.belongsTo(features_B);
 
 features_C_permission.belongsTo(features_B_permission);
-features_B_permission.hasMany(features_C_permission);
+features_C_permission.belongsTo(features_C, { as: "features_C" });
 
+
+
+
+
+
+// userModel.belongsToMany(features_master, { through: features_master_permission });
+// userModel.belongsToMany(features_A, { through: features_A_permission });
+// userModel.belongsToMany(features_B, { through: features_B_permission });
+// userModel.belongsToMany(features_C, { through: features_C_permission });
 
 
 sequelize.sync({ alter: true })

@@ -9,8 +9,13 @@ async function getFeatureCById(id) {
     return await features_C.findByPk(id);
 }
 
-async function createFeatureC(data) {
-    return await features_C.create(data);
+// async function createFeatureC(data) {
+//     return await features_C.create(data);
+// }
+
+async function createFeatureC(dataArray) {
+    const creationPromises = dataArray.map(data => features_C.create(data));
+    return await Promise.all(creationPromises);
 }
 
 async function updateFeatureC(id, data) {

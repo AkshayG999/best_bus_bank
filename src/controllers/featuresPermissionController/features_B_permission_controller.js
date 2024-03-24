@@ -7,7 +7,7 @@ module.exports = {
     async create(req, res) {
         try {
             const { userSystemID, featuresAId, featuresMasterPermissionId, read, write } = req.body;
-            const newPermission = await features_B_permission_service.create({userSystemID, featuresAId, featuresMasterPermissionId, read, write});
+            const newPermission = await features_B_permission_service.create({ userSystemID, featuresAId, featuresMasterPermissionId, read, write });
             res.status(201).json(newPermission);
         } catch (error) {
             res.status(500).json({ error: error.message });
