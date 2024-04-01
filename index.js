@@ -36,7 +36,7 @@ app.use("/api/roles-permissions", require("./src/routes/rolePermissionsRoute"));
 app.get('/', (req, res) => {
     res.send("server is running..")
 });
-
+    
 
 sequelize.sync({ alter: true })
     .then(() => {

@@ -8,8 +8,8 @@ module.exports = {
         user: 'sbi_db',
         password: 'Database@123',
         server: 'sbi-db.postgres.database.azure.com',
-        // database: 'best-bus-database',
-        database: 'postgres',
+        database: 'best-bus-db',
+        // database: 'postgres',
         port: 5432,
         // ssl: true,
         options: {
