@@ -9,10 +9,10 @@ exports.createFeatures = async (req, res) => {
         if (!name) {
             return res.status(400).json({ message: 'Name is required' });
         }
-        if (!description) {
-            return res.status(400).json({ message: 'Description is required' });
-        }
-        let data = { name: name, description: description, };
+        // if (!description) {
+        //     return res.status(400).json({ message: 'Description is required' });
+        // }
+        let data = { name: name, description: name, };
 
         if (parentFeatureId) {
             data.parentFeatureId = parentFeatureId;
