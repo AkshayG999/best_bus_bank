@@ -88,6 +88,59 @@ module.exports = {
             ],
         });
     },
+    async findById(id) {
+        return await FeaturesMasterPermission.findByPk(id, {
+            attributes: ["id", "read", "write",],
+            include: [
+                {
+                    model: features_master,
+                    as: 'features_master',
+                    attributes: ["id", "name"],
+
+                },
+                {
+                    model: features_A_permission,
+                    as: 'a_permission',
+                    attributes: ["id", "read", "write",],
+
+                    include: [
+                        {
+                            model: features_A,
+                            as: 'features_A',
+                            attributes: ["id", "name"],
+
+                        },
+                        {
+                            model: features_B_permission,
+                            as: 'b_permission',
+                            attributes: ["id", "read", "write",],
+
+                            include: [
+                                {
+                                    model: features_B,
+                                    as: 'features_B',
+                                    attributes: ["id", "name"],
+                                },
+                                {
+                                    model: features_C_permission,
+                                    as: 'c_permission',
+                                    attributes: ["id", "read", "write",],
+
+                                    include: [
+                                        {
+                                            model: features_C,
+                                            as: 'features_C',
+                                            attributes: ["id", "name"],
+                                        }
+                                    ],
+                                }
+                            ]
+                        }
+                    ]
+                },
+            ],
+        });
+    },
 
 
 

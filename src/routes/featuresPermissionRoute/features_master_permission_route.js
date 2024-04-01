@@ -11,7 +11,7 @@ router.post('/', featuresMasterPermissionController.create);
 router.get('/', featuresMasterPermissionController.findAll);
 
 // Retrieve a single features_master_permission with id
-router.get('/:id', featuresMasterPermissionController.findOne);
+router.get('/:id', featuresMasterPermissionController.findById);
 
 // Update a features_master_permission with id
 router.put('/:id', featuresMasterPermissionController.update);

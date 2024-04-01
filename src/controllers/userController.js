@@ -2,6 +2,10 @@ const shortId = require('shortid')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const personService = require("../services/userService");
+const { getRolesById } = require('../services/rolePermissionsService');
+const { getFilterFeatures } = require('../services/featuresService');
+const { featuresWithReadWrite } = require('../helper/featuresHelper');
+const { replaceReadWriteWithPermissions, extractFeaturesC, concatRolePermissions } = require('../helper/rolePermissionHelper');
 
 
 
@@ -105,6 +109,8 @@ const updateByID = async (req, res) => {
   }
 }
 
+
+
 const deleteByID = async (req, res) => {
   try {
     const exisitingPerson = await personService.findPersonBySystemID(req.params.id);
@@ -127,11 +133,122 @@ const deleteByID = async (req, res) => {
 }
 
 
+
+//--------------Roles And Permissions------------------
+const addRolePermissionsToUser = async (req, res) => {
+  try {
+    const { systemID } = req.params;
+    const { roleId } = req.body;
+
+    const exisitingPerson = await personService.findPersonBySystemID(systemID);
+
+    if (!exisitingPerson) {
+      return res
+        .status(404)
+        .json({ statusCode: 404, error: "User Does not exist" });
+    }
+
+    const role = await getRolesById(roleId);
+
+    if (!role) {
+      return res
+        .status(404)
+        .json({ statusCode: 404, error: "Role Does not exist" });
+    }
+
+    const userPermissions = await personService.updatePersonRole(systemID, roleId, role.dataValues.permissions);
+
+    console.log(userPermissions, exisitingPerson.dataValues, role.dataValues)
+    return res.status(200).send({ userPermissions })
+
+  } catch (err) {
+    console.log({ err });
+    return res.status(500).json({
+      success: false,
+      message: `Error:${err}`
+    });
+  }
+}
+
+
+const fetchUserPermissions = async (req, res) => {
+  try {
+    const { systemID } = req.params;
+    const { masterId } = req.body;
+
+    const exisitingPerson = await personService.findPersonBySystemID(systemID);
+
+    if (!exisitingPerson) {
+      return res
+        .status(404)
+        .json({ statusCode: 404, error: "User Does not exist" });
+    }
+    console.log(exisitingPerson.dataValues.permissions);
+
+    let featuresList = await getFilterFeatures({});
+
+    featuresList = featuresList.map(item => ({
+      id: item.dataValues.id,
+      name: item.dataValues.name,
+      description: item.dataValues.description,
+      parentFeatureId: item.dataValues.parentFeatureId,
+    }));
+
+    const featuresData = featuresWithReadWrite(masterId, featuresList, level = 0);
+
+    let permissions = replaceReadWriteWithPermissions(exisitingPerson.dataValues.permissions, featuresData);
+
+    return res.status(200).send({ permission: permissions })
+
+  } catch (err) {
+    console.log({ err });
+    return res.status(500).json({
+      success: false,
+      message: `Error:${err}`
+    });
+  }
+}
+
+
+const updateUserPermissions = async (req, res) => {
+  try {
+    const { systemID } = req.params;
+    const { permissions } = req.body;
+
+    const exisitingPerson = await personService.findPersonBySystemID(systemID);
+
+    if (!exisitingPerson) {
+      return res
+        .status(404)
+        .json({ statusCode: 404, error: "User Does not exist" });
+    }
+
+    let permissionsData = extractFeaturesC(permissions);
+
+    const updatedPermissions = concatRolePermissions(exisitingPerson.dataValues, permissionsData);
+    console.log(updatedPermissions);
+
+    const updatePermissions = replaceReadWriteWithPermissions(exisitingPerson.dataValues.permissions, updatedPermissions.permissions);
+
+    return res.status(200).send({ permission: updatePermissions })
+  }
+  catch (err) {
+    console.log({ err });
+    return res.status(500).json({
+      success: false,
+      message: `Error:${err}`
+    })
+  }
+}
+
 module.exports = {
   signUp,
   login,
   getBySystemID,
   getAll,
   updateByID,
-  deleteByID
+  deleteByID,
+  addRolePermissionsToUser,
+  fetchUserPermissions,
+  updateUserPermissions
 };

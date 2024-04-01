@@ -39,15 +39,19 @@ const updatePerson = async ({ Id, Name, Email }) => {
   return { Id, Name, Email };
 };
 
-const updatePersonRole = async (systemID, role) => {
-  return await userModel.update(
-    { role },
-    {
-      where: {
-        systemID: systemID,
-      },
+const updatePersonRole = async (systemID, roleId, permissionsData) => {
+  let user = await userModel.findOne({
+    where: {
+      systemID: systemID
     }
-  );
+  });
+  if (user) {
+    return await user.update({ roleId: roleId, permissions: permissionsData });
+    // return { success: true, message: 'Permissions updated successfully' };
+  } else {
+    return { success: false, message: 'User not found' };
+  }
+
 };
 
 const updateDepartmentAllocation = async (systemID, bankId, branchId, departmentId, role) => {

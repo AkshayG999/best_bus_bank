@@ -9,8 +9,7 @@ app.use(cors());
 
 
 // Routes
-app.use('/user', userRoutes);
-app.use("/api/people", require("./src/routes/userRoutes"));
+app.use("/api/user", require("./src/routes/userRoutes"));
 app.use("/api/admin", require("./src/routes/adminRoute"));
 app.use("/api/parent-group", require("./src/routes/parentGroupRoute"));
 app.use("/api/group", require("./src/routes/groupRoute"));
@@ -29,6 +28,8 @@ app.use("/api/features-A-permission", require("./src/routes/featuresPermissionRo
 app.use("/api/features-B-permission", require("./src/routes/featuresPermissionRoute/features_B_permission_route"));
 app.use("/api/features-C-permission", require("./src/routes/featuresPermissionRoute/features_C_permission_route"));
 
+app.use("/api/features", require("./src/routes/featuresRoute"));
+app.use("/api/roles-permissions", require("./src/routes/rolePermissionsRoute"));
 
 
 

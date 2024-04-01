@@ -1808,3 +1808,198 @@ user_feature_A_permission = [
         "featuresMasterPermissionId": " ",
     }
 ]
+
+
+
+[
+    {
+        "id": "18e84a4a19chygx0h",
+        "name": "Master",
+        "description": "Master",
+        "childFeatureId": null,
+        "createdAt": "2024-03-28T10:39:25.596Z",
+        "updatedAt": "2024-03-28T10:39:25.596Z",
+        "features_a": [
+            {
+                "id": "18e84a73e1fh9441u",
+                "name": "Master Data Entery",
+                "description": "Master Data Entery",
+                "childFeatureId": "18e84a4a19chygx0h",
+                "createdAt": "2024-03-28T10:42:16.735Z",
+                "updatedAt": "2024-03-28T10:42:16.735Z",
+                "features_b": [
+                    {
+                        "id": "18e84a7cc5ct292p1",
+                        "name": "Account",
+                        "description": "Account",
+                        "childFeatureId": "18e84a73e1fh9441u",
+                        "createdAt": "2024-03-28T10:42:53.149Z",
+                        "updatedAt": "2024-03-28T10:42:53.149Z",
+                        "features_c": [
+                            {
+                                "id": "18e84a87fa4efrp4j",
+                                "name": "Group Creation",
+                                "description": "Group Creation",
+                                "childFeatureId": "18e84a7cc5ct292p1",
+                                "createdAt": "2024-03-28T10:43:39.044Z",
+                                "updatedAt": "2024-03-28T10:43:39.044Z"
+                            },
+                            {
+                                "id": "18e84b46ddd4broqs",
+                                "name": "Ledger Creation",
+                                "description": "Ledger Creation",
+                                "childFeatureId": "18e84a7cc5ct292p1",
+                                "createdAt": "2024-03-28T10:56:40.925Z",
+                                "updatedAt": "2024-03-28T10:56:40.925Z"
+                            },
+                            {
+                                "id": "18e84b4bb0e3z52zb",
+                                "name": "Bank Creation",
+                                "description": "Bank Creation",
+                                "childFeatureId": "18e84a7cc5ct292p1",
+                                "createdAt": "2024-03-28T10:57:00.686Z",
+                                "updatedAt": "2024-03-28T10:57:00.686Z"
+                            },
+                            {
+                                "id": "18e84b4f6e0fithbr",
+                                "name": "Branch Creation",
+                                "description": "Branch Creation",
+                                "childFeatureId": "18e84a7cc5ct292p1",
+                                "createdAt": "2024-03-28T10:57:16.000Z",
+                                "updatedAt": "2024-03-28T10:57:16.000Z"
+                            },
+                            {
+                                "id": "18e84b534a879cw33",
+                                "name": "Department Creation",
+                                "description": "Department Creation",
+                                "childFeatureId": "18e84a7cc5ct292p1",
+                                "createdAt": "2024-03-28T10:57:31.816Z",
+                                "updatedAt": "2024-03-28T10:57:31.816Z"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "18e84ad269287ea3q",
+                        "name": "SetUp",
+                        "description": "SetUp",
+                        "childFeatureId": "18e84a73e1fh9441u",
+                        "createdAt": "2024-03-28T10:48:43.923Z",
+                        "updatedAt": "2024-03-28T10:48:43.923Z"
+                    },
+                    {
+                        "id": "18e84ad4f93v06wo4",
+                        "name": "Inward/Outward",
+                        "description": "Inward/Outward",
+                        "childFeatureId": "18e84a73e1fh9441u",
+                        "createdAt": "2024-03-28T10:48:54.419Z",
+                        "updatedAt": "2024-03-28T10:48:54.419Z"
+                    },
+                    {
+                        "id": "18e84ad8bf2u2uf9k",
+                        "name": "SMS",
+                        "description": "SMS",
+                        "childFeatureId": "18e84a73e1fh9441u",
+                        "createdAt": "2024-03-28T10:49:09.874Z",
+                        "updatedAt": "2024-03-28T10:49:09.874Z"
+                    },
+                    {
+                        "id": "18e84b0bcddba369d",
+                        "name": "Master",
+                        "description": "Master",
+                        "childFeatureId": "18e84a73e1fh9441u",
+                        "createdAt": "2024-03-28T10:52:39.006Z",
+                        "updatedAt": "2024-03-28T10:52:39.006Z"
+                    },
+                    {
+                        "id": "18e84b0df2cvwpars",
+                        "name": "Import",
+                        "description": "Import",
+                        "childFeatureId": "18e84a73e1fh9441u",
+                        "createdAt": "2024-03-28T10:52:47.788Z",
+                        "updatedAt": "2024-03-28T10:52:47.788Z"
+                    },
+                    {
+                        "id": "18e84b1051fqulubq",
+                        "name": "YearEnd",
+                        "description": "YearEnd",
+                        "childFeatureId": "18e84a73e1fh9441u",
+                        "createdAt": "2024-03-28T10:52:57.503Z",
+                        "updatedAt": "2024-03-28T10:52:57.503Z"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "18e84c8056ae3vu99",
+        "name": "Admin",
+        "description": "Admin",
+        "childFeatureId": null,
+        "createdAt": "2024-03-28T11:18:04.907Z",
+        "updatedAt": "2024-03-28T11:18:04.907Z"
+    },
+    {
+        "id": "18e84c86cde61cmmh",
+        "name": "Reports",
+        "description": "Reports",
+        "childFeatureId": null,
+        "createdAt": "2024-03-28T11:18:31.391Z",
+        "updatedAt": "2024-03-28T11:18:31.391Z"
+    },
+    {
+        "id": "18e84c89179slfqgm",
+        "name": "Account",
+        "description": "Account",
+        "childFeatureId": null,
+        "createdAt": "2024-03-28T11:18:40.761Z",
+        "updatedAt": "2024-03-28T11:18:40.761Z"
+    },
+    {
+        "id": "18e84c8b6a8j448x6",
+        "name": "Loan",
+        "description": "Loan",
+        "childFeatureId": null,
+        "createdAt": "2024-03-28T11:18:50.281Z",
+        "updatedAt": "2024-03-28T11:18:50.281Z"
+    },
+    {
+        "id": "18e84c8ddd4212kv2",
+        "name": "Fixed Deposite",
+        "description": "Fixed Deposite",
+        "childFeatureId": null,
+        "createdAt": "2024-03-28T11:19:00.309Z",
+        "updatedAt": "2024-03-28T11:19:00.309Z"
+    },
+    {
+        "id": "18e84c9131ego8kdt",
+        "name": "Recovery",
+        "description": "Recovery",
+        "childFeatureId": null,
+        "createdAt": "2024-03-28T11:19:13.950Z",
+        "updatedAt": "2024-03-28T11:19:13.950Z"
+    },
+    {
+        "id": "18e84c93cebpjbxz2",
+        "name": "Share Certificate and Dividend",
+        "description": "Share Certificate and Dividend",
+        "childFeatureId": null,
+        "createdAt": "2024-03-28T11:19:24.651Z",
+        "updatedAt": "2024-03-28T11:19:24.651Z"
+    },
+    {
+        "id": "18e84c96bcbpldwwp",
+        "name": "Document Management",
+        "description": "Document Management",
+        "childFeatureId": null,
+        "createdAt": "2024-03-28T11:19:36.652Z",
+        "updatedAt": "2024-03-28T11:19:36.652Z"
+    },
+    {
+        "id": "18e84c99c33zyaaow",
+        "name": "Other",
+        "description": "Other",
+        "childFeatureId": null,
+        "createdAt": "2024-03-28T11:19:49.043Z",
+        "updatedAt": "2024-03-28T11:19:49.043Z"
+    }
+]

@@ -34,10 +34,13 @@ function model(sequelize) {
       primaryKey: true,
       autoIncrement: false,
     },
-    role: {
+    roleId: {
       type: DataTypes.STRING,
-      DEFAULT: "user",
       allowNull: true,
+    },
+    permissions: {
+      type: DataTypes.JSONB,
+      allowNull: true
     },
     bankId: {
       type: DataTypes.STRING,

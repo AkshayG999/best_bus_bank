@@ -1,5 +1,6 @@
 const roleService = require('../services/roleService');
 const { features_master, features_A, features_B, features_C, features_master_permission, features_A_permission, features_B_permission, features_C_permission } = require('../config/db');
+const personService = require('../services/userService');
 
 
 async function createRole(req, res) {
@@ -28,6 +29,16 @@ async function createRole(req, res) {
 const assigninitialPermissionsToUser = async (req, res) => {
     try {
         const { userSystemID } = req.body;
+        if (!userSystemID) {
+            return res.status(400).json({ error: 'User System ID is required' });
+        }
+        const findUser = await personService.findPersonBySystemID(userSystemID);
+
+        if (!findUser) {
+            return res
+                .status(404)
+                .json({ statusCode: 404, error: "User Does not exist" });
+        }
 
         const rolePermission = await assignPermissionsToUser(userSystemID);
 
@@ -55,7 +66,7 @@ const createInitialPermissions = async (req, res) => {
         const rolePermission = await assignInitialPermissionsToRole(userSystemID);
         return res.status(201).json(rolePermission);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        return res.status(400).json({ error: error.message });
     }
 }
 
@@ -85,9 +96,8 @@ async function assignPermissionsRoleToUser(roleId, userSystemID) {
         }
 
 
-        // ____________Create Feature Master Permissions For User through role____________
+        // ____________Feature Master Permissions For User through role____________
         const roleMasterPermissions = await features_master_permission.findAll({ where: { roleId: roleId } });
-
 
         roleMasterPermissions.forEach(async masterPermission => await updatePermissionRecord(
             features_master_permission,
@@ -99,8 +109,51 @@ async function assignPermissionsRoleToUser(roleId, userSystemID) {
             masterPermission.featuresMasterId
         ));
 
+
+        // ____________Feature A Permissions For User through role____________
+        const roleFeature_A_Permissions = await features_A_permission.findAll({ where: { roleId: roleId } });
+
+        roleFeature_A_Permissions.forEach(async feature_A_Permission => await updatePermissionRecord(
+            features_A_permission,
+            userSystemID,
+            feature_A_Permission.roleId,
+            feature_A_Permission.read,
+            feature_A_Permission.write,
+            'featuresAId',
+            feature_A_Permission.featuresAId
+        ));
+
+
+        // ____________Feature B Permissions For User through role____________
+        const roleFeature_B_Permissions = await features_B_permission.findAll({ where: { roleId: roleId } });
+
+        roleFeature_B_Permissions.forEach(async feature_B_Permission => await updatePermissionRecord(
+            features_B_permission,
+            userSystemID,
+            feature_B_Permission.roleId,
+            feature_B_Permission.read,
+            feature_B_Permission.write,
+            'featuresBId',
+            feature_B_Permission.featuresBId
+        ));
+
+
+        // ____________Feature B Permissions For User through role____________
+        const roleFeature_C_Permissions = await features_C_permission.findAll({ where: { roleId: roleId } });
+
+        roleFeature_C_Permissions.forEach(async feature_C_Permission => await updatePermissionRecord(
+            features_C_permission,
+            userSystemID,
+            feature_C_Permission.roleId,
+            feature_C_Permission.read,
+            feature_C_Permission.write,
+            'featuresCId',
+            feature_C_Permission.featuresCId
+        ));
+
+
         // Wait for all permission records to be created and saved
-        // let result = await Promise.all(permissionsPromises);
+        let result = await Promise.all(permissionsPromises);
 
         console.log('Initial permissions assigned to user successfully.');
         return result;
@@ -116,17 +169,17 @@ async function assignInitialPermissionsToRole(roleId) {
         const permissionsPromises = [];
 
         // Function to create permission record and add to permissionsPromises array
-        function createPermissionRecord(Model, featureColumnName, featureId, featurePermissionColumnName = null, featurePermissionId = null) {
+        async function createPermissionRecord(Model, featureColumnName, featureId, featurePermissionColumnName = null, featurePermissionId = null) {
             const record = {
                 [featureColumnName]: featureId,
                 [featurePermissionColumnName]: featurePermissionId,
                 roleId: roleId
             };
-            permissionsPromises.push(Model.create(record));
+            permissionsPromises.push(await Model.create(record));
         }
 
         const featuresMaster = await features_master.findAll();
-        featuresMaster.forEach(feature => createPermissionRecord(features_master_permission, 'featuresMasterId', feature.id));
+        featuresMaster.forEach(async feature => await createPermissionRecord(features_master_permission, 'featuresMasterId', feature.id));
 
         const featuresA = await features_A.findAll();
         const featuresMasterPermissions = await features_master_permission.findAll({ where: { roleId: roleId } });
@@ -134,7 +187,7 @@ async function assignInitialPermissionsToRole(roleId) {
         featuresA.forEach(async (featureA) => {
             const matchingPermission = featuresMasterPermissions.find(permission => permission.featuresMasterId === featureA.featuresMasterId);
             if (matchingPermission) {
-                createPermissionRecord(features_A_permission, 'featuresAId', featureA.id, 'featuresMasterPermissionId', matchingPermission.id);
+                await createPermissionRecord(features_A_permission, 'featuresAId', featureA.id, 'featuresMasterPermissionId', matchingPermission.id);
             } else {
                 console.error(`No permission found for featuresAId: ${featureA.id}`);
             }
@@ -146,7 +199,7 @@ async function assignInitialPermissionsToRole(roleId) {
         featuresB.forEach(async (featureB) => {
             const matchingPermission = features_A_permissions.find(features_A_permission => features_A_permission.featuresAId === featureB.featuresAId);
             if (matchingPermission) {
-                createPermissionRecord(features_B_permission, 'featuresBId', featureB.id, 'featuresAPermissionId', matchingPermission.id);
+                await createPermissionRecord(features_B_permission, 'featuresBId', featureB.id, 'featuresAPermissionId', matchingPermission.id);
             } else {
                 console.error(`No permission found for featuresBId: ${featureB.id}`);
             }
@@ -158,7 +211,7 @@ async function assignInitialPermissionsToRole(roleId) {
         featuresC.forEach(async (featureC) => {
             const matchingPermission = features_B_permissions.find(features_B_permission => features_B_permission.featuresBId === featureC.featuresBId);
             if (matchingPermission) {
-                createPermissionRecord(features_C_permission, 'featuresCId', featureC.id, 'featuresBPermissionId', matchingPermission.id);
+                await createPermissionRecord(features_C_permission, 'featuresCId', featureC.id, 'featuresBPermissionId', matchingPermission.id);
             } else {
                 console.error(`No permission found for featuresCId: ${featureC.id}`);
             }
@@ -181,13 +234,13 @@ async function assignPermissionsToUser(userSystemID) {
         const permissionsPromises = [];
 
         // Function to create permission record and add to permissionsPromises array
-        function createPermissionRecord(Model, featureCoumnName, featureId, featurePermissionColumnName = null, featurePermissionId = null) {
-            permissionsPromises.push(Model.create({ [featureCoumnName]: featureId, [featurePermissionColumnName]: featurePermissionId, userSystemID }));
+        async function createPermissionRecord(Model, featureCoumnName, featureId, featurePermissionColumnName = null, featurePermissionId = null) {
+            permissionsPromises.push(await Model.create({ [featureCoumnName]: featureId, [featurePermissionColumnName]: featurePermissionId, userSystemID }));
         }
 
 
         const featuresMaster = await features_master.findAll();
-        featuresMaster.forEach(feature => createPermissionRecord(features_master_permission, 'featuresMasterId', feature.id));
+        featuresMaster.forEach(async feature => await createPermissionRecord(features_master_permission, 'featuresMasterId', feature.id));
 
         const featuresA = await features_A.findAll();
         const featuresMasterPermissions = await features_master_permission.findAll({ where: { userSystemID: userSystemID } });
@@ -195,7 +248,7 @@ async function assignPermissionsToUser(userSystemID) {
         featuresA.forEach(async (featureA) => {
             const matchingPermission = featuresMasterPermissions.find(permission => permission.featuresMasterId === featureA.featuresMasterId);
             if (matchingPermission) {
-                createPermissionRecord(features_A_permission, 'featuresAId', featureA.id, 'featuresMasterPermissionId', matchingPermission.id);
+                await createPermissionRecord(features_A_permission, 'featuresAId', featureA.id, 'featuresMasterPermissionId', matchingPermission.id);
             } else {
                 console.error(`No permission found for featuresAId: ${featureA.id}`);
             }
@@ -207,7 +260,7 @@ async function assignPermissionsToUser(userSystemID) {
         featuresB.forEach(async (featureB) => {
             const matchingPermission = features_A_permissions.find(features_A_permission => features_A_permission.featuresAId === featureB.featuresAId);
             if (matchingPermission) {
-                createPermissionRecord(features_B_permission, 'featuresBId', featureB.id, 'featuresAPermissionId', matchingPermission.id);
+                await createPermissionRecord(features_B_permission, 'featuresBId', featureB.id, 'featuresAPermissionId', matchingPermission.id);
             } else {
                 console.error(`No permission found for featuresBId: ${featureB.id}`);
             }
@@ -219,7 +272,7 @@ async function assignPermissionsToUser(userSystemID) {
         featuresC.forEach(async (featureC) => {
             const matchingPermission = features_B_permissions.find(features_B_permission => features_B_permission.featuresBId === featureC.featuresBId);
             if (matchingPermission) {
-                createPermissionRecord(features_C_permission, 'featuresCId', featureC.id, 'featuresBPermissionId', matchingPermission.id);
+                await createPermissionRecord(features_C_permission, 'featuresCId', featureC.id, 'featuresBPermissionId', matchingPermission.id);
             } else {
                 console.error(`No permission found for featuresCId: ${featureC.id}`);
             }

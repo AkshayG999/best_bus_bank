@@ -12,4 +12,9 @@ router.put("/:id", userController.updateByID);
 router.delete("/:id", userController.deleteByID);
 
 
+router.put("/add-role-permissions/:systemID", userController.addRolePermissionsToUser);
+router.get("/get-role-permissions/:systemID", userController.fetchUserPermissions);
+router.put("/update-role-permissions/:systemID", userController.updateUserPermissions);
+
+
 module.exports = router;

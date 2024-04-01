@@ -19,12 +19,28 @@ module.exports = {
 
             if (systemID) {
                 const featuresMasterPermissions = await featuresMasterPermissionService.findAllBySystemID(systemID);
-                res.status(200).json(featuresMasterPermissions);
+                return res.status(200).json(featuresMasterPermissions);
             }
             const featuresMasterPermissions = await featuresMasterPermissionService.findAll();
-            res.status(200).json(featuresMasterPermissions);
+            return res.status(200).json(featuresMasterPermissions);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            return res.status(400).json({ error: error.message });
+        }
+    },
+
+    async findById(req, res) {
+        try {
+            const { id } = req.params;
+
+            const featuresMasterPermission = await featuresMasterPermissionService.findById(id);
+
+            if (!featuresMasterPermission) {
+                return res.status(404).json({ message: 'Features master permission not found' });
+            } else {
+                return res.status(200).json(featuresMasterPermission);
+            }
+        } catch (error) {
+            return res.status(400).json({ error: error.message });
         }
     },
 
@@ -33,12 +49,12 @@ module.exports = {
         try {
             const featuresMasterPermission = await featuresMasterPermissionService.findOne(req.params.id);
             if (!featuresMasterPermission) {
-                res.status(404).json({ message: 'Features master permission not found' });
+                return res.status(404).json({ message: 'Features master permission not found' });
             } else {
-                res.status(200).json(featuresMasterPermission);
+                return res.status(200).json(featuresMasterPermission);
             }
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            return res.status(400).json({ error: error.message });
         }
     },
 
@@ -46,9 +62,9 @@ module.exports = {
     async update(req, res) {
         try {
             const updatedFeaturesMasterPermission = await featuresMasterPermissionService.update(req.params.id, req.body);
-            res.status(200).json(updatedFeaturesMasterPermission);
+            return res.status(200).json(updatedFeaturesMasterPermission);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            return res.status(400).json({ error: error.message });
         }
     },
 
@@ -56,9 +72,9 @@ module.exports = {
     async delete(req, res) {
         try {
             await featuresMasterPermissionService.delete(req.params.id);
-            res.status(204).end("Deleted successfully");
+            return res.status(204).end("Deleted successfully");
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            return res.status(400).json({ error: error.message });
         }
     }
 };
