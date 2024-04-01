@@ -39,14 +39,14 @@ const updatePerson = async ({ Id, Name, Email }) => {
   return { Id, Name, Email };
 };
 
-const updatePersonRole = async (systemID, roleId, permissionsData) => {
+const updatePersonRole = async (systemID,dataForUpdate) => {
   let user = await userModel.findOne({
     where: {
       systemID: systemID
     }
   });
   if (user) {
-    return await user.update({ roleId: roleId, permissions: permissionsData });
+    return await user.update(dataForUpdate);
     // return { success: true, message: 'Permissions updated successfully' };
   } else {
     return { success: false, message: 'User not found' };

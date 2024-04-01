@@ -30,27 +30,6 @@ exports.extractFeaturesC = (permissions) => {
 
 // ____________________________________________________________________________________________________________________________________________________
 
-// // Get Feature Permissions
-// exports.replacePermissions = (permissions, featuresData) => {
-//     permissions.forEach(permission => {
-//         featuresData.features_a.forEach(feature_a => {
-//             if (feature_a.features_b && Array.isArray(feature_a.features_b)) {
-//                 feature_a.features_b.forEach(feature_b => {
-//                     if (feature_b.features_c && Array.isArray(feature_b.features_c)) {
-//                         feature_b.features_c.forEach(feature_c => {
-//                             if (feature_c.id === permission.id) {
-//                                 feature_c.read = permission.read;
-//                                 feature_c.write = permission.write;
-//                             }
-//                         });
-//                     }
-//                 });
-//             }
-//         });
-//     });
-//     return featuresData;
-// }
-
 exports.replaceReadWriteWithPermissions = (permissions, featuresData) => {
     function findFeatureById(data, id) {
         if (data.id === id) {

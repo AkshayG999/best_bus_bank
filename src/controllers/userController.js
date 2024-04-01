@@ -5,7 +5,7 @@ const personService = require("../services/userService");
 const { getRolesById } = require('../services/rolePermissionsService');
 const { getFilterFeatures } = require('../services/featuresService');
 const { featuresWithReadWrite } = require('../helper/featuresHelper');
-const { replaceReadWriteWithPermissions, extractFeaturesC, concatRolePermissions } = require('../helper/rolePermissionHelper');
+const { replaceReadWriteWithPermissions, extractFeaturesC, concatRolePermissions, filterPermissions } = require('../helper/rolePermissionHelper');
 
 
 
@@ -113,8 +113,8 @@ const updateByID = async (req, res) => {
 
 const deleteByID = async (req, res) => {
   try {
-    const exisitingPerson = await personService.findPersonBySystemID(req.params.id);
-    if (!exisitingPerson) {
+    const existingPerson = await personService.findPersonBySystemID(req.params.id);
+    if (!existingPerson) {
       return res
         .status(404)
         .json({ statusCode: 404, error: "Person Does not exist" });
@@ -140,9 +140,9 @@ const addRolePermissionsToUser = async (req, res) => {
     const { systemID } = req.params;
     const { roleId } = req.body;
 
-    const exisitingPerson = await personService.findPersonBySystemID(systemID);
+    const existingPerson = await personService.findPersonBySystemID(systemID);
 
-    if (!exisitingPerson) {
+    if (!existingPerson) {
       return res
         .status(404)
         .json({ statusCode: 404, error: "User Does not exist" });
@@ -156,9 +156,11 @@ const addRolePermissionsToUser = async (req, res) => {
         .json({ statusCode: 404, error: "Role Does not exist" });
     }
 
-    const userPermissions = await personService.updatePersonRole(systemID, roleId, role.dataValues.permissions);
+    let dataForUpdate = { roleId, permissions: role.dataValues.permissions }
 
-    console.log(userPermissions, exisitingPerson.dataValues, role.dataValues)
+    const userPermissions = await personService.updatePersonRole(systemID, dataForUpdate);
+
+    console.log(userPermissions, existingPerson.dataValues, role.dataValues)
     return res.status(200).send({ userPermissions })
 
   } catch (err) {
@@ -176,14 +178,14 @@ const fetchUserPermissions = async (req, res) => {
     const { systemID } = req.params;
     const { masterId } = req.body;
 
-    const exisitingPerson = await personService.findPersonBySystemID(systemID);
+    const existingPerson = await personService.findPersonBySystemID(systemID);
 
-    if (!exisitingPerson) {
+    if (!existingPerson) {
       return res
         .status(404)
         .json({ statusCode: 404, error: "User Does not exist" });
     }
-    console.log(exisitingPerson.dataValues.permissions);
+    console.log(existingPerson.dataValues.permissions);
 
     let featuresList = await getFilterFeatures({});
 
@@ -196,7 +198,7 @@ const fetchUserPermissions = async (req, res) => {
 
     const featuresData = featuresWithReadWrite(masterId, featuresList, level = 0);
 
-    let permissions = replaceReadWriteWithPermissions(exisitingPerson.dataValues.permissions, featuresData);
+    let permissions = replaceReadWriteWithPermissions(existingPerson.dataValues.permissions, featuresData);
 
     return res.status(200).send({ permission: permissions })
 
@@ -215,9 +217,9 @@ const updateUserPermissions = async (req, res) => {
     const { systemID } = req.params;
     const { permissions } = req.body;
 
-    const exisitingPerson = await personService.findPersonBySystemID(systemID);
+    const existingPerson = await personService.findPersonBySystemID(systemID);
 
-    if (!exisitingPerson) {
+    if (!existingPerson) {
       return res
         .status(404)
         .json({ statusCode: 404, error: "User Does not exist" });
@@ -225,12 +227,19 @@ const updateUserPermissions = async (req, res) => {
 
     let permissionsData = extractFeaturesC(permissions);
 
-    const updatedPermissions = concatRolePermissions(exisitingPerson.dataValues, permissionsData);
-    console.log(updatedPermissions);
+    const concatPermissions = concatRolePermissions(existingPerson.dataValues, permissionsData);
+    console.log(concatPermissions);
 
-    const updatePermissions = replaceReadWriteWithPermissions(exisitingPerson.dataValues.permissions, updatedPermissions.permissions);
+    const updatePermissions = replaceReadWriteWithPermissions(existingPerson.dataValues.permissions, concatPermissions.permissions);
 
-    return res.status(200).send({ permission: updatePermissions })
+    let filterPermissionsList = filterPermissions(updatePermissions);
+
+    let dataForUpdate = { permissions: filterPermissionsList }
+
+    const userPermissions = await personService.updatePersonRole(systemID, dataForUpdate);
+
+
+    return res.status(200).send({ status: true, message: "Permission updated successfully", userPermissions })
   }
   catch (err) {
     console.log({ err });
@@ -240,6 +249,7 @@ const updateUserPermissions = async (req, res) => {
     })
   }
 }
+
 
 module.exports = {
   signUp,
