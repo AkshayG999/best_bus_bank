@@ -12,7 +12,7 @@ async function createBranch(req, res, next) {
             city,
             district,
             pincode,
-            state,
+            state,  
             zone,
             telephones,
             status,

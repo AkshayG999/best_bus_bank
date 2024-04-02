@@ -1,5 +1,5 @@
-const { generateHierarchy, formatHierarchy, featuresWithReadWrite } = require("../helper/featuresHelper");
-const { createFeatures, getAllFeatures, getFeaturesById, updateFeatures, deleteFeatures, getFilterFeatures } = require("../services/featuresService");
+const featuresHelper = require("../helper/featuresHelper");
+const featuresService = require("../services/featuresService");
 
 
 
@@ -9,16 +9,17 @@ exports.createFeatures = async (req, res) => {
         if (!name) {
             return res.status(400).json({ message: 'Name is required' });
         }
-        // if (!description) {
-        //     return res.status(400).json({ message: 'Description is required' });
-        // }
+        if (parentFeatureId) {
+            let findParentFeature = await featuresService.getFeaturesById(parentFeatureId);
+            return res.status(400).json({ message: 'Description is required' });
+        }
         let data = { name: name, description: name, };
 
         if (parentFeatureId) {
             data.parentFeatureId = parentFeatureId;
         }
 
-        const featureA = await createFeatures(data);
+        const featureA = await featuresService.createFeatures(data);
         return res.status(201).json(featureA);
     } catch (error) {
         console.error(error);
@@ -37,8 +38,7 @@ exports.fetchFeatures = async (req, res) => {
             filter.parentFeatureId = null;
         }
 
-        featuresList = await getFilterFeatures(filter);
-
+        featuresList = await featuresService.getFilterFeatures(filter);
         let result;
 
         // Get Hierarchy
@@ -52,13 +52,14 @@ exports.fetchFeatures = async (req, res) => {
                     parentFeatureId: item.dataValues.parentFeatureId,
                 }));
 
+                console.log(featuresList)
                 // Get Master ID data  
                 if (master_id) {
-                    result = generateHierarchy(master_id, featuresList, level = 0);
+                    result = featuresHelper.generateHierarchy(master_id, featuresList, level = 0);
                     console.log(JSON.stringify(result, null, 2));
                 } else {
                     // Get all hierarchy
-                    result = formatHierarchy(featuresList, master_id);
+                    result = featuresHelper.formatHierarchy(featuresList, master_id);
                     console.log(JSON.stringify(result, null, 2));
                 }
 
@@ -78,7 +79,7 @@ exports.getFeaturesForNewRole = async (req, res) => {
     const { id } = req.params;
     try {
 
-        let featuresList = await getFilterFeatures({});
+        let featuresList = await featuresService.getFilterFeatures({});
 
         featuresList = featuresList.map(item => ({
             id: item.dataValues.id,
@@ -88,7 +89,7 @@ exports.getFeaturesForNewRole = async (req, res) => {
         }));
         console.log(featuresList);
 
-        const result = featuresWithReadWrite(id, featuresList, level = 0);
+        const result = featuresHelper.featuresWithReadWrite(id, featuresList, level = 0);
 
         res.json(result);
     } catch (error) {
@@ -99,7 +100,7 @@ exports.getFeaturesForNewRole = async (req, res) => {
 
 exports.getAllFeatures = async (req, res) => {
     try {
-        const featureAList = await getAllFeatures();
+        const featureAList = await featuresService.getAllFeatures();
         res.json(featureAList);
     } catch (error) {
         console.error(error);
@@ -114,7 +115,7 @@ exports.fetchFeaturesHierarchy = async (req, res) => {
 
         let filter = {};
 
-        const featursList = await getFilterFeatures();
+        const featursList = await featuresService.getFilterFeatures();
 
 
         return res.status(200).send({ featursList: hierarchy });
@@ -129,7 +130,7 @@ exports.fetchFeaturesHierarchy = async (req, res) => {
 exports.getFeaturesById = async (req, res) => {
     const { id } = req.params;
     try {
-        const featureA = await getFeaturesById(id);
+        const featureA = await featuresService.getFeaturesById(id);
         if (!featureA) {
             return res.status(404).json({ message: 'Feature A not found' });
         }
@@ -143,14 +144,22 @@ exports.getFeaturesById = async (req, res) => {
 
 exports.updateFeaturesById = async (req, res) => {
     const { id } = req.params;
-    const { parentFeatureId } = req.body;
+    const { name, parentFeatureId } = req.body;
     try {
-        let featureA = await getFeaturesById(id);
+        let featureA = await featuresService.getFeaturesById(id);
         if (!featureA) {
             return res.status(404).json({ message: 'Feature A not found' });
         }
-        featureA = await updateFeatures(id, parentFeatureId);
-        res.json(featureA);
+        let dataForUpdate = {}
+        if (parentFeatureId) {
+            dataForUpdate.parentFeatureId = parentFeatureId;
+        }
+        if (name) {
+            dataForUpdate.name = name;
+            dataForUpdate.description = name;
+        }
+        featureA = await featuresService.updateFeatures(id, dataForUpdate);
+        return res.json(featureA);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -161,7 +170,7 @@ exports.updateFeaturesById = async (req, res) => {
 exports.deleteFeaturesById = async (req, res) => {
     const { id } = req.params;
     try {
-        const deletedCount = await deleteFeatures(id);
+        const deletedCount = await featuresService.deleteFeatures(id);
         if (deletedCount === 0) {
             return res.status(404).json({ message: 'Feature A not found' });
         }

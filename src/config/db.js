@@ -7,7 +7,6 @@ const user = require("../models/userModel");
 const parentGroup = require("../models/parentGroupModel");
 const group = require("../models/groupModel");
 const ledger = require("../models/ledgerModel");
-const roles = require("../models/rolesModel");
 const branch = require("../models/branchModel");
 const department = require("../models/departmentModel");
 const { features_model_master } = require("../models/featuresModel/features_master_model");
@@ -70,20 +69,20 @@ const userModel = user(sequelize);
 const parentGroupModel = parentGroup(sequelize);
 const groupModel = group(sequelize);
 const ledgerModel = ledger(sequelize);
-const roleModel = roles(sequelize);
 const branchModel = branch(sequelize);
 const departmentModel = department(sequelize);
 
-const features_master = features_model_master(sequelize);
-const features_A = features_model_A(sequelize);
-const features_B = features_model_B(sequelize);
-const features_C = features_model_C(sequelize);
-// const features_permission = features_permission_model(sequelize);
 
-const features_master_permission = features_master_permission_model(sequelize);
-const features_A_permission = features_A_permission_model(sequelize);
-const features_B_permission = features_B_permission_model(sequelize);
-const features_C_permission = features_C_permission_model(sequelize);
+// const features_master = features_model_master(sequelize);
+// const features_A = features_model_A(sequelize);
+// const features_B = features_model_B(sequelize);
+// const features_C = features_model_C(sequelize);
+
+// const features_permission = features_permission_model(sequelize);
+// const features_master_permission = features_master_permission_model(sequelize);
+// const features_A_permission = features_A_permission_model(sequelize);
+// const features_B_permission = features_B_permission_model(sequelize);
+// const features_C_permission = features_C_permission_model(sequelize);
 
 const features = featuresModel(sequelize);
 const rolePermissions = rolePermissionsModel(sequelize);
@@ -148,7 +147,5 @@ departmentModel.belongsTo(branchModel, { foreignKey: 'branchCode', as: 'branch' 
 
 
 module.exports = {
-    db, sequelize, userModel, groupModel, parentGroupModel, ledgerModel, roleModel, branchModel, departmentModel, features, rolePermissions,
-    features_master, features_A, features_B, features_C,
-    features_master_permission, features_A_permission, features_B_permission, features_C_permission
+    db, sequelize, userModel, groupModel, parentGroupModel, ledgerModel, branchModel, departmentModel, features, rolePermissions,
 };

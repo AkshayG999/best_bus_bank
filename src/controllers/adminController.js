@@ -7,10 +7,10 @@ const updateUserRole = async (req, res) => {
     try {
 
         const { systemID, role } = req.body;
-        const exisitingPerson = await personService.findPersonBySystemID(systemID);
-        console.log(exisitingPerson);
+        const existingPerson = await personService.findPersonBySystemID(systemID);
+        console.log(existingPerson);existingPerson
 
-        if (!exisitingPerson) {
+        if (!existingPerson) {
             return res
                 .status(404)
                 .json({ statusCode: 404, error: "User Does not exist" });
@@ -30,10 +30,10 @@ const departmentAllocation = async (req, res) => {
 
         const { systemID, bankId, branchId, departmentId, role } = req.body;
 
-        const exisitingPerson = await personService.findPersonBySystemID(systemID);
-        console.log(exisitingPerson);
+        const existingPerson = await personService.findPersonBySystemID(systemID);
+        console.log(existingPerson);
 
-        if (!exisitingPerson) {
+        if (!existingPerson) {
             return res
                 .status(404)
                 .json({ statusCode: 404, error: "User Does not exist" });

@@ -7,8 +7,8 @@ async function getAllFeatures() {
 }
 async function getFilterFeatures(filter) {
     return await features.findAll({
-        where: filter
-    });
+        where: filter, attributes: ['id', 'name', 'description', 'parentFeatureId']
+    },);
 }
 
 async function getFeaturesById(id) {
@@ -24,12 +24,12 @@ async function createFeatures(data) {
 //     return await Promise.all(creationPromises);
 // }
 
-async function updateFeatures(id, parentFeatureId) {
+async function updateFeatures(id, dataForUpdate) {
     const feature = await features.findByPk(id);
     if (!feature) {
         throw new Error('Feature C not found');
     }
-    return await feature.update({ parentFeatureId: parentFeatureId });
+    return await feature.update(dataForUpdate);
 }
 
 async function deleteFeatures(id) {

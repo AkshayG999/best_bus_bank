@@ -11,9 +11,9 @@ exports.createRolePermissions = async (name, permissions) => {
     }
 }
 
-exports.getAllRolesPermissions = async () => {
+exports.getAllRolesPermissions = async (filter) => {
     try {
-        return await rolePermissions.findAll()
+        return await rolePermissions.findAll({ where: filter })
     }
     catch (err) {
         return err

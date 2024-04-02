@@ -5,7 +5,7 @@ exports.buildHierarchy = (data, parentId, level) => {
         if (item.parentFeatureId === parentId) {
             let children = this.buildHierarchy(data, item.id, level + 1);
             if (children.length) {
-                item[`features_${String.fromCharCode(97 + level)}`] = children;
+                item[`children`] = children;
             }
             result.push(item);
         }
