@@ -5,7 +5,7 @@ const rolePermissionController = require('../controllers/rolePermissionControlle
 
 
 router.post('/', rolePermissionController.createRolePermission);
-router.get('/:id', rolePermissionController.getRolePermissionById);
+router.get('/get-role-permissions', rolePermissionController.getRolePermissionById);
 router.get('/', rolePermissionController.getAllRolePermissions);
 router.put('/:id', rolePermissionController.updateRolePermission);
 router.delete('/', rolePermissionController.deleteRolePermission);

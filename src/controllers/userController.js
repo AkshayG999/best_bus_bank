@@ -203,7 +203,12 @@ const fetchUserPermissions = async (req, res) => {
 
     const featuresData = featuresHelper.featuresWithReadWrite(masterId, featuresList, level = 0);
 
-    let permissions = rolePermissionHelper.replaceReadWriteWithPermissions(existingPerson.dataValues.permissions, featuresData);
+    let permissions;
+    if (existingPerson.dataValues.permissions == null) {
+      permissions = rolePermissionHelper.replaceReadWriteWithPermissions([], featuresData);
+    } else {
+      permissions = rolePermissionHelper.replaceReadWriteWithPermissions(existingPerson.dataValues.permissions, featuresData);
+    }
 
     return res.status(200).send({ success: true, message: "Permissions fetched successfully", result: permissions })
 

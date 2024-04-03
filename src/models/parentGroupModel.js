@@ -3,7 +3,7 @@ const { DataTypes } = require("sequelize");
 module.exports = model;
 
 function model(sequelize) {
-    const ParentGroup = sequelize.define("parentgroup", {
+    const ParentGroup = sequelize.define("parent_group", {
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,

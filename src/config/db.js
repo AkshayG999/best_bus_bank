@@ -1,7 +1,6 @@
 const { Sequelize } = require("sequelize");
 const { dbConfig } = require('./config');
 const fs = require('fs');
-const cert = fs.readFileSync('src/best-bus-pem.pem');
 require("dotenv").config();
 const user = require("../models/userModel");
 const parentGroup = require("../models/parentGroupModel");
@@ -73,17 +72,6 @@ const branchModel = branch(sequelize);
 const departmentModel = department(sequelize);
 
 
-// const features_master = features_model_master(sequelize);
-// const features_A = features_model_A(sequelize);
-// const features_B = features_model_B(sequelize);
-// const features_C = features_model_C(sequelize);
-
-// const features_permission = features_permission_model(sequelize);
-// const features_master_permission = features_master_permission_model(sequelize);
-// const features_A_permission = features_A_permission_model(sequelize);
-// const features_B_permission = features_B_permission_model(sequelize);
-// const features_C_permission = features_C_permission_model(sequelize);
-
 const features = featuresModel(sequelize);
 const rolePermissions = rolePermissionsModel(sequelize);
 
@@ -97,9 +85,19 @@ departmentModel.belongsTo(branchModel, { foreignKey: 'branchCode', as: 'branch' 
 // userModel.belongsTo(branchModel, { foreignKey: 'branchId', as: 'branch' });
 // userModel.belongsTo(departmentModel, { foreignKey: 'departmentId', as: 'department' });
 
+
+// const features_master = features_model_master(sequelize);
+// const features_A = features_model_A(sequelize);
+// const features_B = features_model_B(sequelize);
+// const features_C = features_model_C(sequelize);
+
+// const features_permission = features_permission_model(sequelize);
+// const features_master_permission = features_master_permission_model(sequelize);
+// const features_A_permission = features_A_permission_model(sequelize);
+// const features_B_permission = features_B_permission_model(sequelize);
+// const features_C_permission = features_C_permission_model(sequelize);
 // userModel.belongsToMany(features_permission, { foreignKey: 'featuresPermissionId', as: 'features_permission' });
 // features_permission.belongsToMany(userModel, { foreignKey: 'userId', as: 'user' });
-
 
 // features_master.hasMany(features_A, { as: 'features_A' });
 // features_A.belongsTo(features_master, { foreignKey: 'featuresMasterId', as: 'features_master' });

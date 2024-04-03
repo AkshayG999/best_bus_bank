@@ -1,4 +1,4 @@
-const { createParentgroup, getAll } = require("../services/parentGroupService");
+const parentGroupService = require("../services/parentGroupService");
 
 
 
@@ -7,8 +7,8 @@ const createParentGroup = async (req, res) => {
     try {
         const { id, name } = req.body;
 
-        const createNewParentgroup = await createParentgroup({ id, name })
-        return res.status(201).json(createNewParentgroup);
+        const createNewParentGroup = await parentGroupService.createParentGroup({ id, name })
+        return res.status(201).json(createNewParentGroup);
 
     } catch (error) {
         console.log(error);
@@ -21,7 +21,7 @@ const getAllParentGroups = async (req, res) => {
 
     try {
 
-        const getAllGroups = await getAll();
+        const getAllGroups = await parentGroupService.getAll();
         return res.status(200).json(getAllGroups);
 
     } catch (error) {

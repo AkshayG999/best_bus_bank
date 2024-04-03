@@ -50,10 +50,10 @@ exports.getAllRolePermissions = async (req, res) => {
 
 exports.getRolePermissionById = async (req, res) => {
     const { id } = req.params;
-    const { masterId } = req.body;
+    const { roleId, masterId } = req.body;
 
     try {
-        const role = await rolePermissionsService.getRolesById(id);
+        const role = await rolePermissionsService.getRolesById(roleId);
         if (!role) {
             return res.status(404).send({ success: false, message: 'Role not found' });
         }

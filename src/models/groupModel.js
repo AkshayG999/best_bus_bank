@@ -13,7 +13,7 @@ function model(sequelize) {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        groupUnder: {
+        parentGroupId: {
             type: DataTypes.INTEGER,
             allowNull: true,
         },

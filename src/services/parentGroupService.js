@@ -2,9 +2,9 @@ const { db, sequelize, parentGroupModel } = require("../config/db");
 
 
 
-const createParentgroup = async ({ id, name }) => {
-    const newParentgroup = await parentGroupModel.create({ id, name });
-    return newParentgroup;
+const createParentGroup = async ({ id, name }) => {
+    const newParentGroup = await parentGroupModel.create({ id, name });
+    return newParentGroup;
 };
 
 const findById = async (id) => {
@@ -19,4 +19,4 @@ const getAll = async () => {
     return await parentGroupModel.findAll();
 };
 
-module.exports = { createParentgroup, findById, getAll }
+module.exports = { createParentGroup, findById, getAll }

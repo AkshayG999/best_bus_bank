@@ -11,7 +11,7 @@ async function createLedger(req, res) {
         console.log(findGroup)
 
         if (!findGroup) {
-            return res.status(400).send({ success: false, mesaage: "Group Id is Incorrect" });
+            return res.status(400).send({ success: false, message: "Group Id is Incorrect" });
         }
 
         const TRNo = await generateUniqueCode('AC');
