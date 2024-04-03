@@ -2,9 +2,9 @@ const rolePermissions = require('../config/db').rolePermissions;
 
 
 
-exports.createRolePermissions = async (name, permissions) => {
+exports.createRolePermissions = async (name) => {
     try {
-        return await rolePermissions.create({ name, permissions })
+        return await rolePermissions.create({ name })
     }
     catch (err) {
         return err
