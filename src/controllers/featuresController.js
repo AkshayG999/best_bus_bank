@@ -63,11 +63,11 @@ exports.fetchFeatures = async (req, res) => {
                     console.log(JSON.stringify(result, null, 2));
                 }
 
-                return res.status(200).send({ result });
+                return res.status(200).send({ success: true, message: "Fetched successfully", result });
             }
         }
 
-        return res.status(200).send({ featuresList });
+        return res.status(200).send({ success: true, message: "Fetched successfully", result: featuresList });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: error });
@@ -91,10 +91,10 @@ exports.getFeaturesForNewRole = async (req, res) => {
 
         const result = featuresHelper.featuresWithReadWrite(id, featuresList, level = 0);
 
-        res.json(result);
+        return res.status(200).send({ success: true, message: "Fetched successfully", result: result });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).send({ success: false, message: 'Internal server error', error });
     }
 };
 
@@ -104,7 +104,7 @@ exports.getAllFeatures = async (req, res) => {
         res.json(featureAList);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).send({ message: 'Internal server error', error });
     }
 };
 
@@ -132,12 +132,12 @@ exports.getFeaturesById = async (req, res) => {
     try {
         const featureA = await featuresService.getFeaturesById(id);
         if (!featureA) {
-            return res.status(404).json({ message: 'Feature A not found' });
+            return res.status(404).send({ message: 'Feature A not found' });
         }
-        res.json(featureA);
+        return res.status(200).send({ success: true, message: "Fetched successfully", result: featureA });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).send({ message: 'Internal server error', error });
     }
 };
 
@@ -148,7 +148,7 @@ exports.updateFeaturesById = async (req, res) => {
     try {
         let featureA = await featuresService.getFeaturesById(id);
         if (!featureA) {
-            return res.status(404).json({ message: 'Feature A not found' });
+            return res.status(404).send({ success: false, message: 'Feature A not found' });
         }
         let dataForUpdate = {}
         if (parentFeatureId) {
@@ -159,10 +159,10 @@ exports.updateFeaturesById = async (req, res) => {
             dataForUpdate.description = name;
         }
         featureA = await featuresService.updateFeatures(id, dataForUpdate);
-        return res.json(featureA);
+        return res.status(200).send({ success: true, message: "Updated successfully", result: featureA, });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).send({ message: 'Internal server error', error });
     }
 };
 

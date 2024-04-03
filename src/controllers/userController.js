@@ -146,7 +146,7 @@ const addRolePermissionsToUser = async (req, res) => {
     if (!existingPerson) {
       return res
         .status(404)
-        .json({ statusCode: 404, error: "User Does not exist" });
+        .json({ success: false, message: "User Does not exist" });
     }
 
     const role = await rolePermissionsService.getRolesById(roleId);
@@ -154,7 +154,7 @@ const addRolePermissionsToUser = async (req, res) => {
     if (!role) {
       return res
         .status(404)
-        .json({ statusCode: 404, error: "Role Does not exist" });
+        .json({ success: false, message: "Role Does not exist" });
     }
 
     let dataForUpdate = { roleId, permissions: role.dataValues.permissions }
@@ -162,7 +162,7 @@ const addRolePermissionsToUser = async (req, res) => {
     const userPermissions = await personService.updatePersonRole(systemID, dataForUpdate);
 
     console.log(userPermissions, existingPerson.dataValues, role.dataValues)
-    return res.status(200).send({ userPermissions })
+    return res.status(200).send({ success: true, message: "Permission Added successfully", result: userPermissions })
 
   } catch (err) {
     console.log({ err });
@@ -184,12 +184,12 @@ const fetchUserPermissions = async (req, res) => {
     if (!existingPerson) {
       return res
         .status(404)
-        .json({ statusCode: 404, error: "User Does not exist" });
+        .json({ success: false, message: "User Does not exist" });
     }
     // console.log(existingPerson.dataValues.permissions);
     const findFeature = await featuresService.getFeaturesById(masterId);
     if (!findFeature) {
-      return res.status(400).json({ success: false, message: 'Master feature not found' });
+      return res.status(404).json({ success: false, message: 'Master feature not found' });
     }
 
     let featuresList = await featuresService.getFilterFeatures({});
@@ -205,7 +205,7 @@ const fetchUserPermissions = async (req, res) => {
 
     let permissions = rolePermissionHelper.replaceReadWriteWithPermissions(existingPerson.dataValues.permissions, featuresData);
 
-    return res.status(200).send({ permission: permissions })
+    return res.status(200).send({ success: true, message: "Permissions fetched successfully", result: permissions })
 
   } catch (err) {
     console.log({ err });
@@ -227,7 +227,7 @@ const updateUserPermissions = async (req, res) => {
     if (!existingPerson) {
       return res
         .status(404)
-        .json({ statusCode: 404, error: "User Does not exist" });
+        .json({ success: false, message: "User Does not exist" });
     }
 
     let permissionsData = rolePermissionHelper.extractFeaturesC(permissions);
@@ -244,7 +244,7 @@ const updateUserPermissions = async (req, res) => {
     const userPermissions = await personService.updatePersonRole(systemID, dataForUpdate);
 
 
-    return res.status(200).send({ status: true, message: "Permission updated successfully", userPermissions })
+    return res.status(200).send({ status: true, message: "Permission updated successfully", result: userPermissions })
   }
   catch (err) {
     console.log({ err });

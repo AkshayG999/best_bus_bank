@@ -8,7 +8,7 @@ const updateUserRole = async (req, res) => {
 
         const { systemID, role } = req.body;
         const existingPerson = await personService.findPersonBySystemID(systemID);
-        console.log(existingPerson);existingPerson
+        console.log(existingPerson);
 
         if (!existingPerson) {
             return res
