@@ -1,46 +1,52 @@
 const groupService = require("../services/groupService");
 const { findById } = require("../services/parentGroupService");
 const { generateUniqueCode, createRecord } = require("../helper/helper");
+const { sequelize } = require("../config/db");
+
 
 
 const generateTrNo = async (code_prefix) => {
+
     const query = `
-        DECLARE
-            year_part TEXT;
-            month_part TEXT;
-            new_month BOOLEAN;
-            increment INT;
-            padded_increment TEXT;
-            trno TEXT;
-        BEGIN
-            year_part := to_char(current_date, 'YY');
-            month_part := to_char(current_date, 'MM');
-            
-            -- Check if it's a new month
-            SELECT CASE WHEN month_part <> readMonthFromFile() THEN true ELSE false END INTO new_month;
-            
-            IF new_month THEN
-                increment := 1; -- Reset increment if it's a new month
-                writeMonthToFile(month_part);
-            ELSE
-                increment := readIncrementFromFile() + 1;
-            END IF;
-            
-            writeIncrementToFile(increment);
-            
-            -- Pad the increment with leading zeros
-            padded_increment := LPAD(increment::TEXT, 6, '0');
-            
-            -- Generate TRNo
-            trno := code_prefix || year_part || month_part || '-' || padded_increment;
-            
-            RETURN trno;
-        END;
-    `;
+            DO $$
+            DECLARE
+                year_part TEXT;
+                month_part TEXT;
+                new_month BOOLEAN;
+                increment INT;
+                padded_increment TEXT;
+                trno TEXT;
+            BEGIN
+                year_part := to_char(current_date, 'YY');
+                month_part := to_char(current_date, 'MM');
+                
+                -- Check if it's a new month
+                SELECT CASE WHEN month_part <> readMonthFromFile() THEN true ELSE false END INTO new_month;
+                
+                IF new_month THEN
+                    increment := 1; -- Reset increment if it's a new month
+                    writeMonthToFile(month_part);
+                ELSE
+                    increment := readIncrementFromFile() + 1;
+                END IF;
+                
+                writeIncrementToFile(increment);
+                
+                -- Pad the increment with leading zeros
+                padded_increment := LPAD(increment::TEXT, 6, '0');
+                
+                -- Generate TRNo
+                trno := code_prefix || year_part || month_part || '-' || padded_increment;
+                
+                -- Return TRNo
+                RETURN trno;
+            END;
+            $$;
+        `;
 
     // Execute the stored procedure
-    const result = await sequelize.query(query, { type: Sequelize.QueryTypes.RAW });
-    
+    const result = await sequelize.query(query, { type: sequelize.QueryTypes.RAW });
+
     // Assuming your stored procedure returns the TRNo directly
     return result[0][0].trno;
 };
@@ -58,6 +64,7 @@ const createGroup = async (req, res) => {
         // TRNo create function
         const TRNo = await generateTrNo('BR');
         console.log(TRNo);
+        return res.status(201).json(TRNo);
 
         // srNo
         const grp_srNo = await createRecord();

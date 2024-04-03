@@ -54,7 +54,7 @@ exports.getAllRolePermissions = async (req, res) => {
 
 exports.getRolePermissionById = async (req, res) => {
     const { id } = req.params;
-    const { roleId, masterId } = req.body;
+    const { roleId, masterId } = req.query;
 
     try {
         const role = await rolePermissionsService.getRolesById(roleId);
