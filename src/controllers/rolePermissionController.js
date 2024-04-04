@@ -35,7 +35,7 @@ exports.createRolePermission = async (req, res) => {
 
 exports.getAllRolePermissions = async (req, res) => {
     try {
-        const { roleId } = req.body;
+        const { roleId } = req.query;
         let filter = {};
         if (roleId) {
             filter.id = roleId;
