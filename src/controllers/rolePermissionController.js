@@ -40,6 +40,7 @@ exports.getAllRolePermissions = async (req, res) => {
         if (roleId) {
             filter.id = roleId;
         }
+        // console.log(filter);
         const rolePermissions = await rolePermissionsService.getAllRolesPermissions(filter);
         if (!rolePermissions) {
             return res.status(404).send({ success: false, message: 'No role permissions found' });
