@@ -177,7 +177,7 @@ const addRolePermissionsToUser = async (req, res) => {
 const fetchUserPermissions = async (req, res) => {
   try {
     const { systemID } = req.params;
-    const { masterId } = req.body;
+    const { masterId } = req.query;
 
     const existingPerson = await personService.findPersonBySystemID(systemID);
 
@@ -235,9 +235,10 @@ const updateUserPermissions = async (req, res) => {
         .json({ success: false, message: "User Does not exist" });
     }
 
-    let permissionsData = rolePermissionHelper.extractLastChildPermissions(permissions);
-
-    const concatPermissions = rolePermissionHelper.concatRolePermissions(existingPerson.dataValues, permissionsData);
+    // Extracting permissions from last child
+    let lastChildExtracted = rolePermissionHelper.extractLastChildPermissions(permissions);
+    
+    const concatPermissions = rolePermissionHelper.concatRolePermissions(existingPerson.dataValues, lastChildExtracted);
     console.log(concatPermissions);
 
     const updatePermissions = rolePermissionHelper.replaceReadWriteWithPermissions(existingPerson.dataValues.permissions, concatPermissions.permissions);

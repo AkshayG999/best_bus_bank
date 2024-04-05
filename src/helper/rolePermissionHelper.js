@@ -61,6 +61,49 @@ exports.extractLastChildPermissions = (permissions) => {
 
 // ____________________________________________________________________________________________________________________________________________________
 
+// exports.replaceReadWriteWithPermissions = (permissions, featuresData) => {
+//     function findFeatureById(data, id) {
+//         if (data.id === id) {
+//             return data;
+//         }
+//         if (data.children) {
+//             for (const child of data.children) {
+//                 const found = findFeatureById(child, id);
+//                 if (found) return found;
+//             }
+//         }
+//         return null;
+//     }
+
+//     function updateParentPermissions(feature) {
+//         if (!feature.parentFeatureId) return; // If it's the root, stop recursion
+//         const parentFeature = findFeatureById(featuresData, feature.parentFeatureId);
+//         if (!parentFeature) return; // If parent feature not found, stop recursion
+//         parentFeature.read = parentFeature.read || feature.read; // Update parent's read if child has read
+//         parentFeature.write = parentFeature.write || feature.write; // Update parent's write if child has write
+//         updateParentPermissions(parentFeature); // Recursively update parent permissions
+//     }
+
+//     permissions.forEach(permission => {
+//         // Find the corresponding feature in featuresData
+//         const feature = findFeatureById(featuresData, permission.id);
+//         if (feature) {
+//             // Update read and write properties
+//             feature.read = permission.read;
+//             feature.write = permission.write;
+//             if (permission.read) {
+//                 updateParentPermissions(feature); // Update read permissions for parents
+//             }
+//             if (permission.write) {
+//                 updateParentPermissions(feature); // Update write permissions for parents
+//             }
+//         }
+//     });
+
+//     return featuresData;
+// }
+
+
 exports.replaceReadWriteWithPermissions = (permissions, featuresData) => {
     function findFeatureById(data, id) {
         if (data.id === id) {
@@ -79,9 +122,15 @@ exports.replaceReadWriteWithPermissions = (permissions, featuresData) => {
         if (!feature.parentFeatureId) return; // If it's the root, stop recursion
         const parentFeature = findFeatureById(featuresData, feature.parentFeatureId);
         if (!parentFeature) return; // If parent feature not found, stop recursion
-        parentFeature.read = parentFeature.read || feature.read; // Update parent's read if child has read
-        parentFeature.write = parentFeature.write || feature.write; // Update parent's write if child has write
-        updateParentPermissions(parentFeature); // Recursively update parent permissions
+
+        // Update parent's read based on its children's read values
+        parentFeature.read = parentFeature.children.every(child => child.read);
+        
+        // Update parent's write based on its children's write values
+        parentFeature.write = parentFeature.children.every(child => child.write);
+
+        // Recursively update parent permissions
+        updateParentPermissions(parentFeature); 
     }
 
     permissions.forEach(permission => {
@@ -91,11 +140,8 @@ exports.replaceReadWriteWithPermissions = (permissions, featuresData) => {
             // Update read and write properties
             feature.read = permission.read;
             feature.write = permission.write;
-            if (permission.read) {
-                updateParentPermissions(feature); // Update read permissions for parents
-            }
-            if (permission.write) {
-                updateParentPermissions(feature); // Update write permissions for parents
+            if (permission.read || permission.write) {
+                updateParentPermissions(feature); // Update parent permissions
             }
         }
     });
