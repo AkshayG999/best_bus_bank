@@ -1,55 +1,9 @@
 const groupService = require("../services/groupService");
 const { findById } = require("../services/parentGroupService");
 const { generateUniqueCode, createRecord } = require("../helper/helper");
-const { sequelize } = require("../config/db");
+const { generateGroupUniqueCode, createRecordWithSrNo, procedure_store_model } = require("../storeprocedures/groupStoreProcedure");
 
 
-
-const generateTrNo = async (code_prefix) => {
-
-    const query = `
-            DO $$
-            DECLARE
-                year_part TEXT;
-                month_part TEXT;
-                new_month BOOLEAN;
-                increment INT;
-                padded_increment TEXT;
-                trno TEXT;
-            BEGIN
-                year_part := to_char(current_date, 'YY');
-                month_part := to_char(current_date, 'MM');
-                
-                -- Check if it's a new month
-                SELECT CASE WHEN month_part <> readMonthFromFile() THEN true ELSE false END INTO new_month;
-                
-                IF new_month THEN
-                    increment := 1; -- Reset increment if it's a new month
-                    writeMonthToFile(month_part);
-                ELSE
-                    increment := readIncrementFromFile() + 1;
-                END IF;
-                
-                writeIncrementToFile(increment);
-                
-                -- Pad the increment with leading zeros
-                padded_increment := LPAD(increment::TEXT, 6, '0');
-                
-                -- Generate TRNo
-                trno := code_prefix || year_part || month_part || '-' || padded_increment;
-                
-                -- Return TRNo
-                RETURN trno;
-            END;
-            $$;
-        `;
-
-    // Execute the stored procedure
-    const result = await sequelize.query(query, { type: sequelize.QueryTypes.RAW });
-
-    // Assuming your stored procedure returns the TRNo directly
-    return result[0][0].trno;
-};
 
 const createGroup = async (req, res) => {
 
@@ -61,19 +15,21 @@ const createGroup = async (req, res) => {
         // if (!findParentGroup) {
         //     return res.status(400).send({ success: false, message: "Parent Group Id Incorrect" });
         // }
+
         // TRNo create function
-        const TRNo = await generateTrNo('BR');
-        console.log(TRNo);
-        return res.status(201).json(TRNo);
+        const tr_no = await generateGroupUniqueCode('group_tr_no', 'BR');
+        // console.log(tr_no);
 
         // srNo
-        const grp_srNo = await createRecord();
-        console.log(grp_srNo);
+        const sr_no = await createRecordWithSrNo('group_sr_no');
+        // console.log(grp_srNo);
+
+        // return res.status(201).json({ grp_srNo, tr_no });
 
         groupName = groupName.toUpperCase();
-        const createNewGroup = await groupService.createGroup({ TRNo, groupName, parentGroupId, grp_srNo, createdBy });
+        const createNewGroup = await groupService.createGroup({ sr_no, tr_no, groupName, parentGroupId, createdBy });
 
-        return res.status(201).json(createNewGroup);
+        return res.status(201).json({ createNewGroup });
 
     } catch (error) {
         console.log(error);

@@ -4,7 +4,13 @@ module.exports = model;
 
 function model(sequelize) {
     const Group = sequelize.define("group", {
-        TRNo: {
+        sr_no: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            primaryKey: true,
+            // autoIncrement: true
+        },
+        tr_no: {
             type: DataTypes.STRING,
             allowNull: false,
             autoIncrement: false,
@@ -16,11 +22,6 @@ function model(sequelize) {
         parentGroupId: {
             type: DataTypes.INTEGER,
             allowNull: true,
-        },
-        grp_srNo: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            primaryKey: true,
         },
         createdBy: {
             type: DataTypes.STRING,

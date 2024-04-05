@@ -5,7 +5,13 @@ module.exports = model;
 
 function model(sequelize) {
     const Ledger = sequelize.define("ledger", {
-        TRNo: {
+        sr_no: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            primaryKey: true,
+            // autoIncrement: true
+        },
+        tr_no: {
             type: DataTypes.STRING,
             allowNull: false,
             autoIncrement: false,
@@ -18,14 +24,9 @@ function model(sequelize) {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        groupID: {
+        groupId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-        },
-        acc_Sr_No: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            autoIncrement: false,
         },
         op_acc_DR_CR: {
             type: DataTypes.STRING,

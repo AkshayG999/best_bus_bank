@@ -5,7 +5,7 @@ const { authenticateToken } = require("../middleware/authMid");
 const { roleAuth } = require("../middleware/roleAuth");
 
 
-router.post('/', authenticateToken, roleAuth(['ADMIN', 'LEDGER MANAGER']), ledgerController.createLedger)
+router.post('/', ledgerController.createLedger)
 router.get('/', ledgerController.getLedgers)
 
 

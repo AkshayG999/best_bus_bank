@@ -2,16 +2,16 @@ const { db, sequelize, groupModel, parentGroupModel } = require("../config/db");
 
 
 
-const createGroup = async ({ TRNo, groupName, parentGroupId, grp_srNo, createdBy }) => {
-    const newGroup = await groupModel.create({ TRNo, groupName, parentGroupId, grp_srNo, createdBy });
+const createGroup = async (data) => {
+    const newGroup = await groupModel.create(data);
     return newGroup;
 };
 
 
-const findByGrp_srNo = async (grp_srNo) => {
+const findByGrp_srNo = async (sr_no) => {
     return await groupModel.findOne({
         where: {
-            grp_srNo: grp_srNo
+            sr_no: sr_no
         }
     });
 };
@@ -20,7 +20,7 @@ const findByGrp_srNo = async (grp_srNo) => {
 const getAllGroups = async () => {
     try {
 
-        const groups = await groupModel.findAll({ include: [{ model: parentGroupModel, as: 'parentgroup', attributes: ['id', 'name'] }] })
+        const groups = await groupModel.findAll({ include: [{ model: parentGroupModel, as: 'parent_group', attributes: ['id', 'name'] }] })
         console.log(groups);
         return groups;
     } catch (error) {

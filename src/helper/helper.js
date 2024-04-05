@@ -1,7 +1,5 @@
 const fs = require('fs');
 
-
-
 function readIncrementFromFile() {
     try {
         const data = fs.readFileSync('increment.txt', 'utf8');
@@ -11,9 +9,22 @@ function readIncrementFromFile() {
     }
 }
 
+function readMonthFromFile() {
+    try {
+        return fs.readFileSync('month.txt', 'utf8').trim();
+    } catch (err) {
+        return ''; // Default to empty string if file doesn't exist or cannot be read
+    }
+}
+
 function writeIncrementToFile(increment) {
     fs.writeFileSync('increment.txt', increment.toString(), 'utf8');
 }
+
+function writeMonthToFile(month) {
+    fs.writeFileSync('month.txt', month.toString(), 'utf8');
+}
+
 
 function generateUniqueCode(code) {
     const currentDate = new Date();
@@ -33,17 +44,7 @@ function generateUniqueCode(code) {
     return `${code}${year}${month}-${paddedIncrement}`;
 }
 
-function readMonthFromFile() {
-    try {
-        return fs.readFileSync('month.txt', 'utf8').trim();
-    } catch (err) {
-        return ''; // Default to empty string if file doesn't exist or cannot be read
-    }
-}
 
-function writeMonthToFile(month) {
-    fs.writeFileSync('month.txt', month.toString(), 'utf8');
-}
 
 
 // Reset TR NO -----------------------------------------------------------------------------------------------

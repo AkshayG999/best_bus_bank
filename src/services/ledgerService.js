@@ -2,23 +2,10 @@ const { ledgerModel, groupModel } = require('../config/db');
 
 
 
-async function createLedger(TRNo, code, accountName, groupID, acc_Sr_No, op_acc_DR_CR, op_acc_balance, ly_acc_DR_CR, ly_cl_balance, loan_deduct, loan_deduct_amount, exception_checking, exception_amount) {
+async function createLedger(data) {
     try {
-        const ledger = await ledgerModel.create({
-            TRNo: TRNo,
-            code: code,
-            accountName: accountName,
-            groupID: groupID,
-            acc_Sr_No: acc_Sr_No,
-            op_acc_DR_CR: op_acc_DR_CR,
-            op_acc_balance: op_acc_balance,
-            ly_acc_DR_CR: ly_acc_DR_CR,
-            ly_cl_balance: ly_cl_balance,
-            loan_deduct: loan_deduct,
-            loan_deduct_amount: loan_deduct_amount,
-            exception_checking: exception_checking,
-            exception_amount: exception_amount
-        });
+        console.log(data)
+        const ledger = await ledgerModel.create(data);
         return ledger;
     } catch (error) {
         throw error;
