@@ -235,7 +235,7 @@ const updateUserPermissions = async (req, res) => {
         .json({ success: false, message: "User Does not exist" });
     }
 
-    let permissionsData = rolePermissionHelper.extractFeaturesC(permissions);
+    let permissionsData = rolePermissionHelper.extractLastChildPermissions(permissions);
 
     const concatPermissions = rolePermissionHelper.concatRolePermissions(existingPerson.dataValues, permissionsData);
     console.log(concatPermissions);

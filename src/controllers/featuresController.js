@@ -115,16 +115,15 @@ exports.fetchFeaturesHierarchy = async (req, res) => {
 
         let filter = {};
 
-        const featursList = await featuresService.getFilterFeatures();
+        const featuresList = await featuresService.getFilterFeatures();
 
 
-        return res.status(200).send({ featursList: hierarchy });
+        return res.status(200).send({ result: featuresList });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 }
-
 
 
 exports.getFeaturesById = async (req, res) => {

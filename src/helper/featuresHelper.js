@@ -121,14 +121,12 @@ exports.featuresWithReadWrite = (masterId, featuresList, level = 0) => {
         name: masterFeature.name,
         description: masterFeature.description,
         parentFeatureId: masterFeature.parentFeatureId,
+        read: false, // Adding read option as false for every element
+        write: false, // Adding write option as false for every element
     };
 
     if (childFeatures.length > 0) {
         hierarchy[`children`] = childFeatures.map(child => this.featuresWithReadWrite(child.id, featuresList, level + 1));
-    } else {
-        // Add read and write options as false for the last children list element
-        hierarchy.read = false;
-        hierarchy.write = false;
     }
 
     return hierarchy;

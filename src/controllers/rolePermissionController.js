@@ -15,9 +15,9 @@ exports.createRolePermission = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Role Name already exists' });
         }
 
-        // let permissionsData = rolePermissionHelper.extractFeaturesC(permissions);
+        // let lastChildExtracted = rolePermissionHelper.extractLastChildPermissions(permissions);
 
-        // let filterPermissionsList = rolePermissionHelper.filterPermissions(permissionsData);
+        // let filterPermissionsList = rolePermissionHelper.filterPermissions(lastChildExtracted);
 
         // if (filterPermissionsList.length == 0) {
         //     return res.status(404).json({ success: false, message: 'Permissions not found! Please provide valid permissions' });
@@ -96,21 +96,29 @@ exports.getRolePermissionById = async (req, res) => {
 }
 
 
-
 exports.updateRolePermission = async (req, res) => {
     try {
         const { id } = req.params;
         const { permissions } = req.body;
 
-        let permissionsData = rolePermissionHelper.extractFeaturesC(permissions);
+        if (!permissions) {
+            return res.status(404).send({ success: false, message: 'Permissions data not found' });
+        }
+
         const role = await rolePermissionsService.getRolesById(id);
         // console.log(role);
         if (!role) {
             return res.status(404).send({ success: false, message: 'Role not found' });
         }
 
-        const updatedPermissions = rolePermissionHelper.concatRolePermissions(role.dataValues, permissionsData);
+        // Extracting permissions from last child
+        let lastChildExtracted = rolePermissionHelper.extractLastChildPermissions(permissions);
+
+        // compare and rewrite changes permissions
+        const updatedPermissions = rolePermissionHelper.concatRolePermissions(role.dataValues, lastChildExtracted);
         // console.log(updatedPermissions);
+
+        //Filter out permissions where both read and write are false
         let filterPermissionsList = rolePermissionHelper.filterPermissions(updatedPermissions.permissions);
 
         if (filterPermissionsList.length == 0) {
