@@ -1,24 +1,33 @@
-const { db, sequelize, userModel, branchModel, departmentModel } = require("../config/db");
-
-
+const {
+  db,
+  sequelize,
+  userModel,
+  branchModel,
+  departmentModel,
+} = require("../config/db");
 
 const getAll = async () => {
-  return await userModel.findAll({ include: [{ model: branchModel, as: 'branch' }, { model: departmentModel, as: 'department' }] });
+  return await userModel.findAll({
+    // include: [
+    //   { model: branchModel, as: "branch" },
+    //   { model: departmentModel, as: "department" },
+    // ],
+  });
 };
 
 const findPersonBySystemID = async (systemID) => {
   return await userModel.findOne({
     where: {
-      systemID: systemID
-    }
+      systemID: systemID,
+    },
   });
 };
 
 const findPersonByEmail = async (email) => {
   return await userModel.findOne({
     where: {
-      email: email
-    }
+      email: email,
+    },
   });
 };
 
@@ -39,22 +48,27 @@ const updatePerson = async ({ Id, Name, Email }) => {
   return { Id, Name, Email };
 };
 
-const updatePersonRole = async (systemID,dataForUpdate) => {
+const updatePersonRole = async (systemID, dataForUpdate) => {
   let user = await userModel.findOne({
     where: {
-      systemID: systemID
-    }
+      systemID: systemID,
+    },
   });
   if (user) {
     return await user.update(dataForUpdate);
     // return { success: true, message: 'Permissions updated successfully' };
   } else {
-    return { success: false, message: 'User not found' };
+    return { success: false, message: "User not found" };
   }
-
 };
 
-const updateDepartmentAllocation = async (systemID, bankId, branchId, departmentId, role) => {
+const updateDepartmentAllocation = async (
+  systemID,
+  bankId,
+  branchId,
+  departmentId,
+  role
+) => {
   return await userModel.update(
     { bankId, branchId, departmentId, role },
     {
@@ -63,7 +77,9 @@ const updateDepartmentAllocation = async (systemID, bankId, branchId, department
       },
     }
   );
-  { systemID, role };
+  {
+    systemID, role;
+  }
 };
 
 const deletePerson = async (Id) => {
