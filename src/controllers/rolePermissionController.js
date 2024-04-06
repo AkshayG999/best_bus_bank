@@ -113,21 +113,36 @@ exports.updateRolePermission = async (req, res) => {
 
         // Extracting permissions from last child
         let lastChildExtracted = rolePermissionHelper.extractLastChildPermissions(permissions);
+        let updatedPermissions;
 
-        // compare and rewrite changes permissions
-        const updatedPermissions = rolePermissionHelper.concatRolePermissions(role.dataValues, lastChildExtracted);
-        // console.log(updatedPermissions);
+        if (role.dataValues.permissions != null) {
+            // compare and rewrite changes permissions
+            updatedPermissions = rolePermissionHelper.concatRolePermissions(role.dataValues, lastChildExtracted);
+            // console.log(updatedPermissions);
 
-        //Filter out permissions where both read and write are false
-        let filterPermissionsList = rolePermissionHelper.filterPermissions(updatedPermissions.permissions);
+            //Filter out permissions where both read and write are false
+            let filterPermissionsList = rolePermissionHelper.filterPermissions(updatedPermissions.permissions);
 
-        if (filterPermissionsList.length == 0) {
-            return res.status(404).json({ success: false, message: 'No data for update' });
+            if (filterPermissionsList.length == 0) {
+                return res.status(404).json({ success: false, message: 'No data for update' });
+            }
+            const rolePermissionUpdate = await rolePermissionsService.updateRolesPermissions(id, filterPermissionsList);
+            return res.send({ success: true, message: 'Permissions updated successfully', result: rolePermissionUpdate });
+
+        } else {
+            //Filter out permissions where both read and write are false
+            let filterPermissionsList = rolePermissionHelper.filterPermissions(lastChildExtracted);
+
+            if (filterPermissionsList.length == 0) {
+                return res.status(404).json({ success: false, message: 'No data for update' });
+            }
+
+            const rolePermissionUpdate = await rolePermissionsService.updateRolesPermissions(id, filterPermissionsList);
+
+            return res.send({ success: true, message: 'Permissions updated successfully', result: rolePermissionUpdate });
+
         }
 
-        const rolePermissionUpdate = await rolePermissionsService.updateRolesPermissions(id, filterPermissionsList);
-
-        return res.send({ success: true, message: 'Permissions updated successfully', result: rolePermissionUpdate });
     } catch (error) {
         console.error(error);
         res.status(500).send({ message: 'Internal server error', error });
