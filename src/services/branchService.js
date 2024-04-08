@@ -1,4 +1,4 @@
-const { branchModel, userModel } = require("../config/db");
+const { branchModel, userModel } = require("../../db/db");
 
 async function getAllBranches() {
     return await branchModel.findAll();

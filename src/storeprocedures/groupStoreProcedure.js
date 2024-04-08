@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db');
+const { sequelize } = require('../../db/db');
 
 
 // Define model for storing increment and month data
@@ -62,30 +62,34 @@ async function writeMonthToDB(name, month) {
     await procedure_store_model.update({ month }, { where: { name: name } });
 }
 
-async function generateGroupUniqueCode(name, code) {
+async function generateGroupUniqueCode(name, code, transaction) {
+    try {
+        const find = await procedure_store_model.findOne({ where: { name: name }, lock: transaction.LOCK.UPDATE });
+        if (!find) {
+            await procedure_store_model.create({ name });
+        }
 
-    const find = await procedure_store_model.findOne({ where: { name: name } });
-    if (!find) {
-        await procedure_store_model.create({ name });
+        const currentDate = new Date();
+        const year = currentDate.getFullYear().toString().substring(2);
+        const month = ('0' + (currentDate.getMonth() + 1)).slice(-2);
+
+        let increment = await readIncrementFromDB(name);
+        if (month !== await readMonthFromDB(name)) {
+            increment = 0;
+            await writeMonthToDB(name, month);
+        }
+        console.log({ increment });
+        console.log({ month });
+
+        increment++;
+        await writeIncrementToDB(name, increment);
+
+        const paddedIncrement = increment.toString().padStart(6, '0');
+        return `${code}${year}${month}-${paddedIncrement}`;
+    } catch (error) {
+        console.error('Error generating unique code:', error);
+        throw error;
     }
-
-    const currentDate = new Date();
-    const year = currentDate.getFullYear().toString().substring(2);
-    const month = ('0' + (currentDate.getMonth() + 1)).slice(-2);
-
-    let increment = await readIncrementFromDB(name);
-    if (month !== await readMonthFromDB(name)) {
-        increment = 0;
-        await writeMonthToDB(name, month);
-    }
-    console.log({ increment });
-    console.log({ month });
-
-    increment++;
-    await writeIncrementToDB(name, increment);
-
-    const paddedIncrement = increment.toString().padStart(6, '0');
-    return `${code}${year}${month}-${paddedIncrement}`;
 }
 
 
@@ -103,7 +107,7 @@ async function readSrNoFromDB(name) {
 
 // Function to write Sr No to database
 async function writeSrNoToDB(name, increment) {
-    await procedure_store_model.update({ increment }, { where: { name: name } }); // Assuming the primary key is 'id'
+    await procedure_store_model.update({ increment }, { where: { name: name } });
 }
 
 // Function to get the next Sr No
@@ -114,9 +118,9 @@ async function getNextSrNo(name) {
 }
 
 // Function to create a new record with Sr No
-async function createRecordWithSrNo(name) {
+async function createRecordWithSrNo(name, transaction) {
     try {
-        const find = await procedure_store_model.findOne({ where: { name: name } });
+        const find = await procedure_store_model.findOne({ where: { name: name }, lock: transaction.LOCK.UPDATE });
         if (!find) {
             await procedure_store_model.create({ name, increment: 100 });
         }
@@ -130,7 +134,8 @@ async function createRecordWithSrNo(name) {
         console.log('New record created with Sr No:', nextSrNo);
         return nextSrNo;
     } catch (error) {
-        console.error('Error creating record:', error);
+        console.error('Error generating Sr No:', error);
+        throw error;
     }
 }
 

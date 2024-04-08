@@ -1,12 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const groupController = require('../controllers/groupController');
-const { authenticateToken } = require("../middleware/authMid");
-const { roleAuth } = require("../middleware/roleAuth");
+const { checkPermissionsMiddleware } = require("../../middlewareServices/permissionsMiddleware");
+const { authenticateToken } = require("../../middlewareServices/authMid");
 
 
-router.post("/", groupController.createGroup);
-router.get("/", groupController.getGroups);
+
+
+router.get("/", authenticateToken, checkPermissionsMiddleware('18e9b14072fct849y', 'Group Creation'), groupController.getGroups);
+router.post("/", authenticateToken, checkPermissionsMiddleware('18e9b14072fct849y', 'Group Creation', true), groupController.createGroup);
 
 
 module.exports = router;

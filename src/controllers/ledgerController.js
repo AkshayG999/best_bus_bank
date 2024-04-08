@@ -15,19 +15,23 @@ async function createLedger(req, res) {
         //     return res.status(400).send({ success: false, message: "Group Id is Incorrect" });
         // }
 
-        const tr_no = await generateGroupUniqueCode("ledger_tr_no", 'AC');
+        // Begin a transaction with SERIALIZABLE isolation level
+        transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
+
+        const tr_no = await generateGroupUniqueCode("ledger_tr_no", 'AC', transaction);
         console.log(tr_no);
 
         const code = tr_no.split("-")[1];
         console.log(code[1]);
 
-        const sr_no = await createRecordWithSrNo('ledger_sr_no');
+        const sr_no = await createRecordWithSrNo('ledger_sr_no', transaction);
         console.log(sr_no);
 
         // return res.status(201).json({ tr_no, acc_Sr_No });
 
         const ledger = await ledgerService.createLedger({ sr_no, tr_no, code, accountName, groupId, op_acc_DR_CR, op_acc_balance, ly_acc_DR_CR, ly_cl_balance, loan_deduct, loan_deduct_amount, exception_checking, exception_amount });
-        return res.status(201).json(ledger);
+
+        return res.status(201).send({ success: true, message: "Ledger created successfully", result: ledger });
 
     } catch (error) {
         console.error('Error creating ledger:', error);
@@ -40,7 +44,7 @@ async function getLedgers(req, res) {
         const filters = req.query;
 
         const ledgers = await ledgerService.getLedgers();
-        res.status(200).json(ledgers);
+        res.status(200).send({ success: true, message: "Fetched successfully", result: ledgers });
     } catch (error) {
         console.error('Error fetching ledgers:', error);
         res.status(500).json({ error: 'Internal Server Error' });

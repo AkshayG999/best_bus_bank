@@ -1,4 +1,4 @@
-const { ledgerModel, groupModel } = require('../config/db');
+const { ledgerModel, groupModel } = require('../../db/db');
 
 
 
@@ -27,8 +27,8 @@ async function getLedgers(filters) {
         // }
 
         // Perform the query
-        const ledgers = await ledgerModel.findAll({ include: [{ model: groupModel, as: 'group', attributes: ['TRNo', 'groupName', 'groupUnder', 'grp_srNo'] }] });
-        // const ledgers = await ledgerModel.findAll();
+        // const ledgers = await ledgerModel.findAll({ include: [{ model: groupModel, as: 'group', attributes: ['TRNo', 'groupName', 'groupUnder', 'grp_srNo'] }] });
+        const ledgers = await ledgerModel.findAll();
         return ledgers;
     } catch (error) {
         throw error;
