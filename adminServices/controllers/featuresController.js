@@ -14,12 +14,14 @@ exports.createFeatures = async (req, res) => {
             let findParentFeature = await featuresService.getFeaturesById(
                 parentFeatureId
             );
-            return errorMid(
-                400,
-                `${parentFeatureId} is not a parent feature Id`,
-                req,
-                res
-            );
+            if (!findParentFeature) {
+                return errorMid(
+                    400,
+                    `${parentFeatureId} is not a parent feature Id`,
+                    req,
+                    res
+                );
+            }
         }
         let data = { name: name, description: name };
 
