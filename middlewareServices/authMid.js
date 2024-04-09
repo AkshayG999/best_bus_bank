@@ -1,19 +1,20 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 const personService = require("../userServices/services/userService");
-
-
+const { errorMid } = require("./errorMid");
 
 exports.authenticateToken = async (req, res, next) => {
-    const authHeader = req.header('Authorization');
+    const authHeader = req.header("Authorization");
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({
-            success: false,
-            message: 'Unauthorized: Token not provided',
-        });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return errorMid(
+            401,
+            "Unauthorized: Token not provided",
+            req,
+            res
+        );
     }
 
-    const token = authHeader.substring('Bearer '.length);
+    const token = authHeader.substring("Bearer ".length);
 
     try {
         // Verify the access token
@@ -23,30 +24,33 @@ exports.authenticateToken = async (req, res, next) => {
         const session = await personService.findPersonBySystemID(decoded.systemID);
         // console.log({ session })
         if (!session) {
-            return res.status(401).json({
-                success: false,
-                message: 'Unauthorized: Invalid Access token',
-            });
+            return errorMid(
+                401,
+                "Unauthorized: Invalid Access token",
+                req,
+                res
+            );
         }
 
         // Check expiration of the access token
         if (decoded.exp && Date.now() >= decoded.exp * 1000) {
-
-            return res.status(401).json({
-                success: false,
-                message: 'Unauthorized: Refresh Token has expired',
-            });
-
+            return errorMid(
+                401,
+                "Unauthorized: Token has expired",
+                req,
+                res
+            );
         } else {
             req.systemID = decoded.systemID;
             next();
         }
-
     } catch (error) {
         console.log(error);
-        return res.status(403).json({
-            success: false,
-            message: 'Forbidden: Invalid token',
-        });
+        return errorMid(
+            403,
+            "Forbidden: Invalid token",
+            req,
+            res
+        );
     }
 };

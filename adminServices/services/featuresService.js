@@ -35,7 +35,7 @@ async function updateFeatures(id, dataForUpdate) {
 async function deleteFeatures(id) {
     const feature = await features.findByPk(id);
     if (!feature) {
-        throw new Error('Feature C not found');
+        throw new Error('Feature not found');
     }
     return await feature.destroy();
 }

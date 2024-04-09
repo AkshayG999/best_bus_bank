@@ -1,3 +1,4 @@
+const { errorMid, handleErrors } = require("../../middlewareServices/errorMid");
 const featuresHelper = require("../helper/featuresHelper");
 const rolePermissionHelper = require("../helper/rolePermissionHelper");
 const featuresService = require("../services/featuresService");
@@ -10,20 +11,33 @@ exports.createRolePermission = async (req, res) => {
     try {
         const { name } = req.body;
 
-        const findRole = await rolePermissionsService.getAllRolesPermissions({ name: name });
+        const findRole = await rolePermissionsService.getAllRolesPermissions({
+            name: name,
+        });
         if (findRole.length > 0) {
-            return res.status(400).json({ success: false, message: 'Role Name already exists' });
+            return errorMid(
+                400,
+                `${name} already exists`,
+                req,
+                res
+            );
         }
 
         let role = await rolePermissionsService.createRolePermissions(name);
 
-        return res.status(200).send({ success: true, message: 'Role created successfully', result: role });
+        return res
+            .status(200)
+            .send({
+                success: true,
+                message: "Role created successfully",
+                result: role,
+            });
+
     } catch (error) {
         console.error(error);
-        res.status(500).send({ success: false, message: 'Internal server error', error });
+        return handleErrors(error, req, res);
     }
-}
-
+};
 
 exports.getAllRolePermissions = async (req, res) => {
     try {
@@ -33,17 +47,29 @@ exports.getAllRolePermissions = async (req, res) => {
             filter.id = roleId;
         }
         // console.log(filter);
-        const rolePermissions = await rolePermissionsService.getAllRolesPermissions(filter);
+        const rolePermissions = await rolePermissionsService.getAllRolesPermissions(
+            filter
+        );
         if (!rolePermissions) {
-            return res.status(404).send({ success: false, message: 'No role permissions found' });
+            return errorMid(
+                404,
+                `No role permissions found`,
+                req,
+                res
+            );
         }
-        return res.status(200).send({ success: true, message: 'Fetched successfully', result: rolePermissions });
+        return res
+            .status(200)
+            .send({
+                success: true,
+                message: "Fetched successfully",
+                result: rolePermissions,
+            });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        return handleErrors(error, req, res);
     }
-}
-
+};
 
 exports.getRolePermissionById = async (req, res) => {
     const { id } = req.params;
@@ -52,17 +78,27 @@ exports.getRolePermissionById = async (req, res) => {
     try {
         const role = await rolePermissionsService.getRolesById(roleId);
         if (!role) {
-            return res.status(404).send({ success: false, message: 'Role not found' });
+            return errorMid(
+                404,
+                `No role found`,
+                req,
+                res
+            );
         }
 
         const findFeature = await featuresService.getFeaturesById(masterId);
         if (!findFeature) {
-            return res.status(404).json({ success: false, message: 'Master feature not found' });
+            return errorMid(
+                404,
+                `No master feature found`,
+                req,
+                res
+            );
         }
 
         let featuresList = await featuresService.getFilterFeatures({});
 
-        featuresList = featuresList.map(item => ({
+        featuresList = featuresList.map((item) => ({
             id: item.dataValues.id,
             name: item.dataValues.name,
             description: item.dataValues.description,
@@ -70,23 +106,36 @@ exports.getRolePermissionById = async (req, res) => {
         }));
 
         let permissions;
-        const featuresData = featuresHelper.featuresWithReadWrite(masterId, featuresList, level = 0);
+        const featuresData = featuresHelper.featuresWithReadWrite(
+            masterId,
+            featuresList,
+            (level = 0)
+        );
         // console.log(featuresData);
         if (role.dataValues.permissions == null) {
-            permissions = rolePermissionHelper.replaceReadWriteWithPermissions([], featuresData);
-
+            permissions = rolePermissionHelper.replaceReadWriteWithPermissions(
+                [],
+                featuresData
+            );
         } else {
-            permissions = rolePermissionHelper.replaceReadWriteWithPermissions(role.dataValues.permissions, featuresData);
+            permissions = rolePermissionHelper.replaceReadWriteWithPermissions(
+                role.dataValues.permissions,
+                featuresData
+            );
         }
 
-
-        return res.status(200).send({ success: true, message: 'Fetched successfully', result: permissions });
+        return res
+            .status(200)
+            .send({
+                success: true,
+                message: "Fetched successfully",
+                result: permissions,
+            });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        return handleErrors(error, req, res);
     }
-}
-
+};
 
 exports.updateRolePermission = async (req, res) => {
     try {
@@ -94,61 +143,97 @@ exports.updateRolePermission = async (req, res) => {
         const { permissions } = req.body;
 
         if (!permissions) {
-            return res.status(404).send({ success: false, message: 'Permissions data not found' });
+            return errorMid(
+                404,
+                `Permissions data not found`,
+                req,
+                res
+            );
         }
 
         const role = await rolePermissionsService.getRolesById(id);
         // console.log(role);
         if (!role) {
-            return res.status(404).send({ success: false, message: 'Role not found' });
+            return res
+                .status(404)
+                .send({ success: false, message: "Role not found" });
         }
 
         // Extracting permissions from last child
-        let lastChildExtracted = rolePermissionHelper.extractLastChildPermissions(permissions);
+        let lastChildExtracted =
+            rolePermissionHelper.extractLastChildPermissions(permissions);
         let updatedPermissions;
 
         if (role.dataValues.permissions != null) {
             // compare and rewrite changes permissions
-            updatedPermissions = rolePermissionHelper.concatRolePermissions(role.dataValues, lastChildExtracted);
+            updatedPermissions = rolePermissionHelper.concatRolePermissions(
+                role.dataValues,
+                lastChildExtracted
+            );
             // console.log(updatedPermissions);
 
             //Filter out permissions where both read and write are false
-            let filterPermissionsList = rolePermissionHelper.filterPermissions(updatedPermissions.permissions);
+            let filterPermissionsList = rolePermissionHelper.filterPermissions(
+                updatedPermissions.permissions
+            );
 
             if (filterPermissionsList.length == 0) {
-                return res.status(404).json({ success: false, message: 'No data for update' });
+                return errorMid(
+                    404,
+                    `No data for update`,
+                    req,
+                    res
+                );
             }
-            const rolePermissionUpdate = await rolePermissionsService.updateRolesPermissions(id, filterPermissionsList);
-            return res.send({ success: true, message: 'Permissions updated successfully', result: rolePermissionUpdate });
-
+            const rolePermissionUpdate =
+                await rolePermissionsService.updateRolesPermissions(
+                    id,
+                    filterPermissionsList
+                );
+            return res.send({
+                success: true,
+                message: "Permissions updated successfully",
+                result: rolePermissionUpdate,
+            });
         } else {
             //Filter out permissions where both read and write are false
-            let filterPermissionsList = rolePermissionHelper.filterPermissions(lastChildExtracted);
+            let filterPermissionsList =
+                rolePermissionHelper.filterPermissions(lastChildExtracted);
 
             if (filterPermissionsList.length == 0) {
-                return res.status(404).json({ success: false, message: 'No data for update' });
+                return errorMid(
+                    404,
+                    `No data for update`,
+                    req,
+                    res
+                );
             }
 
-            const rolePermissionUpdate = await rolePermissionsService.updateRolesPermissions(id, filterPermissionsList);
+            const rolePermissionUpdate =
+                await rolePermissionsService.updateRolesPermissions(
+                    id,
+                    filterPermissionsList
+                );
 
-            return res.send({ success: true, message: 'Permissions updated successfully', result: rolePermissionUpdate });
-
+            return res.send({
+                success: true,
+                message: "Permissions updated successfully",
+                result: rolePermissionUpdate,
+            });
         }
-
     } catch (error) {
         console.error(error);
-        res.status(500).send({ message: 'Internal server error', error });
+        return handleErrors(error, req, res);
     }
-}
-
+};
 
 exports.deleteRolePermission = async (req, res) => {
     const { id } = req.params;
     try {
-
         res.json();
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        return handleErrors(error, req, res);
     }
-}
+};

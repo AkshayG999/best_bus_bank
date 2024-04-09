@@ -1,3 +1,4 @@
+const { errorMid, handleErrors } = require("../../middlewareServices/errorMid");
 const featuresHelper = require("../helper/featuresHelper");
 const featuresService = require("../services/featuresService");
 
@@ -7,23 +8,34 @@ exports.createFeatures = async (req, res) => {
     try {
         const { name, description, parentFeatureId } = req.body;
         if (!name) {
-            return res.status(400).json({ message: 'Name is required' });
+            return errorMid(400, "Name is required", req, res);
         }
         if (parentFeatureId) {
-            let findParentFeature = await featuresService.getFeaturesById(parentFeatureId);
-            return res.status(400).json({ message: 'Description is required' });
+            let findParentFeature = await featuresService.getFeaturesById(
+                parentFeatureId
+            );
+            return errorMid(
+                400,
+                `${parentFeatureId} is not a parent feature Id`,
+                req,
+                res
+            );
         }
-        let data = { name: name, description: name, };
+        let data = { name: name, description: name };
 
         if (parentFeatureId) {
             data.parentFeatureId = parentFeatureId;
         }
 
-        const featureA = await featuresService.createFeatures(data);
-        return res.status(201).json(featureA);
+        const feature = await featuresService.createFeatures(data);
+        return res.status(201).json({
+            success: true,
+            message: "Created successfully",
+            result: feature,
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        return handleErrors(error, req, res);
     }
 };
 
@@ -39,23 +51,34 @@ exports.fetchFeatures = async (req, res) => {
         }
 
         featuresList = await featuresService.getFilterFeatures(filter);
-        let result;
+        if (featuresList.length == 0) {
+            return errorMid(
+                404,
+                `features not found`,
+                req,
+                res
+            );
+        }
 
         // Get Hierarchy
+        let result;
         if (features_tree) {
             if (featuresList.length > 0) {
-
-                featuresList = featuresList.map(item => ({
+                featuresList = featuresList.map((item) => ({
                     id: item.dataValues.id,
                     name: item.dataValues.name,
                     description: item.dataValues.description,
                     parentFeatureId: item.dataValues.parentFeatureId,
                 }));
 
-                console.log(featuresList)
-                // Get Master ID data  
+                console.log(featuresList);
+                // Get Master ID data
                 if (master_id) {
-                    result = featuresHelper.generateHierarchy(master_id, featuresList, level = 0);
+                    result = featuresHelper.generateHierarchy(
+                        master_id,
+                        featuresList,
+                        (level = 0)
+                    );
                     console.log(JSON.stringify(result, null, 2));
                 } else {
                     // Get all hierarchy
@@ -63,25 +86,36 @@ exports.fetchFeatures = async (req, res) => {
                     console.log(JSON.stringify(result, null, 2));
                 }
 
-                return res.status(200).send({ success: true, message: "Fetched successfully", result });
+                return res
+                    .status(200)
+                    .send({ success: true, message: "Fetched successfully", result });
             }
         }
 
-        return res.status(200).send({ success: true, message: "Fetched successfully", result: featuresList });
+        return res.status(200).send({
+            success: true,
+            message: "Fetched successfully",
+            result: featuresList,
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: error });
+        return handleErrors(error, req, res);
     }
-}
-
+};
 
 exports.getFeaturesForNewRole = async (req, res) => {
     const { id } = req.params;
     try {
-
         let featuresList = await featuresService.getFilterFeatures({});
-
-        featuresList = featuresList.map(item => ({
+        if (featuresList.length == 0) {
+            return errorMid(
+                404,
+                `features not found`,
+                req,
+                res
+            );
+        }
+        featuresList = featuresList.map((item) => ({
             id: item.dataValues.id,
             name: item.dataValues.name,
             description: item.dataValues.description,
@@ -89,57 +123,65 @@ exports.getFeaturesForNewRole = async (req, res) => {
         }));
         console.log(featuresList);
 
-        const result = featuresHelper.featuresWithReadWrite(id, featuresList, level = 0);
+        const result = featuresHelper.featuresWithReadWrite(
+            id,
+            featuresList,
+            (level = 0)
+        );
 
-        return res.status(200).send({ success: true, message: "Fetched successfully", result: result });
+        return res
+            .status(200)
+            .send({ success: true, message: "Fetched successfully", result: result });
     } catch (error) {
         console.error(error);
-        res.status(500).send({ success: false, message: 'Internal server error', error });
+        return handleErrors(error, req, res);
     }
 };
 
 exports.getAllFeatures = async (req, res) => {
     try {
         const featureAList = await featuresService.getAllFeatures();
-        res.json(featureAList);
+        if (featureAList.length == 0) {
+            return errorMid(
+                404,
+                `features not found`,
+                req,
+                res
+            );
+        }
+        return res.status(200).json({
+            success: true,
+            message: "Fetched successfully",
+            result: featureAList,
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).send({ message: 'Internal server error', error });
+        return handleErrors(error, req, res);
     }
 };
-
-
-exports.fetchFeaturesHierarchy = async (req, res) => {
-    try {
-        const { features_master } = req.query;
-
-        let filter = {};
-
-        const featuresList = await featuresService.getFilterFeatures();
-
-
-        return res.status(200).send({ result: featuresList });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-}
-
 
 exports.getFeaturesById = async (req, res) => {
     const { id } = req.params;
     try {
         const featureA = await featuresService.getFeaturesById(id);
         if (!featureA) {
-            return res.status(404).send({ message: 'Feature A not found' });
+            return errorMid(
+                404,
+                `feature with ${id} not found`,
+                req,
+                res
+            );
         }
-        return res.status(200).send({ success: true, message: "Fetched successfully", result: featureA });
+        return res.status(200).send({
+            success: true,
+            message: "Fetched successfully",
+            result: featureA,
+        });
     } catch (error) {
         console.error(error);
-        return res.status(500).send({ message: 'Internal server error', error });
+        return handleErrors(error, req, res);
     }
 };
-
 
 exports.updateFeaturesById = async (req, res) => {
     const { id } = req.params;
@@ -147,9 +189,14 @@ exports.updateFeaturesById = async (req, res) => {
     try {
         let featureA = await featuresService.getFeaturesById(id);
         if (!featureA) {
-            return res.status(404).send({ success: false, message: 'Feature A not found' });
+            return errorMid(
+                400,
+                `feature with ${id} not found`,
+                req,
+                res
+            );
         }
-        let dataForUpdate = {}
+        let dataForUpdate = {};
         if (parentFeatureId) {
             dataForUpdate.parentFeatureId = parentFeatureId;
         }
@@ -158,25 +205,34 @@ exports.updateFeaturesById = async (req, res) => {
             dataForUpdate.description = name;
         }
         featureA = await featuresService.updateFeatures(id, dataForUpdate);
-        return res.status(200).send({ success: true, message: "Updated successfully", result: featureA, });
+        return res.status(200).send({
+            success: true,
+            message: "Updated successfully",
+            result: featureA,
+        });
     } catch (error) {
         console.error(error);
-        return res.status(500).send({ message: 'Internal server error', error });
+        return handleErrors(error, req, res);
     }
 };
-
 
 exports.deleteFeaturesById = async (req, res) => {
     const { id } = req.params;
     try {
         const deletedCount = await featuresService.deleteFeatures(id);
         if (deletedCount === 0) {
-            return res.status(404).json({ message: 'Feature A not found' });
+            return errorMid(
+                400,
+                `feature with ${id} not found`,
+                req,
+                res
+            );
         }
-        res.json({ message: 'Feature A deleted successfully' });
+        return res
+            .status(200)
+            .json({ success: true, message: "Feature deleted successfully" });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        return handleErrors(error, req, res);
     }
 };
-
