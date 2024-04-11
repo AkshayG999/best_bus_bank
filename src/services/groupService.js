@@ -2,7 +2,7 @@ const { db, sequelize, groupModel, parentGroupModel } = require("../../db/db");
 
 
 
-const createGroup = async (data, transaction) => {
+exports.createGroup = async (data, transaction) => {
     try {
         const newGroup = await groupModel.create(data, { transaction });
         return newGroup;
@@ -14,21 +14,14 @@ const createGroup = async (data, transaction) => {
 };
 
 
-const findByGrp_srNo = async (sr_no) => {
-    return await groupModel.findOne({
-        where: {
-            sr_no: sr_no
-        }
-    });
-};
-
-
-const getAllGroups = async () => {
+exports.getAllGroups = async (filter) => {
     try {
 
-        const groups = await groupModel.findAll(
+        const groups = await groupModel.findAll({
+            where: filter,
+
             // { include: [{ model: parentGroupModel, as: 'parent_group', attributes: ['id', 'name'] }] }
-        )
+        })
         // console.log(groups);
         return groups;
     } catch (error) {
@@ -37,5 +30,28 @@ const getAllGroups = async () => {
 };
 
 
+exports.findByGrp_srNo = async (sr_no) => {
+    return await groupModel.findOne({
+        where: {
+            sr_no: sr_no
+        }
+    });
+};
 
-module.exports = { createGroup, findByGrp_srNo, getAllGroups }
+exports.updateGroup = async (sr_no, data) => {
+    return await groupModel.update(data, {
+        where: {
+            sr_no: sr_no
+        }
+    });
+}
+
+
+exports.deleteGroup = async (sr_no) => {
+
+    return await groupModel.destroy({
+        where: {
+            sr_no: sr_no
+        }
+    })
+}

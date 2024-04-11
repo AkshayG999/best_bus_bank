@@ -2,9 +2,9 @@ const { db, sequelize, parentGroupModel } = require("../../db/db");
 
 
 
-const createParentGroup = async (data) => {
+const createParentGroup = async (data, transaction) => {
     try {
-        const newParentGroup = await parentGroupModel.create(data);
+        const newParentGroup = await parentGroupModel.create(data, { transaction });
         return newParentGroup;
     } catch (error) {
         return error

@@ -82,5 +82,6 @@ departmentModel.belongsTo(branchModel, { foreignKey: 'branchCode', as: 'branch' 
 
 
 module.exports = {
-    db, sequelize, userModel, groupModel, parentGroupModel, ledgerModel, branchModel, departmentModel, features, rolePermissions,
+    db, sequelize, userModel, groupModel, parentGroupModel, ledgerModel,
+    branchModel, departmentModel, features, rolePermissions,
 };

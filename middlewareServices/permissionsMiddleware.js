@@ -4,7 +4,7 @@ const { errorMid, handleErrors } = require("./errorMid");
 
 exports.checkPermissionsMiddleware = (
     featureID,
-    featureName,
+    featureName='',
     write = false
 ) => {
     return async (req, res, next) => {
@@ -26,8 +26,8 @@ exports.checkPermissionsMiddleware = (
                 user.dataValues.permissions.length === 0
             ) {
                 return errorMid(
-                    404,
-                    `User is did't have any permissions`,
+                    403,
+                    `User did't have any permissions`,
                     req,
                     res
                 );

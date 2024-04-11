@@ -7,7 +7,7 @@ const { checkPermissionsMiddleware } = require("../../middlewareServices/permiss
 
 
 router.get('/', authenticateToken, checkPermissionsMiddleware('18e9b143528rg7sc6', 'Ledger Creation'), ledgerController.getLedgers)
-router.post('/', authenticateToken, checkPermissionsMiddleware('', 'Ledger Creation', true), ledgerController.createLedger)
+router.post('/', authenticateToken, checkPermissionsMiddleware('18e9b143528rg7sc6', 'Ledger Creation', true), ledgerController.createLedger)
 
 
 module.exports = router

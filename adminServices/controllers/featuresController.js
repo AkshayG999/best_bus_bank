@@ -6,7 +6,7 @@ const featuresService = require("../services/featuresService");
 
 exports.createFeatures = async (req, res) => {
     try {
-        const { name, description, parentFeatureId } = req.body;
+        const { name, parentFeatureId } = req.body;
         if (!name) {
             return errorMid(400, "Name is required", req, res);
         }
@@ -16,10 +16,8 @@ exports.createFeatures = async (req, res) => {
             );
             if (!findParentFeature) {
                 return errorMid(
-                    400,
-                    `${parentFeatureId} is not a parent feature Id`,
-                    req,
-                    res
+                    400, `${parentFeatureId} is not a parent feature Id`,
+                    req, res
                 );
             }
         }

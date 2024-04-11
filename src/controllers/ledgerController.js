@@ -1,10 +1,15 @@
 const { generateUniqueCode, createRecord } = require('../helper/helper');
 const { findByGrp_srNo } = require('../services/groupService');
 const ledgerService = require('../services/ledgerService');
-const { generateGroupUniqueCode, createRecordWithSrNo } = require('../storeprocedures/groupStoreProcedure');
+const { sequelize } = require("../../db/db");
+const { Sequelize } = require("sequelize");
+const { handleErrors } = require('../../middlewareServices/errorMid');
+const { generateGroupUniqueCode } = require('../../procedureStoreServices/controller/procedureStoreController');
+
 
 
 async function createLedger(req, res) {
+    let transaction;
     try {
         const { accountName, groupId, op_acc_DR_CR, op_acc_balance, ly_acc_DR_CR, ly_cl_balance, loan_deduct, loan_deduct_amount, exception_checking, exception_amount } = req.body;
 
@@ -31,11 +36,16 @@ async function createLedger(req, res) {
 
         const ledger = await ledgerService.createLedger({ sr_no, tr_no, code, accountName, groupId, op_acc_DR_CR, op_acc_balance, ly_acc_DR_CR, ly_cl_balance, loan_deduct, loan_deduct_amount, exception_checking, exception_amount });
 
+        await transaction.commit();
+
         return res.status(201).send({ success: true, message: "Ledger created successfully", result: ledger });
 
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.error('Error creating ledger:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        return handleErrors(error, req, res);
     }
 }
 
@@ -47,7 +57,7 @@ async function getLedgers(req, res) {
         res.status(200).send({ success: true, message: "Fetched successfully", result: ledgers });
     } catch (error) {
         console.error('Error fetching ledgers:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        return handleErrors(error, req, res);
     }
 }
 
@@ -59,7 +69,7 @@ async function updateLedger(req, res) {
         res.status(200).json(ledger);
     } catch (error) {
         console.error('Error updating ledger:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        return handleErrors(error, req, res);
     }
 }
 
@@ -70,7 +80,7 @@ async function deleteLedger(req, res) {
         res.status(204).end();
     } catch (error) {
         console.error('Error deleting ledger:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        return handleErrors(error, req, res);
     }
 }
 

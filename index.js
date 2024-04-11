@@ -1,8 +1,9 @@
 const express = require('express');
-const cors = require('cors');
 const app = express();
+const cors = require('cors');
 require("dotenv").config();
 const { sequelize } = require('./db/db');
+
 app.use(express.json());
 app.use(cors());
 
@@ -10,6 +11,7 @@ app.use(cors());
 
 
 app.use("/api/user", require("./userServices/routes/userRoutes"));
+app.use("/api/user", require("./adminServices/routes/userPermissionsRoute"));
 app.use("/api/admin", require("./src/routes/adminRoute"));
 app.use("/api/parent-group", require("./src/routes/parentGroupRoute"));
 app.use("/api/group", require("./src/routes/groupRoute"));

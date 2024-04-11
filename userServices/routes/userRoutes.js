@@ -1,21 +1,21 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/userController");
-const { authenticateToken } = require("../../middlewareServices/authMid");
+const { authenticateToken, authorizeUser } = require("../../middlewareServices/authMid");
+const { checkPermissionsMiddleware } = require("../../middlewareServices/permissionsMiddleware");
 
 
+// Admin Routes
+router.post("/sign-up", authenticateToken, checkPermissionsMiddleware('18ec79c2611qtoxng', "", true), userController.signUp);
+router.get("/get-all", authenticateToken, checkPermissionsMiddleware('18ec79c2611qtoxng', ""), userController.getAll);
+router.put("/update/:systemID", authenticateToken, checkPermissionsMiddleware('18ec79c2611qtoxng', "", true), userController.updateUser);
+router.delete("/delete/:systemID", authenticateToken, checkPermissionsMiddleware('18ec79c2611qtoxng', "", true), userController.deleteByID);
 
-router.post("/sign-up", userController.signUp);
+
+// User Routes
 router.post("/login", userController.login);
-router.get("/:systemID", authenticateToken, userController.getBySystemID);
-router.get("/", userController.getAll);
-router.put("/:id", userController.updateByID);
-router.delete("/:id", userController.deleteByID);
-
-
-router.put("/add-role-permissions/:systemID", userController.addRolePermissionsToUser);
-router.get("/get-role-permissions/:systemID", userController.fetchUserPermissions);
-router.put("/update-role-permissions/:systemID", userController.updateUserPermissions);
+router.get("/get-by-system-id/:systemID", authenticateToken, authorizeUser, userController.getBySystemID);
+router.patch("/update-password/:systemID", authenticateToken, authorizeUser, userController.updatePassword);
 
 
 module.exports = router;

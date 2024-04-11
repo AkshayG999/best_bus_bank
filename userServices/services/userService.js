@@ -6,8 +6,18 @@ const {
   departmentModel,
 } = require("../../db/db");
 
-const getAll = async () => {
+
+
+exports.createPerson = async ({ name, email, password, systemID }) => {
+  const newPerson = await userModel.create({ name, email, password, systemID });
+  return newPerson;
+};
+
+
+
+exports.getAll = async (filter) => {
   return await userModel.findAll({
+    where: filter,
     // include: [
     //   { model: branchModel, as: "branch" },
     //   { model: departmentModel, as: "department" },
@@ -15,7 +25,7 @@ const getAll = async () => {
   });
 };
 
-const findPersonBySystemID = async (systemID) => {
+exports.findPersonBySystemID = async (systemID) => {
   return await userModel.findOne({
     where: {
       systemID: systemID,
@@ -23,7 +33,7 @@ const findPersonBySystemID = async (systemID) => {
   });
 };
 
-const findPersonByEmail = async (email) => {
+exports.findPersonByEmail = async (email) => {
   return await userModel.findOne({
     where: {
       email: email,
@@ -31,24 +41,32 @@ const findPersonByEmail = async (email) => {
   });
 };
 
-const createPerson = async ({ name, email, password, systemID }) => {
-  const newPerson = await userModel.create({ name, email, password, systemID });
-  return newPerson;
-};
+exports.updatePersonPassword = async (systemID, password) => {
+  let user = await userModel.findOne({
+    where: {
+      systemID: systemID,
+    },
+  });
+  if (user) {
+    return await user.update({ password });
+  }
 
-const updatePerson = async ({ Id, Name, Email }) => {
+}
+
+
+exports.updateUser = async (systemID, dataForUpdate) => {
   await userModel.update(
-    { Name, Email },
+    dataForUpdate,
     {
       where: {
-        Id: Id,
+        systemID: systemID,
       },
     }
   );
   return { Id, Name, Email };
 };
 
-const updatePersonRole = async (systemID, dataForUpdate) => {
+exports.updatePersonRole = async (systemID, dataForUpdate) => {
   let user = await userModel.findOne({
     where: {
       systemID: systemID,
@@ -62,7 +80,7 @@ const updatePersonRole = async (systemID, dataForUpdate) => {
   }
 };
 
-const updateDepartmentAllocation = async (
+exports.updateDepartmentAllocation = async (
   systemID,
   bankId,
   branchId,
@@ -82,19 +100,10 @@ const updateDepartmentAllocation = async (
   }
 };
 
-const deletePerson = async (Id) => {
+exports.deletePerson = async (systemID) => {
   await userModel.destroy({
-    where: { Id: Id },
+    where: { systemID: systemID },
   });
 };
 
-module.exports = {
-  getAll,
-  findPersonBySystemID,
-  findPersonByEmail,
-  createPerson,
-  updatePerson,
-  updatePersonRole,
-  updateDepartmentAllocation,
-  deletePerson,
-};
+

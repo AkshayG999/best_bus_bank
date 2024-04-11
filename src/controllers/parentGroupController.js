@@ -1,20 +1,31 @@
+const { errorMid, handleErrors } = require("../../middlewareServices/errorMid");
 const parentGroupService = require("../services/parentGroupService");
-
+const { sequelize } = require("../../db/db");
+const { Sequelize } = require("sequelize");
+const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
 
 
 const createParentGroup = async (req, res) => {
-
+    let transaction;
     try {
-        const { id, name } = req.body;
+        const { name } = req.body;
         if (!name) {
-            return res.status(400).json({ message: 'Name is required' });
+            return errorMid(400, 'Name is required', req, res);
         }
-        const createNewParentGroup = await parentGroupService.createParentGroup({ name })
+        transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
+        const sr_no = await procedureStoreController.createRecordWithSrNo('parent_group_sr_no', transaction);
+
+        const createNewParentGroup = await parentGroupService.createParentGroup({ sr_no, name }, transaction)
+        await transaction.commit();
+
         return res.status(201).send({ success: true, message: 'Parent group created successfully', result: createNewParentGroup });
 
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ statusCode: 500, error: error });
+        if (transaction) {
+            await transaction.rollback();
+        }
+        return handleErrors(error, req, res);
     }
 }
 
@@ -28,7 +39,7 @@ const getAllParentGroups = async (req, res) => {
 
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ statusCode: 500, error: "Something went wrong" });
+        return handleErrors(error, req, res);
     }
 }
 

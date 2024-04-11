@@ -4,7 +4,7 @@ module.exports = model;
 
 function model(sequelize) {
     const ParentGroup = sequelize.define("parent_group", {
-        id: {
+        sr_no: {
             type: DataTypes.INTEGER,
             allowNull: false,
             primaryKey: true,

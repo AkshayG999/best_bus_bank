@@ -1,276 +1,227 @@
 const shortId = require('shortid')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const personService = require("../services/userService");
-const rolePermissionsService = require('../../adminServices/services/rolePermissionsService');
-const rolePermissionHelper = require('../../adminServices/helper/rolePermissionHelper');
-const featuresService = require('../../adminServices/services/featuresService');
-const featuresHelper = require('../../adminServices/helper/featuresHelper');
+const userService = require("../services/userService");
+const generator = require('generate-password');
+const ShortUniqueId = require('short-unique-id');
+const { generateUserFriendlyPassword } = require('../helper/helper');
+const { errorMid, handleErrors } = require('../../middlewareServices/errorMid');
 
 
 
-
-const signUp = async (req, res) => {
+exports.signUp = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    console.log(req.body);
+    let { name, email, password } = req.body;
 
-    // Unique ID
-    const systemID = shortId.generate().toUpperCase();
+    if (!name) {
+      return errorMid(400, "Name is required", req, res);
+    }
+
+    if (!email) {
+      return errorMid(400, "Email is required", req, res);
+    }
+
+    // Check if user exists
+    const existingUser = await userService.findPersonByEmail(email);
+    if (existingUser) {
+      return errorMid(409, "User already exists", req, res);
+    }
+
+    if (!password) {
+      password = generator.generate({
+        length: 10,
+        numbers: true,
+        excludeSimilarCharacters: true,
+        // symbols: true
+      });
+      console.log("Auto Generated Password:", password);
+    }
+
+    // // Unique ID
+    // const systemID = shortId.generate().toUpperCase();
+    // console.log({ systemID });
+
+    // Random UUID
+    const { randomUUID } = new ShortUniqueId({ length: 10 });
+    const systemID = randomUUID();
     console.log(systemID);
 
     // Hash the password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const createdPerson = await personService.createPerson({ name, email, password: hashedPassword, systemID });
-    return res.status(201).json(createdPerson);
+    const createdPerson = await userService.createPerson({ name, email, password: hashedPassword, systemID });
+    createdPerson['password'] = password;
+
+    return res.status(201).json({ success: true, message: "User created successfully", result: createdPerson });
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ statusCode: 500, error: "Something went wrong" });
+    return handleErrors(error, req, res);
   }
 }
 
 
-const login = async (req, res) => {
+exports.getAll = async (req, res) => {
+  try {
+    const { systemID } = req.query;
+
+    let filter = {};
+    if (systemID) filter = { systemID: systemID };
+
+    const users = await userService.getAll(filter);
+
+    if (!users || users.length === 0) {
+      return errorMid(404, "Users not found", req, res);
+    }
+
+    return res.status(200).json({ success: true, message: "Users fetched successfully", result: users });
+  } catch (error) {
+    console.log(error);
+    return handleErrors(error, req, res);
+  }
+}
+
+
+
+exports.updateUser = async (req, res) => {
+  try {
+    const { systemID } = req.params;
+    const { name, email, password, bankId, branchId, departmentId } = req.body;
+
+    const userIsExist = await userService.findPersonBySystemID(systemID);
+    if (!userIsExist) {
+      return errorMid(404, "User does not exist", req, res);
+    }
+    let dataForUpdate = {};
+
+    if (name) dataForUpdate.name = name;
+
+    if (email) {
+      const existingUser = await userService.findPersonByEmail(email);
+      if (existingUser && existingUser.systemID !== systemID) {
+        return errorMid(409, "User already exists", req, res);
+      }
+      dataForUpdate.email = email
+    }
+
+    if (password) {
+      const saltRounds = 10;
+      dataForUpdate.password = await bcrypt.hash(password, saltRounds);
+    }
+    if (bankId) dataForUpdate.bankId = bankId;
+    if (branchId) dataForUpdate.branchId = branchId;
+    if (departmentId) dataForUpdate.departmentId = departmentId;
+
+    if (!dataForUpdate) return errorMid(400, "Please provide valid data to update", req, res);
+
+    const updatedPerson = await userService.updateUser(systemID, dataForUpdate);
+    return res.status(200).json({ success: true, message: "User updated successfully", result: updatedPerson });
+  } catch (error) {
+    return handleErrors(error, req, res);
+  }
+}
+
+
+
+exports.deleteByID = async (req, res) => {
+  try {
+    const { systemID } = req.params;
+
+    const userIsExist = await userService.findPersonBySystemID(systemID);
+    if (!userIsExist) {
+      return errorMid(404, "User does not exist", req, res);
+    }
+
+    const deletedPerson = await userService.deletePerson(systemID);
+
+    return res.status(200).json({ success: true, message: "User deleted successfully", result: deletedPerson });
+
+  } catch (error) {
+    return handleErrors(error, req, res);
+  }
+}
+
+
+
+// ____________________________________________________________________________________________________________________________________
+// User Side Routes
+exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     // Find user by email
-    const user = await personService.findPersonByEmail(email);
+    const user = await userService.findPersonByEmail(email);
 
     if (!user) {
-      return res.status(404).json({ statusCode: 404, error: "Invalid email Id" });
+      return errorMid(400, "Invalid email", req, res);
     }
 
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      return res.status(401).json({ statusCode: 401, error: "Invalid password" });
+      return errorMid(400, "Invalid password", req, res);
     }
 
     // Generate JWT token
     const secretKey = process.env.SECRET_KEY;
-    const token = jwt.sign({ systemID: user.systemID, role: user.role }, secretKey, { expiresIn: '4h' });
+    const token = jwt.sign({ systemID: user.systemID, name: user.name, email, }, secretKey, { expiresIn: '4h' });
 
-    // Return the token
-    return res.status(200).send({ systemID: user.systemID, token: token });
+    return res.status(200).json({ success: true, message: "User logged in successfully", systemID: user.systemID, token });
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ statusCode: 500, error: "Something went wrong" });
+    return handleErrors(error, req, res);
   }
 }
 
 
-const getBySystemID = async (req, res) => {
-  try {
-    const person = await personService.findPersonBySystemID(req.params.systemID);
-    if (!person) {
-      return res
-        .status(404)
-        .json({ statusCode: 404, error: "Person Does not exist" });
-    }
-    return res.json(person);
-  } catch (error) {
-    return res
-      .statusCode(500)
-      .json({ statusCode: 500, error: "Something went wrong" });
-  }
-}
-
-const getAll = async (req, res) => {
-  try {
-    const people = await personService.getAll();
-    res.json(people);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ statusCode: 500, error: "Something went wrong" });
-  }
-}
-
-
-
-const updateByID = async (req, res) => {
-  try {
-    const exisitingPerson = await personService.findPersonBySystemID(req.params.id);
-    console.log(exisitingPerson);
-    if (!exisitingPerson) {
-      return res
-        .status(404)
-        .json({ statusCode: 404, error: "Person Does not exist" });
-    }
-    const updatedPerson = await personService.updatePerson(req.body);
-    return res.json(updatedPerson);
-  } catch (error) {
-    return res
-      .statusCode(500)
-      .json({ statusCode: 500, error: "Something went wrong" });
-  }
-}
-
-
-
-const deleteByID = async (req, res) => {
-  try {
-    const existingPerson = await personService.findPersonBySystemID(req.params.id);
-    if (!existingPerson) {
-      return res
-        .status(404)
-        .json({ statusCode: 404, error: "Person Does not exist" });
-    }
-
-    await personService.deletePerson(req.params.id);
-    return res.json({
-      statusCode: 200,
-      message: `person with id: ${req.params.id} is deleted successfully`,
-    });
-  } catch (error) {
-    return res
-      .statusCode(500)
-      .json({ statusCode: 500, error: "Something went wrong" });
-  }
-}
-
-
-
-//--------------Roles And Permissions------------------
-const addRolePermissionsToUser = async (req, res) => {
+exports.getBySystemID = async (req, res) => {
   try {
     const { systemID } = req.params;
-    const { roleId } = req.body;
 
-    const existingPerson = await personService.findPersonBySystemID(systemID);
-
-    if (!existingPerson) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User Does not exist" });
+    if (!systemID) {
+      return errorMid(400, "systemID is required", req, res);
     }
 
-    const role = await rolePermissionsService.getRolesById(roleId);
-
-    if (!role) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Role Does not exist" });
+    const user = await userService.findPersonBySystemID(systemID);
+    if (!user) {
+      return errorMid(404, "User does not exist", req, res);
     }
 
-    let dataForUpdate = { roleId, permissions: role.dataValues.permissions }
-
-    const userPermissions = await personService.updatePersonRole(systemID, dataForUpdate);
-
-    console.log(userPermissions, existingPerson.dataValues, role.dataValues)
-    return res.status(200).send({ success: true, message: "Permission Added successfully", result: userPermissions })
-
-  } catch (err) {
-    console.log({ err });
-    return res.status(500).json({
-      success: false,
-      message: `Error:${err}`
-    });
+    return res.status(200).json({ success: true, message: "User found successfully", result: user });
+  } catch (error) {
+    return handleErrors(error, req, res);
   }
 }
 
 
-const fetchUserPermissions = async (req, res) => {
+exports.updatePassword = async (req, res) => {
   try {
     const { systemID } = req.params;
-    const { masterId } = req.query;
+    const { currentPassword, newPassword } = req.body;
 
-    const existingPerson = await personService.findPersonBySystemID(systemID);
-
-    if (!existingPerson) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User Does not exist" });
-    }
-    // console.log(existingPerson.dataValues.permissions);
-    const findFeature = await featuresService.getFeaturesById(masterId);
-    if (!findFeature) {
-      return res.status(404).json({ success: false, message: 'Master feature not found' });
+    if (!currentPassword || !newPassword) {
+      return errorMid(400, "Password is required", req, res);
     }
 
-    let featuresList = await featuresService.getFilterFeatures({});
+    const user = await userService.findPersonBySystemID(systemID);
+    if (!user) {
+      return errorMid(404, "User does not exist", req, res);
+    }
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
 
-    featuresList = featuresList.map(item => ({
-      id: item.dataValues.id,
-      name: item.dataValues.name,
-      description: item.dataValues.description,
-      parentFeatureId: item.dataValues.parentFeatureId,
-    }));
-
-    const featuresData = featuresHelper.featuresWithReadWrite(masterId, featuresList, level = 0);
-
-    let permissions;
-    if (existingPerson.dataValues.permissions == null) {
-      permissions = rolePermissionHelper.replaceReadWriteWithPermissions([], featuresData);
-    } else {
-      permissions = rolePermissionHelper.replaceReadWriteWithPermissions(existingPerson.dataValues.permissions, featuresData);
+    if (!passwordMatch) {
+      return errorMid(400, "Invalid current Password", req, res);
     }
 
-    return res.status(200).send({ success: true, message: "Permissions fetched successfully", result: permissions })
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-  } catch (err) {
-    console.log({ err });
-    return res.status(500).json({
-      success: false,
-      message: `Error:${err}`
-    });
+    const updatedPerson = await userService.updatePersonPassword(systemID, hashedPassword);
+
+    return res.status(200).json({ success: true, message: "Password updated successfully", result: updatedPerson });
+  } catch (error) {
+    return handleErrors(error, req, res);
   }
 }
-
-
-const updateUserPermissions = async (req, res) => {
-  try {
-    const { systemID } = req.params;
-    const { permissions } = req.body;
-
-    const existingPerson = await personService.findPersonBySystemID(systemID);
-
-    if (!existingPerson) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User Does not exist" });
-    }
-
-    // Extracting permissions from last child
-    let lastChildExtracted = rolePermissionHelper.extractLastChildPermissions(permissions);
-
-    const concatPermissions = rolePermissionHelper.concatRolePermissions(existingPerson.dataValues, lastChildExtracted);
-    console.log(concatPermissions);
-
-    const updatePermissions = rolePermissionHelper.replaceReadWriteWithPermissions(existingPerson.dataValues.permissions, concatPermissions.permissions);
-
-    let filterPermissionsList = rolePermissionHelper.filterPermissions(updatePermissions);
-
-    let dataForUpdate = { permissions: filterPermissionsList }
-
-    const userPermissions = await personService.updatePersonRole(systemID, dataForUpdate);
-
-
-    return res.status(200).send({ status: true, message: "Permission updated successfully", result: userPermissions })
-  }
-  catch (err) {
-    console.log({ err });
-    return res.status(500).json({
-      success: false,
-      message: `Error:${err}`
-    })
-  }
-}
-
-
-module.exports = {
-  signUp,
-  login,
-  getBySystemID,
-  getAll,
-  updateByID,
-  deleteByID,
-  addRolePermissionsToUser,
-  fetchUserPermissions,
-  updateUserPermissions
-};

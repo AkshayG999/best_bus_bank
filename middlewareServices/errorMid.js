@@ -2,7 +2,7 @@ exports.errorMid = async (status, message, req, res) => {
 
     // Log the error for debugging
     console.error(`[${new Date().toISOString()}] [${status}] ${message}`);
-    
+
     if (status === 500) {
         return res.status(status).json({
             success: false,
@@ -19,10 +19,8 @@ exports.errorMid = async (status, message, req, res) => {
 exports.handleErrors = (error, req, res) => {
     console.error(error);
     return this.errorMid(
-        {
-            status: 500,
-            error: error.message || "Internal Server Error",
-        },
+        500,
+        error.message || "Internal Server Error",
         req,
         res
     );

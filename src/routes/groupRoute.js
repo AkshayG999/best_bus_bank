@@ -10,5 +10,8 @@ const { authenticateToken } = require("../../middlewareServices/authMid");
 router.get("/", authenticateToken, checkPermissionsMiddleware('18e9b14072fct849y', 'Group Creation'), groupController.getGroups);
 router.post("/", authenticateToken, checkPermissionsMiddleware('18e9b14072fct849y', 'Group Creation', true), groupController.createGroup);
 
+router.put("/:sr_no", authenticateToken, checkPermissionsMiddleware('18e9b14072fct849y', 'Group Creation', true), groupController.updateGroup);
+router.delete("/:sr_no", authenticateToken, checkPermissionsMiddleware('18e9b14072fct849y', 'Group Creation', true), groupController.deleteGroup);
+
 
 module.exports = router;
