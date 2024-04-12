@@ -24,16 +24,12 @@ function model(sequelize) {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        groupId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
         op_acc_DR_CR: {
             type: DataTypes.STRING,
             allowNull: false,
         },
         op_acc_balance: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.DECIMAL,
             allowNull: false,
         },
         ly_acc_DR_CR: {
@@ -41,7 +37,7 @@ function model(sequelize) {
             allowNull: false,
         },
         ly_cl_balance: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.DECIMAL,
             allowNull: false,
         },
         loan_deduct: {
@@ -49,7 +45,7 @@ function model(sequelize) {
             allowNull: false,
         },
         loan_deduct_amount: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.DECIMAL,
             allowNull: false,
         },
         exception_checking: {
@@ -57,7 +53,7 @@ function model(sequelize) {
             allowNull: false,
         },
         exception_amount: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.DECIMAL,
             allowNull: false,
         },
         createdBy: {

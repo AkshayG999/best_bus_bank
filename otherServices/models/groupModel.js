@@ -19,10 +19,6 @@ function model(sequelize) {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        parentGroupId: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-        },
         createdBy: {
             type: DataTypes.STRING,
             allowNull: true

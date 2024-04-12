@@ -14,15 +14,13 @@ exports.createGroup = async (data, transaction) => {
 };
 
 
-exports.getAllGroups = async (filter) => {
-    try {
 
+exports.getAllGroups = async (filter, populate = false) => {
+    try {
         const groups = await groupModel.findAll({
             where: filter,
-
-            // { include: [{ model: parentGroupModel, as: 'parent_group', attributes: ['id', 'name'] }] }
-        })
-        // console.log(groups);
+            include: populate ? [{ model: parentGroupModel, attributes: ['sr_no', 'name'] }] : []
+        });
         return groups;
     } catch (error) {
         console.error('Error fetching group data:', error);
@@ -30,11 +28,12 @@ exports.getAllGroups = async (filter) => {
 };
 
 
-exports.findByGrp_srNo = async (sr_no) => {
+
+exports.findBySrNo = async (sr_no, populate = false) => {
     return await groupModel.findOne({
-        where: {
-            sr_no: sr_no
-        }
+        where: { sr_no: sr_no },
+        include: populate ? [{ model: parentGroupModel, attributes: ['sr_no', 'name'] }] : []
+
     });
 };
 

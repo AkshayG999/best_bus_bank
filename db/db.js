@@ -1,11 +1,11 @@
 const { Sequelize } = require("sequelize");
 const { dbConfig } = require('../config/config');
 const user = require("../userServices/models/userModel");
-const parentGroup = require("../src/models/parentGroupModel");
-const group = require("../src/models/groupModel");
-const ledger = require("../src/models/ledgerModel");
-const branch = require("../src/models/branchModel");
-const department = require("../src/models/departmentModel");
+const parentGroup = require("../otherServices/models/parentGroupModel");
+const group = require("../otherServices/models/groupModel");
+const ledger = require("../otherServices/models/ledgerModel");
+const branch = require("../otherServices/models/branchModel");
+const department = require("../otherServices/models/departmentModel");
 const featuresModel = require("../adminServices/models/featuresModel");
 const rolePermissionsModel = require("../adminServices/models/rolePermissionsModel");
 
@@ -65,16 +65,19 @@ const ledgerModel = ledger(sequelize);
 const branchModel = branch(sequelize);
 const departmentModel = department(sequelize);
 
-
 const features = featuresModel(sequelize);
 const rolePermissions = rolePermissionsModel(sequelize);
 
-// groupModel.belongsTo(parentGroupModel, { foreignKey: 'groupUnder', as: 'parentgroup' });
-// ledgerModel.belongsTo(groupModel, { foreignKey: 'groupID', as: 'group' });
-// branchModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
+// Associations between models here
+groupModel.belongsTo(parentGroupModel);
+parentGroupModel.hasMany(groupModel);
 
-departmentModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
-departmentModel.belongsTo(branchModel, { foreignKey: 'branchCode', as: 'branch' });
+ledgerModel.belongsTo(groupModel);
+groupModel.hasMany(ledgerModel);
+
+
+// departmentModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
+// departmentModel.belongsTo(branchModel, { foreignKey: 'branchCode', as: 'branch' });
 
 // userModel.belongsTo(branchModel, { foreignKey: 'branchId', as: 'branch' });
 // userModel.belongsTo(departmentModel, { foreignKey: 'departmentId', as: 'department' });

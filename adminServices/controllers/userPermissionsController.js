@@ -58,9 +58,11 @@ exports.fetchUserPermissions = async (req, res) => {
                 .json({ success: false, message: "User Does not exist" });
         }
         // console.log(existingPerson.dataValues.permissions);
-        const findFeature = await featuresService.getFeaturesById(masterId);
-        if (!findFeature) {
-            return res.status(404).json({ success: false, message: 'Master feature not found' });
+        if (masterId) {
+            const findFeature = await featuresService.getFeaturesById(masterId);
+            if (!findFeature) {
+                return res.status(404).json({ success: false, message: 'Master feature not found' });
+            }
         }
 
         let featuresList = await featuresService.getFilterFeatures({});
@@ -72,7 +74,7 @@ exports.fetchUserPermissions = async (req, res) => {
             parentFeatureId: item.dataValues.parentFeatureId,
         }));
 
-        const featuresData = featuresHelper.featuresWithReadWrite(masterId, featuresList, level = 0);
+        const featuresData = featuresHelper.featuresWithReadWrite(masterId || '', featuresList, level = 0);
 
         let permissions;
         if (existingPerson.dataValues.permissions == null) {
