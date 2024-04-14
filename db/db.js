@@ -64,11 +64,13 @@ const groupModel = group(sequelize);
 const ledgerModel = ledger(sequelize);
 const branchModel = branch(sequelize);
 const departmentModel = department(sequelize);
-
 const features = featuresModel(sequelize);
 const rolePermissions = rolePermissionsModel(sequelize);
 
+
 // Associations between models here
+userModel.belongsTo(rolePermissions, { foreignKey: 'roleId', as: 'role_permissions' });
+
 groupModel.belongsTo(parentGroupModel);
 parentGroupModel.hasMany(groupModel);
 

@@ -5,8 +5,6 @@ const { Sequelize, Op } = require("sequelize");
 const { handleErrors, errorMid } = require("../../middlewareServices/errorMid");
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
 
-
-
 exports.createGroup = async (req, res) => {
     let transaction;
     try {
@@ -27,7 +25,9 @@ exports.createGroup = async (req, res) => {
             return errorMid(400, `${groupName} Group already exists`, req, res);
         }
 
-        const findParentGroup = await parentGroupService.findBySrNo(parentGroupSrNo);
+        const findParentGroup = await parentGroupService.findBySrNo(
+            parentGroupSrNo
+        );
         if (!findParentGroup)
             return errorMid(
                 400,
@@ -58,13 +58,11 @@ exports.createGroup = async (req, res) => {
 
         await transaction.commit();
 
-        return res
-            .status(201)
-            .send({
-                success: true,
-                message: "New Group created successfully",
-                result: createNewGroup,
-            });
+        return res.status(201).send({
+            success: true,
+            message: "New Group created successfully",
+            result: createNewGroup,
+        });
     } catch (error) {
         console.error("Error creating group:", error);
         if (transaction) {
@@ -73,7 +71,6 @@ exports.createGroup = async (req, res) => {
         return handleErrors(error, req, res);
     }
 };
-
 
 exports.getGroups = async (req, res) => {
     try {
@@ -89,19 +86,16 @@ exports.getGroups = async (req, res) => {
         if (parentGroupSrNo) filter.parentGroupSrNo = parentGroupSrNo;
 
         const getAllGroups = await groupService.getAllGroups(filter, true);
-        return res
-            .status(200)
-            .send({
-                success: true,
-                message: "Fetched successfully",
-                result: getAllGroups,
-            });
+        return res.status(200).send({
+            success: true,
+            message: "Fetched successfully",
+            result: getAllGroups,
+        });
     } catch (error) {
         console.log(error);
         return handleErrors(error, req, res);
     }
 };
-
 
 exports.updateGroup = async (req, res) => {
     try {
@@ -123,7 +117,9 @@ exports.updateGroup = async (req, res) => {
         }
 
         if (parentGroupSrNo) {
-            const findParentGroup = await parentGroupService.findBySrNo(parentGroupSrNo);
+            const findParentGroup = await parentGroupService.findBySrNo(
+                parentGroupSrNo
+            );
             if (!findParentGroup)
                 return errorMid(
                     400,
@@ -138,19 +134,16 @@ exports.updateGroup = async (req, res) => {
             return errorMid(400, "Please provide valid data to update", req, res);
 
         const updatedGroup = await groupService.updateGroup(sr_no, dataForUpdate);
-        return res
-            .status(200)
-            .send({
-                success: true,
-                message: "Group updated successfully",
-                result: updatedGroup,
-            });
+        return res.status(200).send({
+            success: true,
+            message: "Group updated successfully",
+            result: updatedGroup,
+        });
     } catch (error) {
         console.log(error);
         return handleErrors(error, req, res);
     }
 };
-
 
 exports.deleteGroup = async (req, res) => {
     try {
@@ -162,13 +155,11 @@ exports.deleteGroup = async (req, res) => {
                 return errorMid(400, `Group with sr_no: ${sr_no} not found`, req, res);
         }
         const deletedGroup = await groupService.deleteGroup(sr_no);
-        return res
-            .status(200)
-            .send({
-                success: true,
-                message: "Group deleted successfully",
-                result: deletedGroup,
-            });
+        return res.status(200).send({
+            success: true,
+            message: "Group deleted successfully",
+            result: deletedGroup,
+        });
     } catch (error) {
         console.log(error);
         return handleErrors(error, req, res);

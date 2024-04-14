@@ -4,6 +4,7 @@ const {
   userModel,
   branchModel,
   departmentModel,
+  rolePermissions,
 } = require("../../db/db");
 
 
@@ -18,10 +19,11 @@ exports.createPerson = async ({ name, email, password, systemID }) => {
 exports.getAll = async (filter) => {
   return await userModel.findAll({
     where: filter,
-    // include: [
-    //   { model: branchModel, as: "branch" },
-    //   { model: departmentModel, as: "department" },
-    // ],
+    include: [
+      { model: rolePermissions, as: 'role_permissions', attributes: ['id', 'name'] },
+      //   { model: branchModel, as: "branch" },
+      //   { model: departmentModel, as: "department" },
+    ],
   });
 };
 
@@ -95,9 +97,6 @@ exports.updateDepartmentAllocation = async (
       },
     }
   );
-  {
-    systemID, role;
-  }
 };
 
 exports.deletePerson = async (systemID) => {
