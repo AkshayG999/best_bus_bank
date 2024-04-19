@@ -4,11 +4,13 @@ const { features } = require("../../db/db");
 
 async function getAllFeatures() {
     return await features.findAll();
-}
+}   
 async function getFilterFeatures(filter) {
     return await features.findAll({
-        where: filter, attributes: ['id', 'name', 'description', 'parentFeatureId']
-    },);
+        where: filter,
+        attributes: ['id', 'name', 'label', 'icon', 'link', 'description', 'parentFeatureId', 'parentId'],
+        order: [['name', 'ASC']] // ASC for ascending order, DESC for descending order
+    });
 }
 
 async function getFeaturesById(id) {
