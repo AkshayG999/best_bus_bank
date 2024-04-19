@@ -16,11 +16,27 @@ function featuresModel(sequelize) {
             type: DataTypes.STRING,
             allowNull: false,
         },
+        label: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
         description: {
             type: DataTypes.STRING,
             allowNull: true,
         },
+        icon: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        link: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
         parentFeatureId: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        parentId: {
             type: DataTypes.STRING,
             allowNull: true
         }
