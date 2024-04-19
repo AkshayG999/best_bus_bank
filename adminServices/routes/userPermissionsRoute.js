@@ -6,6 +6,7 @@ const userPermissionsController = require("../controllers/userPermissionsControl
 // Admin permission Routes
 router.put("/add-role-permissions/:systemID", userPermissionsController.addRolePermissionsToUser);
 router.get("/get-role-permissions/:systemID", userPermissionsController.fetchUserPermissions);
+router.get("/get-role-permissions-all/:systemID", userPermissionsController.fetchUserPermissionsAll);
 router.put("/update-user-permissions/:systemID", userPermissionsController.updateUserPermissions);
 
 

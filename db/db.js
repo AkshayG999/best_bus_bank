@@ -86,6 +86,7 @@ groupModel.hasMany(ledgerModel);
 
 
 
+
 module.exports = {
     db, sequelize, userModel, groupModel, parentGroupModel, ledgerModel,
     branchModel, departmentModel, features, rolePermissions,

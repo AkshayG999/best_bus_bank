@@ -6,7 +6,7 @@ const featuresService = require("../services/featuresService");
 
 exports.createFeatures = async (req, res) => {
     try {
-        const { name, parentFeatureId } = req.body;
+        const { name, icon, link, parentFeatureId } = req.body;
         if (!name) {
             return errorMid(400, "Name is required", req, res);
         }
@@ -21,12 +21,16 @@ exports.createFeatures = async (req, res) => {
                 );
             }
         }
-        let data = { name: name, description: name };
+        let data = { name: name, description: name, label: name, link: link };
 
         if (parentFeatureId) {
             data.parentFeatureId = parentFeatureId;
+            data.parentId = parentId;
         }
 
+        if (icon) {
+            data.icon = icon;
+        }
         const feature = await featuresService.createFeatures(data);
         return res.status(201).json({
             success: true,
@@ -67,11 +71,15 @@ exports.fetchFeatures = async (req, res) => {
                 featuresList = featuresList.map((item) => ({
                     id: item.dataValues.id,
                     name: item.dataValues.name,
+                    label: item.dataValues.label || item.name,
+                    icon: item.dataValues.icon,
+                    link: item.dataValues.link,
                     description: item.dataValues.description,
                     parentFeatureId: item.dataValues.parentFeatureId,
+                    parentId: item.dataValues.parentId,
                 }));
 
-                console.log(featuresList);
+                // console.log({featuresList});
                 // Get Master ID data
                 if (master_id) {
                     result = featuresHelper.generateHierarchy(
@@ -118,8 +126,12 @@ exports.getFeaturesForNewRole = async (req, res) => {
         featuresList = featuresList.map((item) => ({
             id: item.dataValues.id,
             name: item.dataValues.name,
+            label: item.dataValues.label,
+            icon: item.dataValues.icon,
+            link: item.dataValues.link,
             description: item.dataValues.description,
             parentFeatureId: item.dataValues.parentFeatureId,
+            parentId: item.dataValues.parentId,
         }));
         console.log(featuresList);
 
@@ -185,7 +197,7 @@ exports.getFeaturesById = async (req, res) => {
 
 exports.updateFeaturesById = async (req, res) => {
     const { id } = req.params;
-    const { name, parentFeatureId } = req.body;
+    const { name, parentFeatureId, icon, link, } = req.body;
     try {
         let featureA = await featuresService.getFeaturesById(id);
         if (!featureA) {
@@ -197,13 +209,24 @@ exports.updateFeaturesById = async (req, res) => {
             );
         }
         let dataForUpdate = {};
-        if (parentFeatureId) {
-            dataForUpdate.parentFeatureId = parentFeatureId;
-        }
-        if (name) {
-            dataForUpdate.name = name;
-            dataForUpdate.description = name;
-        }
+        // if (parentFeatureId) {
+        //     dataForUpdate.parentFeatureId = parentFeatureId;
+        //     dataForUpdate.parentId = parentFeatureId;
+        // }
+        // if (name) {
+        //     dataForUpdate.name = name;
+        //     dataForUpdate.description = name;
+        //     dataForUpdate.label = name;
+        // }
+        // if (link) {
+        //     dataForUpdate.link = link;
+        // }
+        dataForUpdate.label = featureA.dataValues.name;
+        dataForUpdate.link = link;
+        // dataForUpdate.icon = icon;
+        dataForUpdate.parentId = featureA.dataValues.parentFeatureId;
+
+
         featureA = await featuresService.updateFeatures(id, dataForUpdate);
         return res.status(200).send({
             success: true,

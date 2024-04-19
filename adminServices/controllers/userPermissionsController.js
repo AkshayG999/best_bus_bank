@@ -95,6 +95,89 @@ exports.fetchUserPermissions = async (req, res) => {
 }
 
 
+exports.fetchUserPermissionsAll = async (req, res) => {
+    try {
+        const { systemID } = req.params;
+        // const { masterId } = req.query;
+
+        const existingPerson = await userService.findPersonBySystemID(systemID);
+
+        if (!existingPerson) {
+            return res
+                .status(404)
+                .json({ success: false, message: "User Does not exist" });
+        }
+        let filter = {};
+        filter.parentFeatureId = null;
+
+        const featureAList = await featuresService.getFilterFeatures(filter);
+        // console.log(featureAList);
+
+        let result = [];
+
+        if (featureAList.length == 0) {
+            return errorMid(
+                404,
+                `features not found`,
+            )
+        }
+
+        for (let feature of featureAList) {
+            console.log(feature.dataValues);
+            masterId = feature.dataValues.id;
+
+
+            let featuresList = await featuresService.getFilterFeatures({});
+            // console.log(featuresList)
+
+            featuresList = featuresList.map(item => ({
+                id: item.dataValues.id,
+                // name: item.dataValues.name,
+                label: item.dataValues.label || item.dataValues.name,
+                icon: item.dataValues.icon,
+                link: item.dataValues.link,
+                // description: item.dataValues.description,
+                parentFeatureId: item.dataValues.parentFeatureId,
+                parentId: item.dataValues.parentId,
+            }));
+
+            const featuresData = featuresHelper.featuresWithReadWrite_1(masterId || '', featuresList, level = 0);
+
+            // return res.status(200).send({ success: true, message: "Permissions fetched successfully", result: featuresData });
+
+            let permissions;
+            if (existingPerson.dataValues.permissions == null) {
+                permissions = rolePermissionHelper.replaceReadWriteWithPermissions([], featuresData);
+            } else {
+                permissions = rolePermissionHelper.replaceReadWriteWithPermissions(existingPerson.dataValues.permissions, featuresData);
+            }
+            const filterAndModifiedFeatures = featuresHelper.filterAndModify(permissions);
+
+            if (filterAndModifiedFeatures != null) {
+                result.push(filterAndModifiedFeatures)
+            }
+
+        }
+        // // console.log(existingPerson.dataValues.permissions);
+        // if (masterId) {
+        //     const findFeature = await featuresService.getFeaturesById(masterId);
+        //     if (!findFeature) {
+        //         return res.status(404).json({ success: false, message: 'Master feature not found' });
+        //     }
+        // }
+
+        return res.status(200).send({ success: true, message: "Permissions fetched successfully", result: result })
+
+    } catch (err) {
+        console.log({ err });
+        return res.status(500).json({
+            success: false,
+            message: `Error:${err}`
+        });
+    }
+}
+
+
 exports.updateUserPermissions = async (req, res) => {
     try {
         const { systemID } = req.params;
@@ -137,4 +220,3 @@ exports.updateUserPermissions = async (req, res) => {
         })
     }
 }
-

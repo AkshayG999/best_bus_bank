@@ -10,6 +10,7 @@ router.get('/:id', featuresController.getFeaturesById);
 router.get('/', featuresController.fetchFeatures);
 
 router.put('/:id', featuresController.updateFeaturesById);
+router.delete('/:id', featuresController.deleteFeaturesById);
 
 
 module.exports = router;

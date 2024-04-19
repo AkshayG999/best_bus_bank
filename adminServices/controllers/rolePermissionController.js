@@ -101,8 +101,12 @@ exports.getRolePermissionById = async (req, res) => {
         featuresList = featuresList.map((item) => ({
             id: item.dataValues.id,
             name: item.dataValues.name,
+            label: item.dataValues.label,
+            icon: item.dataValues.icon,
+            link: item.dataValues.link,
             description: item.dataValues.description,
             parentFeatureId: item.dataValues.parentFeatureId,
+            parentId: item.dataValues.parentId,
         }));
 
         let permissions;
