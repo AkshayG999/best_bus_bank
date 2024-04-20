@@ -140,7 +140,7 @@ exports.featuresWithReadWrite = (masterId, featuresList, level = 0) => {
     return hierarchy;
 }
 
-exports.featuresWithReadWrite_1 = (masterId, featuresList, level = 0) => {
+exports.featuresReadWriteWithChildItem = (masterId, featuresList, level = 0) => {
     const masterFeature = featuresList.find(feature => feature.id === masterId);
     if (!masterFeature) return null;
 
@@ -161,7 +161,7 @@ exports.featuresWithReadWrite_1 = (masterId, featuresList, level = 0) => {
 
     if (childFeatures.length > 0) {
         hierarchy.children = childFeatures.map(child => {
-            const childHierarchy = this.featuresWithReadWrite_1(child.id, featuresList, level + 1);
+            const childHierarchy = this.featuresReadWriteWithChildItem(child.id, featuresList, level + 1);
             // Add isChildItem property based on if the child has children
             childHierarchy.isChildItem = childHierarchy.children ? true : false;
             return childHierarchy;

@@ -163,16 +163,50 @@ exports.updateRolePermission = async (req, res) => {
                 .send({ success: false, message: "Role not found" });
         }
 
-        // Extracting permissions from last child
-        let lastChildExtracted =
-            rolePermissionHelper.extractLastChildPermissions(permissions);
+        // ___________________________________________________________________________________________________________________________________
+
+        const masterId = permissions.id;
+        // console.log(masterId);
+
+        let featuresList = await featuresService.getFilterFeatures({});
+        if (featuresList.length == 0) {
+            return errorMid(
+                404,
+                `features not found`,
+                req,
+                res
+            );
+        }
+        featuresList = featuresList.map((item) => ({
+            id: item.dataValues.id,
+            name: item.dataValues.name,
+            label: item.dataValues.label,
+            icon: item.dataValues.icon,
+            link: item.dataValues.link,
+            description: item.dataValues.description,
+            parentFeatureId: item.dataValues.parentFeatureId,
+            parentId: item.dataValues.parentId,
+        }));
+        // console.log(featuresList);
+
+        const result = featuresHelper.featuresWithReadWrite(masterId, featuresList, (level = 0));
+
+        let originalExtractedLastChild = rolePermissionHelper.extractLastChildPermissions(result);
+
+        let permissionsLastChildExtracted = rolePermissionHelper.extractLastChildPermissions(permissions);
+
+        let concatRolePermissions = rolePermissionHelper.concatOriginalFeatures(originalExtractedLastChild, permissionsLastChildExtracted);
+
+        // ______________________________________________________________________________________________________________________________________________________________
+
+
         let updatedPermissions;
 
         if (role.dataValues.permissions != null) {
             // compare and rewrite changes permissions
             updatedPermissions = rolePermissionHelper.concatRolePermissions(
                 role.dataValues,
-                lastChildExtracted
+                concatRolePermissions
             );
             // console.log(updatedPermissions);
 
@@ -202,7 +236,7 @@ exports.updateRolePermission = async (req, res) => {
         } else {
             //Filter out permissions where both read and write are false
             let filterPermissionsList =
-                rolePermissionHelper.filterPermissions(lastChildExtracted);
+                rolePermissionHelper.filterPermissions(concatRolePermissions);
 
             if (filterPermissionsList.length == 0) {
                 return errorMid(
@@ -230,6 +264,7 @@ exports.updateRolePermission = async (req, res) => {
         return handleErrors(error, req, res);
     }
 };
+
 
 exports.deleteRolePermission = async (req, res) => {
     const { id } = req.params;

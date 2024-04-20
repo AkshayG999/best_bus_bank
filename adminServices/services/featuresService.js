@@ -1,52 +1,72 @@
 const { features } = require("../../db/db");
 
 
-
-async function getAllFeatures() {
+exports.getAllFeatures = async () => {
     return await features.findAll();
-}   
-async function getFilterFeatures(filter) {
-    return await features.findAll({
-        where: filter,
-        attributes: ['id', 'name', 'label', 'icon', 'link', 'description', 'parentFeatureId', 'parentId'],
-        order: [['name', 'ASC']] // ASC for ascending order, DESC for descending order
-    });
-}
+};
 
-async function getFeaturesById(id) {
-    return await features.findByPk(id);
-}
+exports.getFilterFeatures = async (filter) => {
+    try {
+        return await features.findAll({
+            where: filter,
+            attributes: [
+                "id",
+                "name",
+                "label",
+                "icon",
+                "link",
+                "description",
+                "parentFeatureId",
+                "parentId",
+            ],
+            order: [["name", "ASC"]],
+        });
+    } catch (err) {
+        return err;
+    }
+};
 
-async function createFeatures(data) {
-    return await features.create(data);
-}
+exports.getFeaturesById = async (id) => {
+    try {
+        return await features.findByPk(id);
+    } catch (err) {
+        return err;
+    }
+};
+
+exports.createFeatures = async (data) => {
+    try {
+        return await features.create(data);
+    } catch (err) {
+        return err;
+    }
+};
 
 // async function createFeatures(dataArray) {
 //     const creationPromises = dataArray.map(data => features.create(data));
 //     return await Promise.all(creationPromises);
 // }
 
-async function updateFeatures(id, dataForUpdate) {
-    const feature = await features.findByPk(id);
-    if (!feature) {
-        throw new Error('Feature C not found');
+exports.updateFeatures = async (id, dataForUpdate) => {
+    try {
+        const feature = await features.findByPk(id);
+        if (!feature) {
+            throw new Error("Feature C not found");
+        }
+        return await feature.update(dataForUpdate);
+    } catch (err) {
+        return err;
     }
-    return await feature.update(dataForUpdate);
-}
+};
 
-async function deleteFeatures(id) {
-    const feature = await features.findByPk(id);
-    if (!feature) {
-        throw new Error('Feature not found');
+exports.deleteFeatures = async (id) => {
+    try {
+        const feature = await features.findByPk(id);
+        if (!feature) {
+            throw new Error("Feature not found");
+        }
+        return await feature.destroy();
+    } catch (err) {
+        return err;
     }
-    return await feature.destroy();
-}
-
-module.exports = {
-    getAllFeatures,
-    getFeaturesById,
-    createFeatures,
-    updateFeatures,
-    deleteFeatures,
-    getFilterFeatures
 };

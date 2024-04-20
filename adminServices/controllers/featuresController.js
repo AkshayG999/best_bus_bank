@@ -25,7 +25,7 @@ exports.createFeatures = async (req, res) => {
 
         if (parentFeatureId) {
             data.parentFeatureId = parentFeatureId;
-            data.parentId = parentId;
+            data.parentId = parentFeatureId;
         }
 
         if (icon) {
@@ -221,10 +221,15 @@ exports.updateFeaturesById = async (req, res) => {
         // if (link) {
         //     dataForUpdate.link = link;
         // }
+
         dataForUpdate.label = featureA.dataValues.name;
-        dataForUpdate.link = link;
-        // dataForUpdate.icon = icon;
         dataForUpdate.parentId = featureA.dataValues.parentFeatureId;
+        if (link) {
+            dataForUpdate.link = link;
+        }
+        if (icon) {
+            dataForUpdate.icon = icon;
+        }
 
 
         featureA = await featuresService.updateFeatures(id, dataForUpdate);

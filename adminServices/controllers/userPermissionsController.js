@@ -1,5 +1,4 @@
 const userService = require("../../userServices/services/userService");
-
 const rolePermissionsService = require('../../adminServices/services/rolePermissionsService');
 const rolePermissionHelper = require('../../adminServices/helper/rolePermissionHelper');
 const featuresService = require('../../adminServices/services/featuresService');
@@ -12,9 +11,9 @@ exports.addRolePermissionsToUser = async (req, res) => {
         const { systemID } = req.params;
         const { roleId } = req.body;
 
-        const existingPerson = await userService.findPersonBySystemID(systemID);
+        const user = await userService.findPersonBySystemID(systemID);
 
-        if (!existingPerson) {
+        if (!user) {
             return res
                 .status(404)
                 .json({ success: false, message: "User Does not exist" });
@@ -32,7 +31,7 @@ exports.addRolePermissionsToUser = async (req, res) => {
 
         const userPermissions = await userService.updatePersonRole(systemID, dataForUpdate);
 
-        console.log(userPermissions, existingPerson.dataValues, role.dataValues)
+        console.log(userPermissions, user.dataValues, role.dataValues)
         return res.status(200).send({ success: true, message: "Permission Added successfully", result: userPermissions })
 
     } catch (err) {
@@ -50,14 +49,14 @@ exports.fetchUserPermissions = async (req, res) => {
         const { systemID } = req.params;
         const { masterId } = req.query;
 
-        const existingPerson = await userService.findPersonBySystemID(systemID);
+        const user = await userService.findPersonBySystemID(systemID);
 
-        if (!existingPerson) {
+        if (!user) {
             return res
                 .status(404)
                 .json({ success: false, message: "User Does not exist" });
         }
-        // console.log(existingPerson.dataValues.permissions);
+        // console.log(user.dataValues.permissions);
         if (masterId) {
             const findFeature = await featuresService.getFeaturesById(masterId);
             if (!findFeature) {
@@ -77,10 +76,10 @@ exports.fetchUserPermissions = async (req, res) => {
         const featuresData = featuresHelper.featuresWithReadWrite(masterId || '', featuresList, level = 0);
 
         let permissions;
-        if (existingPerson.dataValues.permissions == null) {
+        if (user.dataValues.permissions == null) {
             permissions = rolePermissionHelper.replaceReadWriteWithPermissions([], featuresData);
         } else {
-            permissions = rolePermissionHelper.replaceReadWriteWithPermissions(existingPerson.dataValues.permissions, featuresData);
+            permissions = rolePermissionHelper.replaceReadWriteWithPermissions(user.dataValues.permissions, featuresData);
         }
 
         return res.status(200).send({ success: true, message: "Permissions fetched successfully", result: permissions })
@@ -98,15 +97,14 @@ exports.fetchUserPermissions = async (req, res) => {
 exports.fetchUserPermissionsAll = async (req, res) => {
     try {
         const { systemID } = req.params;
-        // const { masterId } = req.query;
 
-        const existingPerson = await userService.findPersonBySystemID(systemID);
-
-        if (!existingPerson) {
+        const user = await userService.findPersonBySystemID(systemID);
+        if (!user) {
             return res
                 .status(404)
                 .json({ success: false, message: "User Does not exist" });
         }
+
         let filter = {};
         filter.parentFeatureId = null;
 
@@ -116,16 +114,13 @@ exports.fetchUserPermissionsAll = async (req, res) => {
         let result = [];
 
         if (featureAList.length == 0) {
-            return errorMid(
-                404,
-                `features not found`,
-            )
+            return errorMid(404, `features not found`, req, res);
         }
 
         for (let feature of featureAList) {
-            console.log(feature.dataValues);
-            masterId = feature.dataValues.id;
 
+            // console.log(feature.dataValues);
+            let masterId = feature.dataValues.id;
 
             let featuresList = await featuresService.getFilterFeatures({});
             // console.log(featuresList)
@@ -141,30 +136,20 @@ exports.fetchUserPermissionsAll = async (req, res) => {
                 parentId: item.dataValues.parentId,
             }));
 
-            const featuresData = featuresHelper.featuresWithReadWrite_1(masterId || '', featuresList, level = 0);
-
-            // return res.status(200).send({ success: true, message: "Permissions fetched successfully", result: featuresData });
+            const featuresData = featuresHelper.featuresReadWriteWithChildItem(masterId || '', featuresList, level = 0);
 
             let permissions;
-            if (existingPerson.dataValues.permissions == null) {
+            if (user.dataValues.permissions == null) {
                 permissions = rolePermissionHelper.replaceReadWriteWithPermissions([], featuresData);
             } else {
-                permissions = rolePermissionHelper.replaceReadWriteWithPermissions(existingPerson.dataValues.permissions, featuresData);
+                permissions = rolePermissionHelper.replaceReadWriteWithPermissions(user.dataValues.permissions, featuresData);
             }
             const filterAndModifiedFeatures = featuresHelper.filterAndModify(permissions);
 
             if (filterAndModifiedFeatures != null) {
                 result.push(filterAndModifiedFeatures)
             }
-
         }
-        // // console.log(existingPerson.dataValues.permissions);
-        // if (masterId) {
-        //     const findFeature = await featuresService.getFeaturesById(masterId);
-        //     if (!findFeature) {
-        //         return res.status(404).json({ success: false, message: 'Master feature not found' });
-        //     }
-        // }
 
         return res.status(200).send({ success: true, message: "Permissions fetched successfully", result: result })
 
@@ -183,9 +168,9 @@ exports.updateUserPermissions = async (req, res) => {
         const { systemID } = req.params;
         const { permissions } = req.body;
 
-        const existingPerson = await userService.findPersonBySystemID(systemID);
+        const user = await userService.findPersonBySystemID(systemID);
 
-        if (!existingPerson) {
+        if (!user) {
             return res
                 .status(404)
                 .json({ success: false, message: "User Does not exist" });
@@ -194,21 +179,20 @@ exports.updateUserPermissions = async (req, res) => {
         // Extracting permissions from last child
         let lastChildExtracted = rolePermissionHelper.extractLastChildPermissions(permissions);
 
-        if (existingPerson.dataValues.permissions == null) {
-            existingPerson.dataValues.permissions = [];
+        if (user.dataValues.permissions == null) {
+            user.dataValues.permissions = [];
 
         }
-        const concatPermissions = rolePermissionHelper.concatRolePermissions(existingPerson.dataValues, lastChildExtracted);
+        const concatPermissions = rolePermissionHelper.concatRolePermissions(user.dataValues, lastChildExtracted);
         console.log(concatPermissions);
 
-        const updatePermissions = rolePermissionHelper.replaceReadWriteWithPermissions(existingPerson.dataValues.permissions, concatPermissions.permissions);
+        const updatePermissions = rolePermissionHelper.replaceReadWriteWithPermissions(user.dataValues.permissions, concatPermissions.permissions);
 
         let filterPermissionsList = rolePermissionHelper.filterPermissions(updatePermissions);
 
         let dataForUpdate = { permissions: filterPermissionsList }
 
         const userPermissions = await userService.updatePersonRole(systemID, dataForUpdate);
-
 
         return res.status(200).send({ status: true, message: "Permission updated successfully", result: userPermissions })
     }

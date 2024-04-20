@@ -125,12 +125,12 @@ exports.replaceReadWriteWithPermissions = (permissions, featuresData) => {
 
         // Update parent's read based on its children's read values
         parentFeature.read = parentFeature.children.every(child => child.read);
-        
+
         // Update parent's write based on its children's write values
         parentFeature.write = parentFeature.children.every(child => child.write);
 
         // Recursively update parent permissions
-        updateParentPermissions(parentFeature); 
+        updateParentPermissions(parentFeature);
     }
 
     permissions.forEach(permission => {
@@ -155,6 +155,7 @@ exports.replaceReadWriteWithPermissions = (permissions, featuresData) => {
 
 // Update Route Permissions
 exports.concatRolePermissions = (role, permissionsData) => {
+
     // Create a new object to hold the updated permissions
     const updatedRole = { ...role };
 
@@ -180,6 +181,31 @@ exports.concatRolePermissions = (role, permissionsData) => {
 };
 
 
+exports.concatOriginalFeatures = (originalExtractedLastChild, permissionsData) => {
+
+    // // Create a new object to hold the updated permissions
+    // const updatedRole = { ...role };
+
+    // // Clone the permissions array to prevent modification of the original role
+    // updatedRole.permissions = [...role.permissions];
+
+    permissionsData.forEach(permission => {
+        const existingPermissionIndex = originalExtractedLastChild.findIndex(p => p.id === permission.id);
+        if (existingPermissionIndex !== -1) {
+            // Permission exists, update read and write conditions
+            originalExtractedLastChild[existingPermissionIndex] = {
+                ...originalExtractedLastChild[existingPermissionIndex],
+                read: permission.read,
+                write: permission.write
+            };
+        } else {
+            // Permission doesn't exist, add it to the role's permissions list
+            originalExtractedLastChild.push(permission);
+        }
+    });
+
+    return originalExtractedLastChild;
+};
 
 
 // ____________________________________________________________________________________________________________________________________________________________
