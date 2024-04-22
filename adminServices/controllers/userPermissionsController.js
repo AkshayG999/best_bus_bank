@@ -3,6 +3,7 @@ const rolePermissionsService = require('../../adminServices/services/rolePermiss
 const rolePermissionHelper = require('../../adminServices/helper/rolePermissionHelper');
 const featuresService = require('../../adminServices/services/featuresService');
 const featuresHelper = require('../../adminServices/helper/featuresHelper');
+const { errorMid } = require("../../middlewareServices/errorMid");
 
 
 
@@ -50,20 +51,26 @@ exports.fetchUserPermissions = async (req, res) => {
         const { masterId } = req.query;
 
         const user = await userService.findPersonBySystemID(systemID);
-
         if (!user) {
-            return res
-                .status(404)
-                .json({ success: false, message: "User Does not exist" });
+            return errorMid(404, "User Does not exist", req, res);
         }
         // console.log(user.dataValues.permissions);
+
         if (masterId) {
             const findFeature = await featuresService.getFeaturesById(masterId);
             if (!findFeature) {
-                return res.status(404).json({ success: false, message: 'Master feature not found' });
+                return errorMid(404, 'Master feature not found', req, res);
             }
         }
 
+        let userPermissions = user.dataValues.permissions;
+        if (user.dataValues.roleId != null) {
+            const role = await rolePermissionsService.getRolesById(user.dataValues.roleId);
+            if (!role) {
+                return errorMid(404, "Role Does not exist", req, res);
+            }
+            userPermissions = role.dataValues.permissions;
+        }
         let featuresList = await featuresService.getFilterFeatures({});
 
         featuresList = featuresList.map(item => ({
@@ -76,10 +83,10 @@ exports.fetchUserPermissions = async (req, res) => {
         const featuresData = featuresHelper.featuresWithReadWrite(masterId || '', featuresList, level = 0);
 
         let permissions;
-        if (user.dataValues.permissions == null) {
+        if (userPermissions == null) {
             permissions = rolePermissionHelper.replaceReadWriteWithPermissions([], featuresData);
         } else {
-            permissions = rolePermissionHelper.replaceReadWriteWithPermissions(user.dataValues.permissions, featuresData);
+            permissions = rolePermissionHelper.replaceReadWriteWithPermissions(userPermissions, featuresData);
         }
 
         return res.status(200).send({ success: true, message: "Permissions fetched successfully", result: permissions })
@@ -100,9 +107,16 @@ exports.fetchUserPermissionsAll = async (req, res) => {
 
         const user = await userService.findPersonBySystemID(systemID);
         if (!user) {
-            return res
-                .status(404)
-                .json({ success: false, message: "User Does not exist" });
+            return errorMid(404, "User Does not exist", req, res);
+        }
+
+        let userPermissions = user.dataValues.permissions;
+        if (user.dataValues.roleId != null) {
+            const role = await rolePermissionsService.getRolesById(user.dataValues.roleId);
+            if (!role) {
+                return errorMid(404, "Role Does not exist", req, res);
+            }
+            userPermissions = role.dataValues.permissions;
         }
 
         let filter = {};
@@ -139,10 +153,10 @@ exports.fetchUserPermissionsAll = async (req, res) => {
             const featuresData = featuresHelper.featuresReadWriteWithChildItem(masterId || '', featuresList, level = 0);
 
             let permissions;
-            if (user.dataValues.permissions == null) {
+            if (userPermissions == null) {
                 permissions = rolePermissionHelper.replaceReadWriteWithPermissions([], featuresData);
             } else {
-                permissions = rolePermissionHelper.replaceReadWriteWithPermissions(user.dataValues.permissions, featuresData);
+                permissions = rolePermissionHelper.replaceReadWriteWithPermissions(userPermissions, featuresData);
             }
             const filterAndModifiedFeatures = featuresHelper.filterAndModify(permissions);
 
