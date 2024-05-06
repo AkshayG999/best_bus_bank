@@ -117,8 +117,10 @@ async function createRecordWithSrNo(name, transaction) {
     }
     try {
         const find = await procedure_store_model.findOne({ where: { name: name }, ...t, lock: transaction.LOCK.UPDATE });
+        // console.log({ find });
         if (!find) {
-            await procedure_store_model.create({ name, increment: 100 }, t);
+            const newRecord = await procedure_store_model.create({ name, increment: 100 }, t);
+            console.log(newRecord.dataValues);
         }
 
         // Generate Sr No for the new record

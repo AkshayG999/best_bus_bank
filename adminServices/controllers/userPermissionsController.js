@@ -3,7 +3,7 @@ const rolePermissionsService = require('../../adminServices/services/rolePermiss
 const rolePermissionHelper = require('../../adminServices/helper/rolePermissionHelper');
 const featuresService = require('../../adminServices/services/featuresService');
 const featuresHelper = require('../../adminServices/helper/featuresHelper');
-const { errorMid } = require("../../middlewareServices/errorMid");
+const { errorMid, handleErrors } = require("../../middlewareServices/errorMid");
 
 
 
@@ -15,17 +15,13 @@ exports.addRolePermissionsToUser = async (req, res) => {
         const user = await userService.findPersonBySystemID(systemID);
 
         if (!user) {
-            return res
-                .status(404)
-                .json({ success: false, message: "User Does not exist" });
+            return errorMid(404, "User Does not exist", req, res);
         }
 
         const role = await rolePermissionsService.getRolesById(roleId);
 
         if (!role) {
-            return res
-                .status(404)
-                .json({ success: false, message: "Role Does not exist" });
+            return errorMid(404, "Role Does not exist", req, res);
         }
 
         let dataForUpdate = { roleId, permissions: role.dataValues.permissions }
@@ -37,10 +33,7 @@ exports.addRolePermissionsToUser = async (req, res) => {
 
     } catch (err) {
         console.log({ err });
-        return res.status(500).json({
-            success: false,
-            message: `Error:${err}`
-        });
+        return handleErrors(err, req, res);
     }
 }
 
@@ -93,10 +86,7 @@ exports.fetchUserPermissions = async (req, res) => {
 
     } catch (err) {
         console.log({ err });
-        return res.status(500).json({
-            success: false,
-            message: `Error:${err}`
-        });
+        return handleErrors(err, req, res);
     }
 }
 
@@ -169,13 +159,9 @@ exports.fetchUserPermissionsAll = async (req, res) => {
 
     } catch (err) {
         console.log({ err });
-        return res.status(500).json({
-            success: false,
-            message: `Error:${err}`
-        });
+        return handleErrors(err, req, res);
     }
 }
-
 
 exports.updateUserPermissions = async (req, res) => {
     try {
@@ -185,26 +171,63 @@ exports.updateUserPermissions = async (req, res) => {
         const user = await userService.findPersonBySystemID(systemID);
 
         if (!user) {
-            return res
-                .status(404)
-                .json({ success: false, message: "User Does not exist" });
+            return errorMid(404, "User Does not exist", req, res);
         }
-
-        // Extracting permissions from last child
-        let lastChildExtracted = rolePermissionHelper.extractLastChildPermissions(permissions);
+        if (!permissions) {
+            return errorMid(404, `Permissions data not found`, req, res);
+        }
+        // // Extracting permissions from last child
+        // let lastChildExtracted = rolePermissionHelper.extractLastChildPermissions(permissions);
 
         if (user.dataValues.permissions == null) {
             user.dataValues.permissions = [];
-
         }
-        const concatPermissions = rolePermissionHelper.concatRolePermissions(user.dataValues, lastChildExtracted);
-        console.log(concatPermissions);
 
-        const updatePermissions = rolePermissionHelper.replaceReadWriteWithPermissions(user.dataValues.permissions, concatPermissions.permissions);
+        // ___________________________________________________________________________________________________________________________________
 
-        let filterPermissionsList = rolePermissionHelper.filterPermissions(updatePermissions);
+        const masterId = permissions.id;
+        // console.log(masterId);
 
-        let dataForUpdate = { permissions: filterPermissionsList }
+        let featuresList = await featuresService.getFilterFeatures({});
+        if (featuresList.length == 0) {
+            return errorMid(
+                404,
+                `features not found`,
+                req,
+                res
+            );
+        }
+        featuresList = featuresList.map((item) => ({
+            id: item.dataValues.id,
+            name: item.dataValues.name,
+            label: item.dataValues.label,
+            icon: item.dataValues.icon,
+            link: item.dataValues.link,
+            description: item.dataValues.description,
+            parentFeatureId: item.dataValues.parentFeatureId,
+            parentId: item.dataValues.parentId,
+        }));
+        // console.log(featuresList);
+
+        const result = featuresHelper.featuresWithReadWrite(masterId, featuresList, (level = 0));
+
+        let originalExtractedLastChild = rolePermissionHelper.extractLastChildPermissions(result);
+
+        let permissionsLastChildExtracted = rolePermissionHelper.extractLastChildPermissions(permissions);
+
+        let concatRolePermissions = rolePermissionHelper.concatOriginalFeatures(originalExtractedLastChild, permissionsLastChildExtracted);
+
+        // ______________________________________________________________________________________________________________________________________________________________
+
+
+        const concatPermissions = rolePermissionHelper.concatRolePermissions(user.dataValues, concatRolePermissions);
+        // console.log(concatPermissions);
+
+        // const updatePermissions = rolePermissionHelper.replaceReadWriteWithPermissions(user.dataValues.permissions, concatPermissions.permissions);
+
+        let filterPermissionsList = rolePermissionHelper.filterPermissions(concatPermissions.permissions);
+
+        let dataForUpdate = { roleId: null, permissions: filterPermissionsList }
 
         const userPermissions = await userService.updatePersonRole(systemID, dataForUpdate);
 
@@ -212,9 +235,6 @@ exports.updateUserPermissions = async (req, res) => {
     }
     catch (err) {
         console.log({ err });
-        return res.status(500).json({
-            success: false,
-            message: `Error:${err}`
-        })
+        return handleErrors(err, req, res);
     }
 }

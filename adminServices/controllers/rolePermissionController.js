@@ -1,4 +1,5 @@
 const { errorMid, handleErrors } = require("../../middlewareServices/errorMid");
+const userService = require("../../userServices/services/userService");
 const featuresHelper = require("../helper/featuresHelper");
 const rolePermissionHelper = require("../helper/rolePermissionHelper");
 const featuresService = require("../services/featuresService");
@@ -158,9 +159,7 @@ exports.updateRolePermission = async (req, res) => {
         const role = await rolePermissionsService.getRolesById(id);
         // console.log(role);
         if (!role) {
-            return res
-                .status(404)
-                .send({ success: false, message: "Role not found" });
+            return errorMid(404, "Role not found", req, res);
         }
 
         // ___________________________________________________________________________________________________________________________________
@@ -269,7 +268,9 @@ exports.updateRolePermission = async (req, res) => {
 exports.deleteRolePermission = async (req, res) => {
     const { id } = req.params;
     try {
-        res.json();
+
+        let dataForUpdate = { roleId: null, permissions: filterPermissionsList }
+        const userPermissions = await userService.updatePersonRole(systemID, dataForUpdate);
 
     } catch (error) {
         console.error(error);

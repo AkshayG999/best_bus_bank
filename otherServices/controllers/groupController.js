@@ -5,6 +5,7 @@ const { Sequelize, Op } = require("sequelize");
 const { handleErrors, errorMid } = require("../../middlewareServices/errorMid");
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
 
+
 exports.createGroup = async (req, res) => {
     let transaction;
     try {

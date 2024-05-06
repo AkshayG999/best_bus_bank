@@ -3,8 +3,9 @@ const { dbConfig } = require('../config/config');
 const user = require("../userServices/models/userModel");
 const parentGroup = require("../otherServices/models/parentGroupModel");
 const group = require("../otherServices/models/groupModel");
-const ledger = require("../otherServices/models/ledgerModel");
+const individualAccount = require("../otherServices/models/individualAccountModel");
 const branch = require("../otherServices/models/branchModel");
+const bank = require("../otherServices/models/bankModel");
 const department = require("../otherServices/models/departmentModel");
 const featuresModel = require("../adminServices/models/featuresModel");
 const rolePermissionsModel = require("../adminServices/models/rolePermissionsModel");
@@ -58,14 +59,15 @@ const sequelize = new Sequelize(
 const db = {};
 
 
-const userModel = user(sequelize);
-const parentGroupModel = parentGroup(sequelize);
-const groupModel = group(sequelize);
-const ledgerModel = ledger(sequelize);
-const branchModel = branch(sequelize);
-const departmentModel = department(sequelize);
 const features = featuresModel(sequelize);
 const rolePermissions = rolePermissionsModel(sequelize);
+const userModel = user(sequelize);
+const bankModel = bank(sequelize);
+const parentGroupModel = parentGroup(sequelize);
+const groupModel = group(sequelize);
+const individualAccountModel = individualAccount(sequelize);
+const branchModel = branch(sequelize);
+const departmentModel = department(sequelize);
 
 
 // Associations between models here
@@ -74,8 +76,8 @@ userModel.belongsTo(rolePermissions, { foreignKey: 'roleId', as: 'role_permissio
 groupModel.belongsTo(parentGroupModel);
 parentGroupModel.hasMany(groupModel);
 
-ledgerModel.belongsTo(groupModel);
-groupModel.hasMany(ledgerModel);
+individualAccountModel.belongsTo(groupModel, { foreignKey: 'GroupName', targetKey: 'sr_no', as: 'group' });
+groupModel.hasMany(individualAccountModel, { foreignKey: 'GroupName', sourceKey: 'sr_no' });
 
 
 // departmentModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
@@ -88,6 +90,6 @@ groupModel.hasMany(ledgerModel);
 
 
 module.exports = {
-    db, sequelize, userModel, groupModel, parentGroupModel, ledgerModel,
+    db, sequelize, userModel, bankModel, groupModel, parentGroupModel, individualAccountModel,
     branchModel, departmentModel, features, rolePermissions,
 };

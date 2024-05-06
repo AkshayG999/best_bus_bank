@@ -81,7 +81,5 @@ module.exports = function (sequelize) {
         timestamps: true
     };
 
-    const Branch = sequelize.define('branch', attributes, options);
-
-    return Branch;
+    return sequelize.define('branch', attributes, options);
 };

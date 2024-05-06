@@ -221,16 +221,27 @@ exports.updateFeaturesById = async (req, res) => {
         // if (link) {
         //     dataForUpdate.link = link;
         // }
+        if (name) {
+            dataForUpdate.name = name;
+            dataForUpdate.description = name;
+            dataForUpdate.label = name;
+        } else {
+            dataForUpdate.label = featureA.dataValues.name;
+        }
 
-        dataForUpdate.label = featureA.dataValues.name;
-        dataForUpdate.parentId = featureA.dataValues.parentFeatureId;
+        if (parentFeatureId) {
+            dataForUpdate.parentFeatureId = parentFeatureId;
+            dataForUpdate.parentId = parentFeatureId;
+        } else {
+            dataForUpdate.parentId = featureA.dataValues.parentFeatureId;
+        }
+
         if (link) {
             dataForUpdate.link = link;
         }
         if (icon) {
             dataForUpdate.icon = icon;
         }
-
 
         featureA = await featuresService.updateFeatures(id, dataForUpdate);
         return res.status(200).send({
