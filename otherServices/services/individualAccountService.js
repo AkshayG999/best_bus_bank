@@ -27,7 +27,8 @@ exports.getIndividualAccounts = async (filter, populate = false) => {
     try {
         return await individualAccountModel.findAll({
             where: filter,
-            // include: populate ? [{ model: groupModel, }] : []
+            include: populate ? [{ model: groupModel,as:'group', attributes: ['sr_no', 'tr_no', 'groupName'] }] : []
+
         });
     } catch (error) {
         throw error;

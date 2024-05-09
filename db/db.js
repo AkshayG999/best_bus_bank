@@ -4,8 +4,8 @@ const user = require("../userServices/models/userModel");
 const parentGroup = require("../otherServices/models/parentGroupModel");
 const group = require("../otherServices/models/groupModel");
 const individualAccount = require("../otherServices/models/individualAccountModel");
-const branch = require("../otherServices/models/branchModel");
 const bank = require("../otherServices/models/bankModel");
+const bankBranch = require("../otherServices/models/bankBranchModel");
 const department = require("../otherServices/models/departmentModel");
 const featuresModel = require("../adminServices/models/featuresModel");
 const rolePermissionsModel = require("../adminServices/models/rolePermissionsModel");
@@ -66,7 +66,7 @@ const bankModel = bank(sequelize);
 const parentGroupModel = parentGroup(sequelize);
 const groupModel = group(sequelize);
 const individualAccountModel = individualAccount(sequelize);
-const branchModel = branch(sequelize);
+const bankBranchModel = bankBranch(sequelize);
 const departmentModel = department(sequelize);
 
 
@@ -79,6 +79,7 @@ parentGroupModel.hasMany(groupModel);
 individualAccountModel.belongsTo(groupModel, { foreignKey: 'GroupName', targetKey: 'sr_no', as: 'group' });
 groupModel.hasMany(individualAccountModel, { foreignKey: 'GroupName', sourceKey: 'sr_no' });
 
+bankBranchModel.belongsTo(bankModel, { foreignKey: 'ParentBank', targetKey: 'TrNo', as: 'bank' });
 
 // departmentModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
 // departmentModel.belongsTo(branchModel, { foreignKey: 'branchCode', as: 'branch' });
@@ -91,5 +92,5 @@ groupModel.hasMany(individualAccountModel, { foreignKey: 'GroupName', sourceKey:
 
 module.exports = {
     db, sequelize, userModel, bankModel, groupModel, parentGroupModel, individualAccountModel,
-    branchModel, departmentModel, features, rolePermissions,
+    bankBranchModel, departmentModel, features, rolePermissions,
 };
