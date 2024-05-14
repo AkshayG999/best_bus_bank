@@ -22,6 +22,7 @@ app.use("/api/group", require("./otherServices/routes/groupRoute"));
 app.use("/api/individual-account", require("./otherServices/routes/individualAccountRoute"));
 app.use("/api/bank", require("./otherServices/routes/bankRoute"));
 app.use("/api/bank-branch", require("./otherServices/routes/bankBranchRoute"));
+app.use("/api/branch", require("./otherServices/routes/branchRoute"));
 app.use("/api/department", require("./otherServices/routes/departmentRoute"));
 
 

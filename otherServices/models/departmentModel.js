@@ -4,48 +4,58 @@ module.exports = model;
 
 function model(sequelize) {
     const department = sequelize.define("department", {
-        id: {
+        EntryNo: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            primaryKey: true,
-            autoIncrement: true
+            primaryKey: true
         },
-        enteryNo: {
+        EntryDate: {
+            type: DataTypes.DATE,
+            allowNull: false
+        },
+        SysNo: {
             type: DataTypes.INTEGER,
-            allowNull: true,
+            allowNull: false
         },
-        bankName: {
+        MPay: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+        },
+        SPay: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+        },
+        ParentBranch: {
             type: DataTypes.STRING,
-            allowNull: true,
+            allowNull: false
         },
-        branchName: {
+        DepartmentName: {
             type: DataTypes.STRING,
-            allowNull: true,
+            allowNull: false
         },
-        branchCode: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-        },
-        departmentName: {
+        DepartmentNameMarathi: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: false
         },
-        departmentNameMarathi: {
+        Address: {
             type: DataTypes.STRING,
-            allowNull: true,
+            allowNull: false
         },
-        email: {
+        EmailId: {
             type: DataTypes.STRING,
-            allowNull: false,
-            autoIncrement: false,
+            allowNull: false
         },
-        contactNo: {
+        ContactNo: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: false
         },
-        createdBy: {
+        Contact: {
             type: DataTypes.STRING,
-            allowNull: true
+            allowNull: false
+        },
+        IsMainDepartment: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false
         }
     }, {
         freezeTableName: true,

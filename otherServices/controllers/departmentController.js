@@ -1,70 +1,96 @@
 const { createRecord } = require("../helper/helper");
 const departmentService = require("../services/departmentService");
 
-module.exports = {
-    async createDepartment(req, res) {
-        try {
 
-            const { branchCode, branchName, bankName, departmentName, departmentNameMarathi, email, contactNo, createdBy } = req.body;
 
-            const enteryNo = await createRecord();
+exports.createDepartment = async (req, res, next) => {
+    try {
+        const {
+            EntryDate,
+            SysNo,
+            MPay,
+            SPay,
+            ParentBranch,
+            DepartmentName,
+            DepartmentNameMarathi,
+            Address,
+            EmailId,
+            ContactNo,
+            Contact,
+            IsMainDepartment,
+        } = req.body;
 
-            const department = await departmentService.createDepartment(
-                enteryNo,
-                bankName,
-                branchName,
-                branchCode,
-                departmentName,
-                departmentNameMarathi,
-                email,
-                contactNo,
-                createdBy,
-            );
+        const EntryNo = await createRecord();
 
-            return res.status(201).json(department);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
+        const department = await departmentService.createDepartment(
+            EntryNo,
+            EntryDate,
+            SysNo,
+            MPay,
+            SPay,
+            ParentBranch,
+            DepartmentName,
+            DepartmentNameMarathi,
+            Address,
+            EmailId,
+            ContactNo,
+            Contact,
+            IsMainDepartment
+        );
+
+        return res.status(201).send({ success: true, message: "Department created successfully", result: department });
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.getAllDepartments = async (req, res, next) => {
+    try {
+        const { EntryNo, DepartmentName, IsMainDepartment } = req.query;
+        let filter = {};
+
+        if (EntryNo) filter.EntryNo = EntryNo;
+        if (DepartmentName) filter.DepartmentName = { [Op.iLike]: `%${DepartmentName}%` };
+        if (IsMainDepartment) filter.IsMainDepartment = IsMainDepartment;
+
+        const filteredDepartments = await departmentService.getAll(filter);
+        return res.status(200).send({ success: true, message: "Departments fetched successfully", result: filteredDepartments });
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.getById = async (req, res, next) => {
+    try {
+        const department = await departmentService.getDepartmentById(
+            req.params.id
+        );
+        if (!department) {
+            return next({ status: 404, message: "Department not found" });
         }
-    },
+        return res.status(200).send({ success: true, message: "Fetched successfully", result: department });
+    } catch (error) {
+        next(error);
+    }
+}
 
-    async getAllDepartments(req, res) {
-        try {
-            const filteredDepartments = await departmentService.getAllDepartments(req.query);
-            res.json(filteredDepartments);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    },
+exports.updateDepartment = async (req, res, next) => {
+    try {
+        const updatedDepartment = await departmentService.updateDepartment(
+            req.params.id,
+            req.body
+        );
+        res.json(updatedDepartment);
+    } catch (error) {
+        next(error);
+    }
+}
 
-    async getDepartmentById(req, res) {
-        try {
-            const department = await departmentService.getDepartmentById(req.params.id);
-            if (!department) {
-                res.status(404).json({ message: "Department not found" });
-            } else {
-                res.json(department);
-            }
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    },
-
-    async updateDepartment(req, res) {
-        try {
-            const updatedDepartment = await departmentService.updateDepartment(req.params.id, req.body);
-            res.json(updatedDepartment);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    },
-
-    async deleteDepartment(req, res) {
-        try {
-            await departmentService.deleteDepartment(req.params.id);
-            res.status(204).end();
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    },
-
-};
+exports.deleteDepartment = async (req, res, next) => {
+    try {
+        await departmentService.deleteDepartment(req.params.id);
+        res.status(204).end();
+    } catch (error) {
+        next(error);
+    }
+}

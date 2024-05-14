@@ -6,11 +6,10 @@ const { handleErrors, errorMid } = require("../../middlewareServices/errorMid");
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
 
 
-exports.createIndividualAccount = async (req, res) => {
+exports.create = async (req, res) => {
     let transaction;
     try {
         let {
-            Code,
             AccountName,
             GroupName,
             BankSrNo,
@@ -28,7 +27,7 @@ exports.createIndividualAccount = async (req, res) => {
         } = req.body;
 
         const individualAccounts =
-            await individualAccountService.getIndividualAccounts({ AccountName });
+            await individualAccountService.getAll({ AccountName });
         if (individualAccounts.length > 0) {
             return errorMid(
                 400,
@@ -125,7 +124,7 @@ exports.createIndividualAccount = async (req, res) => {
         );
         console.log(TrNo);
 
-        Code = TrNo.split("-")[1];
+        let Code = TrNo.split("-")[1];
         console.log(Code);
 
         // const sr_no = await procedureStoreController.createRecordWithSrNo(
@@ -135,7 +134,7 @@ exports.createIndividualAccount = async (req, res) => {
         // console.log(sr_no);
 
         const individualAccount =
-            await individualAccountService.createIndividualAccount({
+            await individualAccountService.create({
                 TrNo,
                 Code,
                 AccountName,
@@ -170,17 +169,12 @@ exports.createIndividualAccount = async (req, res) => {
     }
 };
 
-exports.getIndividualAccounts = async (req, res) => {
+exports.getByTrNo = async (req, res) => {
     try {
-        const { TrNo, AccountName, GroupName } = req.query;
-        const filter = {};
-
-        if (TrNo) filter.TrNo = TrNo;
-        if (AccountName) filter.AccountName = { [Op.iLike]: `%${AccountName}%` };
-        if (GroupName) filter.GroupName = GroupName;
+        const { TrNo } = req.params;
 
         const individualAccounts =
-            await individualAccountService.getIndividualAccounts(filter, true);
+            await individualAccountService.findByTrNo(TrNo);
 
         res.status(200).send({
             success: true,
@@ -193,7 +187,30 @@ exports.getIndividualAccounts = async (req, res) => {
     }
 };
 
-exports.updateIndividualAccount = async (req, res) => {
+exports.getAll = async (req, res) => {
+    try {
+        const { TrNo, AccountName, GroupName } = req.query;
+        const filter = {};
+
+        if (TrNo) filter.TrNo = TrNo;
+        if (AccountName) filter.AccountName = { [Op.iLike]: `%${AccountName}%` };
+        if (GroupName) filter.GroupName = GroupName;
+
+        const individualAccounts =
+            await individualAccountService.getAll(filter, true);
+
+        res.status(200).send({
+            success: true,
+            message: "Fetched successfully",
+            result: individualAccounts,
+        });
+    } catch (error) {
+        console.error("Error fetching IndividualAccounts:", error);
+        return handleErrors(error, req, res);
+    }
+};
+
+exports.update = async (req, res) => {
     try {
         const { TrNo } = req.params;
         const {
@@ -221,7 +238,7 @@ exports.updateIndividualAccount = async (req, res) => {
         if (SYSAcc) dataForUpdate.SYSAcc = SYSAcc;
 
         if (AccountName) {
-            const individualAccounts = await individualAccountService.getIndividualAccounts({ AccountName });
+            const individualAccounts = await individualAccountService.getAll({ AccountName });
             if (individualAccounts.length > 0) {
                 return errorMid(400, `IndividualAccount with accountName: ${AccountName} already exists`, req, res);
             }
@@ -296,7 +313,7 @@ exports.updateIndividualAccount = async (req, res) => {
             return errorMid(400, "Please provide valid data to update", req, res);
         }
 
-        const updatedIndividualAccount = await individualAccountService.updateIndividualAccount(TrNo, dataForUpdate);
+        const updatedIndividualAccount = await individualAccountService.update(TrNo, dataForUpdate);
 
         return res.status(200).json({
             success: true,
@@ -309,7 +326,7 @@ exports.updateIndividualAccount = async (req, res) => {
     }
 };
 
-exports.deleteIndividualAccount = async (req, res) => {
+exports.delete = async (req, res) => {
     try {
         const { TrNo } = req.params;
 
@@ -323,7 +340,7 @@ exports.deleteIndividualAccount = async (req, res) => {
             );
 
         const deletedIndividualAccount =
-            await individualAccountService.deleteIndividualAccount(TrNo);
+            await individualAccountService.delete(TrNo);
 
         return res.status(200).json({
             success: true,

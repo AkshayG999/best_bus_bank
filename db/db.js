@@ -6,6 +6,7 @@ const group = require("../otherServices/models/groupModel");
 const individualAccount = require("../otherServices/models/individualAccountModel");
 const bank = require("../otherServices/models/bankModel");
 const bankBranch = require("../otherServices/models/bankBranchModel");
+const branch = require("../otherServices/models/branchModel");
 const department = require("../otherServices/models/departmentModel");
 const featuresModel = require("../adminServices/models/featuresModel");
 const rolePermissionsModel = require("../adminServices/models/rolePermissionsModel");
@@ -19,7 +20,7 @@ const sequelize = new Sequelize(
     {
         host: dbConfig.server,
         port: dbConfig.port,
-        dialect: 'postgres',
+        dialect: dbConfig.dialect,
         logging: false,
         dialectOptions: {
             "ssl": {
@@ -62,11 +63,12 @@ const db = {};
 const features = featuresModel(sequelize);
 const rolePermissions = rolePermissionsModel(sequelize);
 const userModel = user(sequelize);
-const bankModel = bank(sequelize);
 const parentGroupModel = parentGroup(sequelize);
 const groupModel = group(sequelize);
 const individualAccountModel = individualAccount(sequelize);
+const bankModel = bank(sequelize);
 const bankBranchModel = bankBranch(sequelize);
+const branchModel = branch(sequelize);
 const departmentModel = department(sequelize);
 
 
@@ -92,5 +94,5 @@ bankBranchModel.belongsTo(bankModel, { foreignKey: 'ParentBank', targetKey: 'TrN
 
 module.exports = {
     db, sequelize, userModel, bankModel, groupModel, parentGroupModel, individualAccountModel,
-    bankBranchModel, departmentModel, features, rolePermissions,
+    bankBranchModel, branchModel, departmentModel, features, rolePermissions,
 };

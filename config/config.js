@@ -26,11 +26,12 @@ module.exports = {
 
 // module.exports = {
 //     dbConfig: {
-//         user: 'postgres',
-//         password: 'Akshay@143',
-//         server: 'localhost',
-//         port: 5432,
-//         database: 'best-bus-bank',
+//         user: 'admin',
+//         password: 'Bestbus123',
+//         server: 'database-1.cxvnuvhxv2yf.ap-south-1.rds.amazonaws.com',
+//         port: 1433,
+//         database: 'bestBus',
+//         dialect: 'mssql',
 //         options: {
 //             encrypt: false,
 //             trustServerCertificate: false,

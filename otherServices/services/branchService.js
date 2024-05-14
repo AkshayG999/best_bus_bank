@@ -1,73 +1,61 @@
 const { branchModel, userModel } = require("../../db/db");
 
+async function createBranch(branchData) {
+    try {
+        const branch = await branchModel.create(branchData);
+        return branch;
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Get all branches
 async function getAllBranches() {
-    return await branchModel.findAll();
+    try {
+        const branches = await branchModel.findAll();
+        return branches;
+    } catch (error) {
+        throw error;
+    }
 }
 
+// Get branch by id
 async function getBranchById(id) {
-    return await branchModel.findByPk(id, { include: [{ model: userModel, as: 'user', attributes: ['name', 'email', 'systemID'] }] });
-}
-
-async function createBranch(
-    branchNumber,
-    code,
-    branchName,
-    address,
-    city,
-    district,
-    pincode,
-    state,
-    zone,
-    telephones,
-    status,
-    bankCode,
-    bankName,
-    cashAccount,
-    pettyCash,
-    createdBy
-) {
-    return await branchModel.create({
-        branchNumber,
-        code,
-        branchName,
-        address,
-        city,
-        district,
-        pincode,
-        state,
-        zone,
-        telephones,
-        status,
-        bankCode,
-        bankName,
-        cashAccount,
-        pettyCash,
-        createdBy
+    try {
+        const branch = await branchModel.findByPk(id);
+        return branch;
+    } catch (error) {
+        throw error;
     }
-    );
 }
 
-async function updateBranch(id, branchData) {
-    const branch = await getBranchById(id);
-    if (!branch) {
-        throw new Error("Branch not found");
+// Update branch by id
+async function updateBranch(id, newData) {
+    try {
+        const [updatedRowsCount, updatedRows] = await branchModel.update(newData, {
+            where: { id },
+            returning: true,
+        });
+        return { updatedRowsCount, updatedRows };
+    } catch (error) {
+        throw error;
     }
-    await branchModel.update(branchData);
-    return branch;
 }
 
+// Delete branch by id
 async function deleteBranch(id) {
-    const branch = await getBranchById(id);
-    if (!branch) {
-        throw new Error("Branch not found");
+    try {
+        const deletedRowCount = await branchModel.destroy({ where: { id } });
+        return deletedRowCount;
+    } catch (error) {
+        throw error;
     }
-    await branchModel.destroy();
 }
 
 module.exports = {
+    createBranch,
     getAllBranches,
     getBranchById,
-    createBranch,
     updateBranch,
     deleteBranch,
 };

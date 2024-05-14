@@ -2,7 +2,7 @@ const { individualAccountModel, groupModel } = require('../../db/db');
 
 
 
-exports.createIndividualAccount = async (data) => {
+exports.create = async (data) => {
     try {
         // console.log(data)
         const individualAccount = await individualAccountModel.create(data);
@@ -23,11 +23,11 @@ exports.findByTrNo = async (TrNo, populate = false) => {
     }
 }
 
-exports.getIndividualAccounts = async (filter, populate = false) => {
+exports.getAll = async (filter, populate = false) => {
     try {
         return await individualAccountModel.findAll({
             where: filter,
-            include: populate ? [{ model: groupModel,as:'group', attributes: ['sr_no', 'tr_no', 'groupName'] }] : []
+            include: populate ? [{ model: groupModel, as: 'group', attributes: ['sr_no', 'tr_no', 'groupName'] }] : []
 
         });
     } catch (error) {
@@ -36,7 +36,7 @@ exports.getIndividualAccounts = async (filter, populate = false) => {
 }
 
 
-exports.updateIndividualAccount = async (TrNo, dataForUpdate) => {
+exports.update = async (TrNo, dataForUpdate) => {
     try {
         await individualAccountModel.update(dataForUpdate, { where: { TrNo: TrNo } });
         const updatedIndividualAccount = await individualAccountModel.findByPk(TrNo);
@@ -46,7 +46,7 @@ exports.updateIndividualAccount = async (TrNo, dataForUpdate) => {
     }
 }
 
-exports.deleteIndividualAccount = async (TrNo) => {
+exports.delete = async (TrNo) => {
     try {
         await individualAccountModel.destroy({ where: { TrNo: TrNo } });
     } catch (error) {
