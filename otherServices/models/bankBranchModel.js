@@ -23,7 +23,7 @@ module.exports = function (sequelize) {
             allowNull: false
         },
         ParentBank: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.CHAR(20),
             allowNull: false
         },
 

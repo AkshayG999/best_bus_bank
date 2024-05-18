@@ -3,23 +3,22 @@ const { sequelize } = require("../../db/db");
 const { Sequelize, Op } = require("sequelize");
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
 const { errorMid } = require("../../middlewareServices/errorMid");
+const helper = require("../helper/helper");
 
 
 // Create a new bank
 exports.createBank = async (req, res, next) => {
     let transaction;
     try {
-        const { BankCode, BankName, Remarks, createdBy } = req.body;
+        const { TrDt, BankCode, BankName, Remarks, BKH_SrNo } = req.body;
         let data = {};
         data.BankCode = BankCode;
         data.BankName = BankName;
+        data.BKH_SrNo = BKH_SrNo;
 
-        const d = new Date();
-        const day = d.getDate();
-        const month = d.getMonth() + 1;
-        const year = d.getFullYear();
-        const TrCr = day + "-" + (month <= 9 ? "0" + month : month) + "-" + year;
-        data.TrCr = TrCr;
+        if (!TrDt) {
+            data.TrDt = helper.formatSmallDatetime(new Date());
+        }
 
         transaction = await sequelize.transaction({
             isolationLevel: Sequelize.Transaction.SERIALIZABLE,
@@ -92,16 +91,17 @@ exports.getBankByTrNo = async (req, res, next) => {
 exports.updateBank = async (req, res, next) => {
     try {
         const TrNo = req.params.TrNo;
-        const { BankCode, BankName, Remarks, createdBy } = req.body;
+        const { TrDt, BankCode, BankName, Remarks, BKH_SrNo } = req.body;
         let dataForUpdate = {};
 
         const bank = await bankService.getBankByTrNo(TrNo);
-
         if (!bank) {
             // return errorMid(400, `Bank with TR No:[${TrNo}] not found`, req, res);
             return next({ status: 404, message: `Bank with TR No:[${TrNo}] not found` });
         }
-
+        if (TrDt) {
+            dataForUpdate.TrDt = TrDt;
+        }
         if (BankCode) {
             const banks = await bankService.getBank({ BankCode });
             if (banks.length > 0) {
@@ -115,10 +115,13 @@ exports.updateBank = async (req, res, next) => {
             if (banks.length > 0) {
                 return next({ status: 400, message: `Bank with Bank Name:[${BankName}] already exists` });
             }
-            dataForUpdate.BankName = BankName
+            dataForUpdate.BankName = BankName;
         };
         if (Remarks) {
-            dataForUpdate.Remarks = Remarks
+            dataForUpdate.Remarks = Remarks;
+        };
+        if (BKH_SrNo) {
+            dataForUpdate.BKH_SrNo = BKH_SrNo;
         };
 
         const affectedRows = await bankService.updateBank(TrNo, dataForUpdate);
