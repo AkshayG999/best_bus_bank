@@ -3,9 +3,10 @@ const { DataTypes } = require("sequelize");
 module.exports = (sequelize) => {
     const attributes = {
         TrNo: {
-            type: DataTypes.CHAR(20),
+            type: DataTypes.INTEGER,
             allowNull: false,
-            primaryKey: true
+            primaryKey: true,
+            autoIncrement: true,
         },
         TrDt: {
             type: DataTypes.DATE,
@@ -23,14 +24,11 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING(250),
             allowNull: true,
         },
-        BKH_SrNo: {
-            type: DataTypes.SMALLINT,
-            allowNull: true,
-        }
+
     };
     const options = {
         freezeTableName: true,
-        timestamps: false, // Set to false as timestamps are not defined in the data
+        timestamps: false,
     };
 
     return sequelize.define("bank", attributes, options);

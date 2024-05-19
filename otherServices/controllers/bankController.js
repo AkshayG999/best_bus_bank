@@ -10,14 +10,14 @@ const helper = require("../helper/helper");
 exports.createBank = async (req, res, next) => {
     let transaction;
     try {
-        const { TrDt, BankCode, BankName, Remarks, BKH_SrNo } = req.body;
+        const { TrDt, BankCode, BankName, Remarks } = req.body;
         let data = {};
         data.BankCode = BankCode;
-        data.BankName = BankName;
-        data.BKH_SrNo = BKH_SrNo;
+        data.BankName = BankName.toUpperCase();
 
+        console.log(new Date());
         if (!TrDt) {
-            data.TrDt = helper.formatSmallDatetime(new Date());
+            data.TrDt = new Date();
         }
 
         transaction = await sequelize.transaction({
@@ -91,7 +91,7 @@ exports.getBankByTrNo = async (req, res, next) => {
 exports.updateBank = async (req, res, next) => {
     try {
         const TrNo = req.params.TrNo;
-        const { TrDt, BankCode, BankName, Remarks, BKH_SrNo } = req.body;
+        const { TrDt, BankCode, BankName, Remarks } = req.body;
         let dataForUpdate = {};
 
         const bank = await bankService.getBankByTrNo(TrNo);
@@ -115,13 +115,10 @@ exports.updateBank = async (req, res, next) => {
             if (banks.length > 0) {
                 return next({ status: 400, message: `Bank with Bank Name:[${BankName}] already exists` });
             }
-            dataForUpdate.BankName = BankName;
+            dataForUpdate.BankName = BankName.toUppercase();
         };
         if (Remarks) {
             dataForUpdate.Remarks = Remarks;
-        };
-        if (BKH_SrNo) {
-            dataForUpdate.BKH_SrNo = BKH_SrNo;
         };
 
         const affectedRows = await bankService.updateBank(TrNo, dataForUpdate);
