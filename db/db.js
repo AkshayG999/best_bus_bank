@@ -3,15 +3,15 @@ const { dbConfig } = require('../config/config');
 const user = require("../userServices/models/userModel");
 const featuresModel = require("../adminServices/models/featuresModel");
 const rolePermissionsModel = require("../adminServices/models/rolePermissionsModel");
-const parentGroup = require("../otherServices/models/parentGroupModel");
-const group = require("../otherServices/models/groupModel");
-const individualAccount = require("../otherServices/models/individualAccountModel");
-const bank = require("../otherServices/models/bankModel");
-const bankBranch = require("../otherServices/models/bankBranchModel");
-const branch = require("../otherServices/models/branchModel");
-const department = require("../otherServices/models/departmentModel");
-const zone = require("../otherServices/models/zoneModel");
-const depo = require("../otherServices/models/depoModel");
+const parentGroup = require("../MasterDataEntry/models/parentGroupModel");
+const group = require("../MasterDataEntry/models/groupModel");
+const individualAccount = require("../MasterDataEntry/models/individualAccountModel");
+const bank = require("../MasterDataEntry/models/bankModel");
+const bankBranch = require("../MasterDataEntry/models/bankBranchModel");
+const branch = require("../MasterDataEntry/models/branchModel");
+const department = require("../MasterDataEntry/models/departmentModel");
+const zone = require("../MasterDataEntry/models/zoneModel");
+const depo = require("../MasterDataEntry/models/depoModel");
 
 
 

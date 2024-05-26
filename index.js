@@ -15,15 +15,15 @@ app.use("/api/roles-permissions", require("./adminServices/routes/rolePermission
 
 app.use("/api/user", require("./userServices/routes/userRoutes"));
 app.use("/api/user", require("./adminServices/routes/userPermissionsRoute"));
-app.use("/api/admin", require("./otherServices/routes/adminRoute"));
-app.use("/api/parent-group", require("./otherServices/routes/parentGroupRoute"));
-app.use("/api/group", require("./otherServices/routes/groupRoute"));
-app.use("/api/individual-account", require("./otherServices/routes/individualAccountRoute"));
-app.use("/api/bank", require("./otherServices/routes/bankRoute"));
-app.use("/api/bank-branch", require("./otherServices/routes/bankBranchRoute"));
-app.use("/api/branch", require("./otherServices/routes/branchRoute"));
-app.use("/api/department", require("./otherServices/routes/departmentRoute"));
-app.use("/api/depos", require("./otherServices/routes/depoRoute"));
+app.use("/api/admin", require("./MasterDataEntry/routes/adminRoute"));
+app.use("/api/parent-group", require("./MasterDataEntry/routes/parentGroupRoute"));
+app.use("/api/group", require("./MasterDataEntry/routes/groupRoute"));
+app.use("/api/individual-account", require("./MasterDataEntry/routes/individualAccountRoute"));
+app.use("/api/bank", require("./MasterDataEntry/routes/bankRoute"));
+app.use("/api/bank-branch", require("./MasterDataEntry/routes/bankBranchRoute"));
+app.use("/api/branch", require("./MasterDataEntry/routes/branchRoute"));
+app.use("/api/department", require("./MasterDataEntry/routes/departmentRoute"));
+app.use("/api/depos", require("./MasterDataEntry/routes/depoRoute"));
 
 
 app.use(errorHandler);
@@ -33,13 +33,13 @@ app.get('/', (req, res) => {
 });
 
 
-// sequelize.sync({ alter: true })
-//     .then(() => {
-//         console.log('Database synchronized successfully.');
-//     })
-//     .catch(err => {
-//         console.error('Error synchronizing database:', err);
-//     });
+sequelize.sync({ alter: true })
+    .then(() => {
+        console.log('Database synchronized successfully.');
+    })
+    .catch(err => {
+        console.error('Error synchronizing database:', err);
+    });
 
 
 const PORT = process.env.PORT || 3000;
