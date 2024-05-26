@@ -1,167 +1,164 @@
 const { DataTypes } = require("sequelize");
 
-
 module.exports = (sequelize) => {
-
     const attributes = {
-        TrNo: {
-            type: DataTypes.INTEGER,
+        Branch_Tr: {
+            type: DataTypes.STRING(20),
             allowNull: false,
-            primaryKey: true,
-            autoIncrement: true
+            primaryKey: true
         },
         Branch_TrDt: {
-            type: DataTypes.STRING,
-            allowNull: false,
+            type: DataTypes.DATE,
+            allowNull: true
         },
         Branch_Code: {
-            type: DataTypes.SMALLINT,
-            allowNull: false,
+            type: DataTypes.STRING(50),
+            allowNull: true
         },
         Branch_Name: {
-            type: DataTypes.STRING,
-            allowNull: false,
+            type: DataTypes.STRING(250),
+            allowNull: true
         },
         Branch_Add_01: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.STRING(250),
+            allowNull: true
         },
         Branch_Add_02: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.STRING(250),
+            allowNull: true
         },
         Branch_Add_03: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.STRING(250),
+            allowNull: true
         },
         Branch_City: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.STRING(250),
+            allowNull: true
         },
         Branch_District: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.STRING(250),
+            allowNull: true
         },
         Branch_Pin: {
-            type: DataTypes.SMALLINT,
-            allowNull: true,
+            type: DataTypes.STRING(50),
+            allowNull: true
         },
         Branch_State: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.STRING(250),
+            allowNull: true
         },
         Branch_Zone: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.INTEGER,
+            allowNull: true
         },
         Branch_Tel_01: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.STRING(50),
+            allowNull: true
         },
         Branch_Tel_02: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.STRING(50),
+            allowNull: true
         },
         Branch_Location: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.SMALLINT,
+            allowNull: true
         },
         BankCode: {
-            type: DataTypes.SMALLINT,
-            allowNull: true,
+            type: DataTypes.STRING(10),
+            allowNull: true
         },
-
-
         CashCode_SrNo: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
+            allowNull: true
         },
         BankCode_SrNo: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
+            allowNull: true
         },
         PettyCash_SrNo: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
+            allowNull: true
         },
         FD_SrNo: {
             type: DataTypes.DECIMAL(18, 0),
-            allowNull: true,
+            allowNull: true
         },
         RD_SrNo: {
             type: DataTypes.DECIMAL(18, 0),
-            allowNull: true,
+            allowNull: true
         },
         JAC_SrNo: {
             type: DataTypes.DECIMAL(18, 0),
-            allowNull: true,
+            allowNull: true
         },
         BranchVouTitle: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.STRING(1050),
+            allowNull: true
         },
         RegdNo: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.STRING(1050),
+            allowNull: true
         },
         BranchVouHeaderName: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            type: DataTypes.STRING(1050),
+            allowNull: true
         },
         Branch_SrNo: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
+            allowNull: true
         },
         Pigme_SrNo: {
             type: DataTypes.DECIMAL(18, 0),
-            allowNull: true,
+            allowNull: true
         },
         RecoCode_SrNo: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
+            allowNull: true
         },
         LoanBondNo: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
+            allowNull: true
         },
         NetPaidAccSrNo: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
+            allowNull: true
         },
         BankAccSrNo: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
+            allowNull: true
         },
         CashAccSrNo: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
+            allowNull: true
         },
         FDPaymentAccSrNo: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
+            allowNull: true
         },
-        OtherReceiotAccSrNo: {
+        OtherReceiotAccNo: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
+            allowNull: true
         },
         FDLoadAdj_AccSrNo: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
+            allowNull: true
         },
         FDCustomer_No: {
             type: DataTypes.DECIMAL(18, 0),
-            allowNull: true,
+            allowNull: true
         },
-        BranchActive: {
+        Branch_active: {
             type: DataTypes.SMALLINT,
-            allowNull: true,
-        },
+            allowNull: true
+        }
+    };
 
-    }
     const options = {
         freezeTableName: true,
-        timestamps: true,
-    }
+        timestamps: false
+    };
 
     return sequelize.define("branch", attributes, options);
-}
+};
+
+// [BEST].[dbo].[Mast_Branch]

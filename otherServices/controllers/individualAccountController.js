@@ -8,13 +8,13 @@ const procedureStoreController = require("../../procedureStoreServices/controlle
 
 exports.create = async (req, res) => {
     let transaction;
+
     try {
         let {
             AccountName,
             GroupName,
             BankSrNo,
             OpClosingRelatedTo,
-            AccSrNo,
             OP_Balance,
             CL_Balance,
             ACC_DRCR,
@@ -127,14 +127,15 @@ exports.create = async (req, res) => {
         let Code = TrNo.split("-")[1];
         console.log(Code);
 
-        // const sr_no = await procedureStoreController.createRecordWithSrNo(
-        //     "IndividualAccount_sr_no",
-        //     transaction
-        // );
-        // console.log(sr_no);
+        const AccSrNo = await procedureStoreController.createRecordWithSrNo(
+            "IndividualAccount_sr_no",
+            transaction
+        );
+        console.log({ AccSrNo });
 
         const individualAccount =
             await individualAccountService.create({
+                AccSrNo,
                 TrNo,
                 Code,
                 AccountName,
@@ -151,7 +152,7 @@ exports.create = async (req, res) => {
                 LoanDeduct_YN,
                 ExceptionChecking,
                 ExceptionAmt,
-            });
+            }, transaction);
 
         await transaction.commit();
 

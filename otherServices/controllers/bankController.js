@@ -2,20 +2,18 @@ const bankService = require("../services/bankService");
 const { sequelize } = require("../../db/db");
 const { Sequelize, Op } = require("sequelize");
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
-const { errorMid } = require("../../middlewareServices/errorMid");
-const helper = require("../helper/helper");
 
 
 // Create a new bank
 exports.createBank = async (req, res, next) => {
     let transaction;
     try {
-        const { TrDt, BankCode, BankName, Remarks } = req.body;
+        let { TrDt, BankCode, BankName, Remarks } = req.body;
         let data = {};
         data.BankCode = BankCode;
         data.BankName = BankName.toUpperCase();
 
-        console.log(new Date());
+        // console.log(new Date());
         if (!TrDt) {
             data.TrDt = new Date();
         }
@@ -29,12 +27,13 @@ exports.createBank = async (req, res, next) => {
             transaction
         );
         data.TrNo = TrNo;
+
         if (Remarks) {
             data.Remarks = Remarks;
         }
         console.log(data);
 
-        const newBank = await bankService.createBank(data);
+        const newBank = await bankService.createBank(data, transaction);
         await transaction.commit();
 
         return res.status(201).send({
@@ -53,7 +52,14 @@ exports.createBank = async (req, res, next) => {
 
 exports.getBank = async (req, res, next) => {
     try {
-        const banks = await bankService.getBank({});
+        const { TrNo, BankCode, BankName, } = req.query;
+        let filter = {};
+
+        if (TrNo) filter.TrNo = TrNo;
+        if (BankCode) filter.BankCode = BankCode;
+        if (BankName) filter.BankName = { [Op.iLike]: `%${BankName}%` };
+
+        const banks = await bankService.getBank(filter);
 
         return res.status(200).send({
             success: true,
@@ -83,7 +89,7 @@ exports.getBankByTrNo = async (req, res, next) => {
             result: bank,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 }
 
@@ -91,7 +97,7 @@ exports.getBankByTrNo = async (req, res, next) => {
 exports.updateBank = async (req, res, next) => {
     try {
         const TrNo = req.params.TrNo;
-        const { TrDt, BankCode, BankName, Remarks } = req.body;
+        let { TrDt, BankCode, BankName, Remarks } = req.body;
         let dataForUpdate = {};
 
         const bank = await bankService.getBankByTrNo(TrNo);
@@ -111,11 +117,12 @@ exports.updateBank = async (req, res, next) => {
             dataForUpdate.BankCode = BankCode
         };
         if (BankName) {
+            BankName = BankName.toUpperCase();
             const banks = await bankService.getBank({ BankName });
             if (banks.length > 0) {
                 return next({ status: 400, message: `Bank with Bank Name:[${BankName}] already exists` });
             }
-            dataForUpdate.BankName = BankName.toUppercase();
+            dataForUpdate.BankName = BankName;
         };
         if (Remarks) {
             dataForUpdate.Remarks = Remarks;

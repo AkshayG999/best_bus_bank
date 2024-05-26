@@ -1,32 +1,52 @@
 const { departmentModel, userModel, branchModel } = require("../../db/db");
-const { Op } = require("sequelize");
-const { create } = require("./individualAccountService");
 
 
 module.exports = {
-    async create(data) {
-
-        return await departmentModel.create(data);
+    async create(data, transaction) {
+        try {
+            return await departmentModel.create(data, { transaction });
+        } catch (error) {
+            throw error;
+        }
     },
 
     async getAll(filters) {
-        return await departmentModel.findAll({  where: filters});
+        try {
+            return await departmentModel.findAll({ where: filters });
+        } catch (error) {
+            throw error;
+        }
     },
 
-    async findById(id) {
-        return await departmentModel.findByPk(id, { include: [{ model: userModel, as: 'user', attributes: ['name', 'email', 'systemID'] }, { model: branchModel, as: 'branch', attributes: { exclude: ['createdAt', 'updatedAt'] } }] });
+    async findById(DeptSrNo) {
+        try {
+            return await departmentModel.findByPk(DeptSrNo,
+                {
+                    // include: [{ model: userModel, as: 'user', attributes: ['name', 'email', 'systemID'] }, { model: branchModel, as: 'branch', attributes: { exclude: ['createdAt', 'updatedAt'] } }]
+                });
+        }
+        catch (error) {
+            throw error;
+        }
     },
 
-    async update(id, departmentData) {
-        const department = await departmentModel.findByPk(id);
-        if (!department) throw new Error("Department not found");
-        return await departmentModel.update(departmentData);
+    async update(DeptSrNo, dataForUpdate) {
+        try {
+            return await departmentModel.update(dataForUpdate, {
+                where: { DeptSrNo }
+            });
+        } catch (error) {
+            throw error;
+        }
     },
 
-    async delete(id) {
-        const department = await departmentModel.findByPk(id);
-        if (!department) throw new Error("Department not found");
-        await departmentModel.destroy();
+    async delete(DeptSrNo) {
+        // destroy with matching DeptSrNo
+        try {
+            return await departmentModel.destroy({ where: { DeptSrNo } });
+        } catch (error) {
+            throw error;
+        }
     },
 
 };

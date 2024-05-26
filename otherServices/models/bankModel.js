@@ -33,3 +33,5 @@ module.exports = (sequelize) => {
 
     return sequelize.define("bank", attributes, options);
 };
+
+// [BEST].[dbo].[Mast_Bank_Parent]

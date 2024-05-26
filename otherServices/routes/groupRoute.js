@@ -15,8 +15,8 @@ const { authenticateToken } = require("../../middlewareServices/authMid");
 
 router.post("/", groupController.createGroup);
 router.get("/", groupController.getGroups);
-router.put("/:sr_no", groupController.updateGroup);
-router.delete("/:sr_no", groupController.deleteGroup);
+router.put("/:Grp_SrNo", groupController.updateGroup);
+router.delete("/:Grp_SrNo", groupController.deleteGroup);
 
 
 

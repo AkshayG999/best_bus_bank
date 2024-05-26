@@ -1,16 +1,119 @@
 const branchService = require('../services/branchService');
-
+const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
+const { sequelize } = require("../../db/db");
+const { Sequelize, Op } = require("sequelize");
 
 
 module.exports = {
 
     async createBranch(req, res, next) {
+        let transaction;
         try {
-            const branchData = req.body;
+            let {
+                Branch_TrDt,
+                Branch_Name,
+                Branch_Add_01,
+                Branch_City,
+                Branch_District,
+                Branch_Pin,
+                Branch_State,
+                Branch_Zone,
+                Branch_Tel_01,
+                BankCode,
+                PettyCash_SrNo,
+                BankAccSrNo,
+                CashAccSrNo
+            } = req.body;
+            let data = {};
 
-            const newBranch = await branchService.createBranch(branchData);
-            res.status(201).json(newBranch);
+            if (!Branch_TrDt || Branch_TrDt == "") {
+                Branch_TrDt = new Date();
+            }
+            data.Branch_TrDt = Branch_TrDt;
+
+            if (!Branch_Name || Branch_Name == "") {
+                return next({ status: 400, message: "Branch Name is required" });
+            }
+            data.Branch_Name = Branch_Name.toUpperCase();
+
+            if (!Branch_Add_01 || Branch_Add_01 == "") {
+                return next({ status: 400, message: "Branch Address is required" });
+            }
+            data.Branch_Add_01 = Branch_Add_01.toUpperCase();
+
+            if (!Branch_City || Branch_City == "") {
+                return next({ status: 400, message: "Branch City is required" });
+            }
+            data.Branch_City = Branch_City.toUpperCase();
+
+            if (!Branch_District || Branch_District == "") {
+                return next({ status: 400, message: "Branch District is required" });
+            }
+            data.Branch_District = Branch_District.toUpperCase();
+
+            if (!Branch_Pin || Branch_Pin == "") {
+                return next({ status: 400, message: "Branch Pin is required" });
+            }
+            data.Branch_Pin = Branch_Pin;
+
+            if (!Branch_State || Branch_State == "") {
+                return next({ status: 400, message: "Branch State is required" });
+            }
+            data.Branch_State = Branch_State.toUpperCase();
+
+            if (!Branch_Zone || Branch_Zone == "") {
+                return next({ status: 400, message: "Branch Zone is required" });
+            }
+            data.Branch_Zone = Branch_Zone;
+
+            if (!Branch_Tel_01 || Branch_Tel_01 == "") {
+                return next({ status: 400, message: "Branch Telephone is required" });
+            }
+            data.Branch_Tel_01 = Branch_Tel_01;
+
+            // if (!BankCode || BankCode == "") {
+            //     return next({ status: 400, message: "Bank Code is required" });
+            // }
+            data.BankCode = BankCode;
+
+            if (!PettyCash_SrNo || PettyCash_SrNo == "") {
+                return next({ status: 400, message: "Petty Cash SrNo is required" });
+            }
+            data.PettyCash_SrNo = PettyCash_SrNo;
+
+            if (!BankAccSrNo || BankAccSrNo == "") {
+                return next({ status: 400, message: "Bank Account SrNo is required" });
+            }
+            data.BankAccSrNo = BankAccSrNo;
+
+            if (!CashAccSrNo || CashAccSrNo == "") {
+                return next({ status: 400, message: "Cash Account SrNo is required" });
+            }
+            data.CashAccSrNo = CashAccSrNo;
+
+            transaction = await sequelize.transaction({
+                isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+            });
+
+            const Branch_Tr = await procedureStoreController.createRecordWithSrNo(
+                "Branch_Tr",
+                transaction
+            );
+            data.Branch_Tr = Branch_Tr;
+            data.Branch_Code = Branch_Tr;
+
+            const newBranch = await branchService.createBranch(data, transaction);
+            await transaction.commit();
+
+            return res.status(201).send({
+                success: true,
+                message: "New Branch created successfully",
+                result: newBranch,
+            });
         } catch (error) {
+            if (transaction) {
+                await transaction.rollback();
+            }
             next(error);
         }
     },
@@ -18,8 +121,19 @@ module.exports = {
 
     async getAllBranches(req, res, next) {
         try {
-            const branches = await branchService.getAllBranches();
-            res.status(200).json(branches);
+            const { Branch_Tr, Branch_Name, Branch_City } = req.query;
+            let filter = {};
+
+            if (Branch_Tr) filter.Branch_Tr = Branch_Tr;
+            if (Branch_Name) filter.Branch_Name = { [Op.iLike]: `%${Branch_Name}%` };
+            if (Branch_City) filter.Branch_City = { [Op.iLike]: `%${Branch_City}%` };
+
+            const branches = await branchService.getAllBranches(filter);
+            return res.status(200).send({
+                success: true,
+                message: "Fetched successfully",
+                result: branches,
+            });
         } catch (error) {
             next(error);
         }
@@ -28,13 +142,16 @@ module.exports = {
 
     async getBranchById(req, res, next) {
         try {
-            const { id } = req.params;
-            const branch = await branchService.getBranchById(id);
+            const { Branch_Tr } = req.params;
+            const branch = await branchService.getBranchById(Branch_Tr);
             if (!branch) {
                 return next({ status: 404, message: 'Branch not found' });
-            } else {
-                res.status(200).json(branch);
             }
+            return res.status(200).send({
+                success: true,
+                message: "Fetched successfully",
+                result: branch,
+            });
         } catch (error) {
             next(error);
         }
@@ -43,14 +160,85 @@ module.exports = {
 
     async updateBranch(req, res, next) {
         try {
-            const { id } = req.params;
-            const newData = req.body;
-            const result = await branchService.updateBranch(id, newData);
-            if (result.updatedRowsCount === 0) {
-                res.status(404).json({ message: 'Branch not found' });
-            } else {
-                res.status(200).json(result.updatedRows[0]);
+            const { Branch_Tr } = req.params;
+            const {
+                Branch_TrDt,
+                Branch_Name,
+                Branch_Add_01,
+                Branch_City,
+                Branch_District,
+                Branch_Pin,
+                Branch_State,
+                Branch_Zone,
+                Branch_Tel_01,
+                BankCode,
+                PettyCash_SrNo,
+                BankAccSrNo,
+                CashAccSrNo } = req.body;
+            let dataForUpdate = {};
+
+            const branch = await branchService.getBranchById(Branch_Tr);
+            if (!branch) {
+                return next({ status: 404, message: 'Branch not found' });
             }
+
+            if (Branch_TrDt) {
+                dataForUpdate.Branch_TrDt = Branch_TrDt;
+            }
+
+            if (Branch_Name) {
+                dataForUpdate.Branch_Name = Branch_Name.toUpperCase();
+            }
+
+            if (Branch_Add_01) {
+                dataForUpdate.Branch_Add_01 = Branch_Add_01.toUpperCase();
+            }
+
+            if (Branch_City) {
+                dataForUpdate.Branch_City = Branch_City.toUpperCase();
+            }
+
+            if (Branch_District) {
+                dataForUpdate.Branch_District = Branch_District.toUpperCase();
+            }
+
+            if (Branch_Pin) {
+                dataForUpdate.Branch_Pin = Branch_Pin;
+            }
+
+            if (Branch_State) {
+                dataForUpdate.Branch_State = Branch_State.toUpperCase();
+            }
+
+            if (Branch_Zone) {
+                dataForUpdate.Branch_Zone = Branch_Zone;
+            }
+
+            if (Branch_Tel_01) {
+                dataForUpdate.Branch_Tel_01 = Branch_Tel_01;
+            }
+
+            if (BankCode) {
+                dataForUpdate.BankCode = BankCode;
+            }
+
+            if (PettyCash_SrNo) {
+                dataForUpdate.PettyCash_SrNo = PettyCash_SrNo;
+            }
+
+            if (BankAccSrNo) {
+                dataForUpdate.BankAccSrNo = BankAccSrNo;
+            }
+
+            if (CashAccSrNo) {
+                dataForUpdate.CashAccSrNo = CashAccSrNo;
+            }
+
+            const result = await branchService.updateBranch(Branch_Tr, dataForUpdate);
+            if (result.updatedRowsCount === 0) {
+                return next({ status: 404, message: 'Branch not update' });
+            }
+            return res.status(200).json(result.updatedRows[0]);
         } catch (error) {
             next(error);
         }
@@ -59,15 +247,19 @@ module.exports = {
 
     async deleteBranch(req, res, next) {
         try {
-            const { id } = req.params;
-            const deletedRowCount = await branchService.deleteBranch(id);
+            const { Branch_Tr } = req.params;
+            const branch = await branchService.getBranchById(Branch_Tr);
+            if (!branch) {
+                return next({ status: 404, message: 'Branch not found' });
+            }
+            const deletedRowCount = await branchService.deleteBranch(Branch_Tr);
             if (deletedRowCount === 0) {
-                res.status(404).json({ message: 'Branch not found' });
+                return next({ status: 404, message: 'Branch not update' });
             } else {
-                res.status(204).end();
+                return res.status(200).send({ success: true, message: "Branch deleted successfully" });
             }
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            next(error);
         }
     }
 

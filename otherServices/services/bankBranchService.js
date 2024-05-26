@@ -2,7 +2,12 @@ const { where } = require("sequelize");
 const { bankBranchModel, bankModel } = require("../../db/db");
 
 exports.create = async (data, transaction) => {
-    return await bankBranchModel.create(data, { transaction });
+    try {
+        return await bankBranchModel.create(data, { transaction });
+    }
+    catch (err) {
+        return err;
+    }
 }
 
 exports.getAll = async (filter) => {

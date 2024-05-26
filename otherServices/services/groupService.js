@@ -8,8 +8,7 @@ exports.createGroup = async (data, transaction) => {
         return newGroup;
     }
     catch (err) {
-        await transaction.rollback();
-        return err;
+        throw err;
     }
 };
 
@@ -19,38 +18,50 @@ exports.getAllGroups = async (filter, populate = false) => {
     try {
         const groups = await groupModel.findAll({
             where: filter,
-            include: populate ? [{ model: parentGroupModel, attributes: ['sr_no', 'name'] }] : []
+            include: populate ? [{ model: parentGroupModel, as: 'parent_group', attributes: ['sr_no', 'name'] }] : []
         });
         return groups;
     } catch (error) {
         console.error('Error fetching group data:', error);
+        throw error;
     }
 };
 
 
 
-exports.findBySrNo = async (sr_no, populate = false) => {
-    return await groupModel.findOne({
-        where: { sr_no: sr_no },
-        include: populate ? [{ model: parentGroupModel, attributes: ['sr_no', 'name'] }] : []
+exports.findBySrNo = async (Grp_SrNo, populate = false) => {
+    try {
+        return await groupModel.findOne({
+            where: { Grp_SrNo: Grp_SrNo },
+            include: populate ? [{ model: parentGroupModel, attributes: ['sr_no', 'name'] }] : []
 
-    });
+        });
+    } catch (error) {
+        throw error;
+    }
 };
 
-exports.updateGroup = async (sr_no, data) => {
-    return await groupModel.update(data, {
-        where: {
-            sr_no: sr_no
-        }
-    });
+exports.updateGroup = async (Grp_SrNo, data) => {
+    try {
+        return await groupModel.update(data, {
+            where: {
+                Grp_SrNo: Grp_SrNo
+            }
+        });
+    } catch (error) {
+        throw error;
+    }
 }
 
 
-exports.deleteGroup = async (sr_no) => {
-
-    return await groupModel.destroy({
-        where: {
-            sr_no: sr_no
-        }
-    })
+exports.deleteGroup = async (Grp_SrNo) => {
+    try {
+        return await groupModel.destroy({
+            where: {
+                Grp_SrNo: Grp_SrNo
+            }
+        })
+    } catch (error) {
+        throw error;
+    }
 }

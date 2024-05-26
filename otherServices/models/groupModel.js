@@ -1,32 +1,42 @@
 const { DataTypes } = require("sequelize");
 
-module.exports = model;
-
-function model(sequelize) {
+module.exports = function (sequelize) {
     const Group = sequelize.define("group", {
-        sr_no: {
+        Grp_SrNo: {
             type: DataTypes.INTEGER,
             allowNull: false,
             primaryKey: true,
-            // autoIncrement: true
         },
-        tr_no: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            autoIncrement: false,
-        },
-        groupName: {
+        TRNo: {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        createdBy: {
+        GroupName: {
             type: DataTypes.STRING,
-            allowNull: true
-        }
+            allowNull: false,
+        },
+        GroupUnder: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        GroupCode: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        Fox_GStatus: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        // grp_prn_order: {
+        //     type: DataTypes.STRING,
+        //     allowNull: false,
+        // },
     }, {
         freezeTableName: true,
-        timestamps: true,
+        timestamps: false,
     });
 
     return Group;
-}
+};
+
+// [BEST].[dbo].[Mast_Group]

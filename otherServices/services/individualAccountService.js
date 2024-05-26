@@ -2,10 +2,10 @@ const { individualAccountModel, groupModel } = require('../../db/db');
 
 
 
-exports.create = async (data) => {
+exports.create = async (data, transaction) => {
     try {
         // console.log(data)
-        const individualAccount = await individualAccountModel.create(data);
+        const individualAccount = await individualAccountModel.create(data, { transaction });
         return individualAccount;
     } catch (error) {
         throw error;
@@ -27,7 +27,7 @@ exports.getAll = async (filter, populate = false) => {
     try {
         return await individualAccountModel.findAll({
             where: filter,
-            include: populate ? [{ model: groupModel, as: 'group', attributes: ['sr_no', 'tr_no', 'groupName'] }] : []
+            include: populate ? [{ model: groupModel, as: 'group' }] : []
 
         });
     } catch (error) {

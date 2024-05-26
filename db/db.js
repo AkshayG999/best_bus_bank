@@ -1,6 +1,8 @@
 const { Sequelize } = require("sequelize");
 const { dbConfig } = require('../config/config');
 const user = require("../userServices/models/userModel");
+const featuresModel = require("../adminServices/models/featuresModel");
+const rolePermissionsModel = require("../adminServices/models/rolePermissionsModel");
 const parentGroup = require("../otherServices/models/parentGroupModel");
 const group = require("../otherServices/models/groupModel");
 const individualAccount = require("../otherServices/models/individualAccountModel");
@@ -8,8 +10,8 @@ const bank = require("../otherServices/models/bankModel");
 const bankBranch = require("../otherServices/models/bankBranchModel");
 const branch = require("../otherServices/models/branchModel");
 const department = require("../otherServices/models/departmentModel");
-const featuresModel = require("../adminServices/models/featuresModel");
-const rolePermissionsModel = require("../adminServices/models/rolePermissionsModel");
+const zone = require("../otherServices/models/zoneModel");
+const depo = require("../otherServices/models/depoModel");
 
 
 
@@ -70,19 +72,24 @@ const bankModel = bank(sequelize);
 const bankBranchModel = bankBranch(sequelize);
 const branchModel = branch(sequelize);
 const departmentModel = department(sequelize);
+const zoneModel = zone(sequelize);
+const depoModel = depo(sequelize);
 
 
 // Associations between models here
 userModel.belongsTo(rolePermissions, { foreignKey: 'roleId', as: 'role_permissions' });
 
-groupModel.belongsTo(parentGroupModel);
-parentGroupModel.hasMany(groupModel);
+groupModel.belongsTo(parentGroupModel, { foreignKey: "GroupUnder", as: "parent_group" });
+parentGroupModel.hasMany(groupModel, { foreignKey: 'GroupUnder' });
 
-individualAccountModel.belongsTo(groupModel, { foreignKey: 'GroupName', targetKey: 'sr_no', as: 'group' });
-groupModel.hasMany(individualAccountModel, { foreignKey: 'GroupName', sourceKey: 'sr_no' });
+individualAccountModel.belongsTo(groupModel, { foreignKey: 'GroupName', as: 'group' });
+groupModel.hasMany(individualAccountModel, { foreignKey: 'GroupName' });
 
 bankBranchModel.belongsTo(bankModel, { foreignKey: 'ParentBank', targetKey: 'TrNo', as: 'bank' });
 
+branchModel.belongsTo(zoneModel, { foreignKey: 'Branch_Zone', as: 'zone' });
+
+departmentModel.belongsTo(depoModel, { foreignKey: 'Depo_SrNo', as: 'depo' });
 // departmentModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
 // departmentModel.belongsTo(branchModel, { foreignKey: 'branchCode', as: 'branch' });
 
@@ -94,5 +101,5 @@ bankBranchModel.belongsTo(bankModel, { foreignKey: 'ParentBank', targetKey: 'TrN
 
 module.exports = {
     db, sequelize, userModel, bankModel, groupModel, parentGroupModel, individualAccountModel,
-    bankBranchModel, branchModel, departmentModel, features, rolePermissions,
+    bankBranchModel, branchModel, departmentModel, features, rolePermissions, zoneModel, depoModel
 };

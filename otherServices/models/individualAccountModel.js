@@ -5,23 +5,26 @@ module.exports = model;
 
 function model(sequelize) {
     const IndividualAccount = sequelize.define("individual-account", {
-        TrNo: {
-            type: DataTypes.STRING,
+        AccSrNo: {
+            type: DataTypes.INTEGER,
             allowNull: false,
             primaryKey: true,
-            autoIncrement: false,
+        },
+        TrNo: {
+            type: DataTypes.STRING,
+            allowNull: true,
         },
         Code: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         AccountName: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         GroupName: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true,
         },
         BankSrNo: {
             type: DataTypes.INTEGER,
@@ -31,13 +34,9 @@ function model(sequelize) {
             type: DataTypes.SMALLINT,
             allowNull: true
         },
-        AccSrNo: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-        },
         OP_Balance: {
             type: DataTypes.DECIMAL,
-            allowNull: false
+            allowNull: true
         },
         CL_Balance: {
             type: DataTypes.DECIMAL,
@@ -45,7 +44,7 @@ function model(sequelize) {
         },
         ACC_DRCR: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
         SYSAcc: {
             type: DataTypes.STRING,
@@ -53,11 +52,11 @@ function model(sequelize) {
         },
         LY_ACC_DRCR: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
         LYCL_Balance: {
             type: DataTypes.DECIMAL,
-            allowNull: false
+            allowNull: true
         },
         LoanDeduct_YN: {
             type: DataTypes.BOOLEAN,
@@ -74,8 +73,10 @@ function model(sequelize) {
 
     }, {
         freezeTableName: true,
-        timestamps: true,
+        timestamps: false,
     });
 
     return IndividualAccount;
 }
+
+// [BEST].[dbo].[Mast_Account]

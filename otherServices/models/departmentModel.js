@@ -1,66 +1,81 @@
 const { DataTypes } = require("sequelize");
 
-module.exports = model;
-
-function model(sequelize) {
+module.exports = function (sequelize) {
     const department = sequelize.define("department", {
-        EntryNo: {
+        DeptSrNo: {
             type: DataTypes.INTEGER,
             allowNull: false,
             primaryKey: true
         },
-        EntryDate: {
-            type: DataTypes.DATE,
-            allowNull: false
-        },
-        SysNo: {
+        EntryNo: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: true,
         },
-        MPay: {
+        EntryDT: {
+            type: DataTypes.DATE,
+            allowNull: true
+        },
+        DeptNo: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        MPayNo: {
             type: DataTypes.FLOAT,
-            allowNull: false
+            allowNull: true
         },
-        SPay: {
+        SPayNo: {
             type: DataTypes.FLOAT,
-            allowNull: false
+            allowNull: true
         },
-        ParentBranch: {
+        DeptName: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
-        DepartmentName: {
+        DeptName_Mar: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
-        DepartmentNameMarathi: {
+        Add_01: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
-        Address: {
+        Add_02: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
-        EmailId: {
+        Add_03: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
-        ContactNo: {
+        Dept_EmailID: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
-        Contact: {
+        Dept_ContactNo: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
-        IsMainDepartment: {
+        Dept_ContactPerson: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        IsMainDept: {
             type: DataTypes.BOOLEAN,
-            allowNull: false
+            allowNull: true,
+            defaultValue: false
+        },
+        Branch_SrNo: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        Depo_SrNo: {
+            type: DataTypes.INTEGER,
+            allowNull: true
         }
     }, {
         freezeTableName: true,
-        timestamps: true,
+        timestamps: false,
     });
 
     return department;
-}
+};

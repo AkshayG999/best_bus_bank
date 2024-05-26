@@ -6,9 +6,9 @@ const { authenticateToken } = require("../../middlewareServices/authMid");
 
 router.post("/", authenticateToken, departmentController.createDepartment);
 router.get("/", authenticateToken, departmentController.getAllDepartments);
-router.get("/:id", authenticateToken, departmentController.getById);
-router.put("/:id", authenticateToken, departmentController.updateDepartment);
-router.delete("/:id", authenticateToken, departmentController.deleteDepartment);
+router.get("/:DeptSrNo", authenticateToken, departmentController.getById);
+router.put("/:DeptSrNo", authenticateToken, departmentController.updateDepartment);
+router.delete("/:DeptSrNo", authenticateToken, departmentController.deleteDepartment);
 
 
 module.exports = router;

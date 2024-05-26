@@ -8,7 +8,6 @@ const { Sequelize, Op } = require("sequelize");
 exports.createBranch = async (req, res, next) => {
     let transaction;
     try {
-        const createdBy = req.systemID;
         let { TrDt, BankCode, BankName, ParentBank } = req.body;
 
         if (!BankCode) {
@@ -38,13 +37,9 @@ exports.createBranch = async (req, res, next) => {
         );
 
         if (!TrDt) {
-            const d = new Date();
-            const day = d.getDate();
-            const month = d.getMonth() + 1;
-            const year = d.getFullYear();
-            const TrCr = day + "-" + (month <= 9 ? "0" + month : month) + "-" + year;
-            TrDt = TrCr;
+            TrDt = new Date();
         }
+        BankName = BankName.toUpperCase();
 
         const newBranch = await bankBranchService.create({ TrNo, TrDt, BankCode, BankName, ParentBank }, transaction);
         await transaction.commit();
@@ -74,7 +69,14 @@ exports.getBranchById = async (req, res, next) => {
 
 exports.getAllBranches = async (req, res, next) => {
     try {
-        const branches = await bankBranchService.getAll({});
+        const { TrNo, BankCode, BankName, ParentBank } = req.query;
+        let filter = {};
+
+        if (TrNo) filter.TrNo = TrNo;
+        if (BankCode) filter.BankCode = BankCode;
+        if (BankName) filter.BankName = { [Op.iLike]: `%${BankName}%` };
+        if (ParentBank) filter.ParentBank = ParentBank;
+        const branches = await bankBranchService.getAll(filter);
         return res.status(200).send({ success: true, message: "Fetched successfully", result: branches });
     } catch (error) {
         next(error);
@@ -84,7 +86,39 @@ exports.getAllBranches = async (req, res, next) => {
 exports.updateBranch = async (req, res, next) => {
     try {
         const { TrNo } = req.params;
-        const branchData = req.body;
+        let { BankCode, BankName, ParentBank } = req.body;
+        let dataForUpdate = {};
+
+        if (!TrNo) {
+            return next({ status: 400, message: "TrNo is required" });
+        }
+
+        const branch = await bankBranchService.getById(TrNo);
+        if (!branch) {
+            return next({ status: 400, message: "Bank Branch not found" });
+        }
+
+        if (BankCode) {
+            dataForUpdate.BankCode = BankCode;
+        }
+
+        if (BankName) {
+            BankName = BankName.toUpperCase();
+            const branches = await bankBranchService.getAll({ BankName });
+            if (branches && branches.length > 0) {
+                return next({ status: 400, message: `Bank Branch Name With [${BankName}] already exist` });
+            }
+            dataForUpdate.BankName = BankName;
+        }
+
+        if (ParentBank) {
+            const getParentBank = await bankService.getBankByTrNo(ParentBank);
+            if (!getParentBank) {
+                return next({ status: 400, message: "Parent Bank not found or invalid Parent Bank" });
+            }
+            dataForUpdate.ParentBank = ParentBank;
+        }
+
         const updatedBranch = await bankBranchService.update(TrNo, branchData);
         if (!updatedBranch) {
             return next({ status: 400, message: "Bank Branch not found" });

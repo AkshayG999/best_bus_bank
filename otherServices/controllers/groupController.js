@@ -1,61 +1,54 @@
 const groupService = require("../services/groupService");
 const parentGroupService = require("../services/parentGroupService");
 const { sequelize } = require("../../db/db");
-const { Sequelize, Op } = require("sequelize");
+const { Sequelize } = require("sequelize");
 const { handleErrors, errorMid } = require("../../middlewareServices/errorMid");
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
 
 
-exports.createGroup = async (req, res) => {
+
+exports.createGroup = async (req, res, next) => {
     let transaction;
     try {
-        let { groupName, parentGroupSrNo } = req.body;
+        let { GroupName, GroupUnder } = req.body;
         const createdBy = req.systemID;
 
-        if (!groupName) {
+        if (!GroupName) {
             return errorMid(400, "Group Name is required", req, res);
         }
 
-        if (!parentGroupSrNo) {
-            return errorMid(400, "Parent Group Sr No is required", req, res);
+        if (!GroupUnder) {
+            return errorMid(400, "GroupUnder is required", req, res);
         }
 
-        groupName = groupName.toUpperCase();
-        const getGroup = await groupService.getAllGroups({ groupName });
+        GroupName = GroupName.toUpperCase();
+        const getGroup = await groupService.getAllGroups({ GroupName });
         if (getGroup.length > 0) {
-            return errorMid(400, `${groupName} Group already exists`, req, res);
+            return errorMid(400, `${GroupName} Group already exists`, req, res);
         }
 
-        const findParentGroup = await parentGroupService.findBySrNo(
-            parentGroupSrNo
-        );
-        if (!findParentGroup)
-            return errorMid(
-                400,
-                `Parent Group with parentGroupSrNo: ${parentGroupSrNo} not found`,
-                req,
-                res
-            );
+        const findParentGroup = await parentGroupService.findBySrNo(GroupUnder);
+        if (!findParentGroup) {
+            return errorMid(400, `Parent Group with GroupUnder No: ${GroupUnder} not found`, req, res);
+        }
 
         transaction = await sequelize.transaction({
             isolationLevel: Sequelize.Transaction.SERIALIZABLE,
         });
 
-        const tr_no = await procedureStoreController.generateGroupUniqueCode(
-            "group_tr_no",
-            "BR",
-            transaction
-        );
-
-        const sr_no = await procedureStoreController.createRecordWithSrNo(
-            "group_sr_no",
-            transaction
-        );
+        const Grp_SrNo = await procedureStoreController.createRecordWithSrNo("group_Grp_SrNo", transaction);
+        const TRNo = await procedureStoreController.generateGroupUniqueCode("group_TRNo", "BR", transaction);
 
         const createNewGroup = await groupService.createGroup(
-            { sr_no, tr_no, groupName, parentGroupSrNo, createdBy },
+            {
+                Grp_SrNo, TRNo, GroupName, GroupUnder, GroupCode: "", Fox_GStatus: "",
+                grp_prn_order: ""
+            },
             transaction
         );
+        if (!createNewGroup) {
+            return next({ status: 400, message: "Group creation failed" });
+        }
 
         await transaction.commit();
 
@@ -66,25 +59,28 @@ exports.createGroup = async (req, res) => {
         });
     } catch (error) {
         console.error("Error creating group:", error);
-        if (transaction) {
-            await transaction.rollback();
+        if (transaction && !transaction.finished) {
+            try {
+                await transaction.rollback();
+            } catch (rollbackError) {
+                console.error("Error rolling back transaction:", rollbackError);
+            }
         }
         return handleErrors(error, req, res);
     }
 };
 
+
 exports.getGroups = async (req, res) => {
     try {
-        const { sr_no, tr_no, groupName, parentGroupSrNo } = req.query;
+        const { Grp_SrNo, GroupName, GroupUnder } = req.query;
         let filter = {};
 
-        if (sr_no) filter.sr_no = sr_no;
+        if (Grp_SrNo) filter.Grp_SrNo = Grp_SrNo;
 
-        if (tr_no) filter.tr_no = tr_no;
+        if (GroupUnder) filter.GroupUnder = GroupUnder;
 
-        if (groupName) filter.groupName = { [Op.iLike]: `%${groupName}%` };
-
-        if (parentGroupSrNo) filter.parentGroupSrNo = parentGroupSrNo;
+        if (GroupName) filter.GroupName = { [Op.iLike]: `%${GroupName}%` };
 
         const getAllGroups = await groupService.getAllGroups(filter, true);
         return res.status(200).send({
@@ -100,41 +96,39 @@ exports.getGroups = async (req, res) => {
 
 exports.updateGroup = async (req, res) => {
     try {
-        const { sr_no } = req.params;
-        let { groupName, parentGroupSrNo } = req.body;
+        const { Grp_SrNo } = req.params;
+        let { GroupName, GroupUnder } = req.body;
         let dataForUpdate = {};
 
-        const findGroup = await groupService.findBySrNo(sr_no);
+        const findGroup = await groupService.findBySrNo(Grp_SrNo);
         if (!findGroup) {
-            return errorMid(400, `Group with sr_no: ${sr_no} not found`, req, res);
+            return errorMid(400, `Group with Grp_SrNo: ${Grp_SrNo} not found`, req, res);
         }
 
-        if (groupName) {
-            groupName = groupName.toUpperCase();
-            const findGroup = await groupService.getAllGroups({ groupName });
+        if (GroupName) {
+            GroupName = GroupName.toUpperCase();
+            const findGroup = await groupService.getAllGroups({ GroupName });
             if (findGroup.length > 0)
-                return errorMid(400, `${groupName} Group already exists`, req, res);
-            dataForUpdate.groupName = groupName;
+                return errorMid(400, `${GroupName} Group already exists`, req, res);
+            dataForUpdate.GroupName = GroupName;
         }
 
-        if (parentGroupSrNo) {
-            const findParentGroup = await parentGroupService.findBySrNo(
-                parentGroupSrNo
-            );
+        if (GroupUnder) {
+            const findParentGroup = await parentGroupService.findBySrNo(GroupUnder);
             if (!findParentGroup)
                 return errorMid(
                     400,
-                    `Parent Group with parentGroupSrNo: ${parentGroupSrNo} not found`,
+                    `Parent Group with GroupUnder: ${GroupUnder} not found`,
                     req,
                     res
                 );
-            dataForUpdate.parentGroupSrNo = parentGroupSrNo;
+            dataForUpdate.GroupUnder = GroupUnder;
         }
 
         if (!dataForUpdate)
             return errorMid(400, "Please provide valid data to update", req, res);
 
-        const updatedGroup = await groupService.updateGroup(sr_no, dataForUpdate);
+        const updatedGroup = await groupService.updateGroup(Grp_SrNo, dataForUpdate);
         return res.status(200).send({
             success: true,
             message: "Group updated successfully",
@@ -148,14 +142,14 @@ exports.updateGroup = async (req, res) => {
 
 exports.deleteGroup = async (req, res) => {
     try {
-        const { sr_no } = req.params;
+        const { Grp_SrNo } = req.params;
 
-        const findGroup = await groupService.findBySrNo(sr_no);
+        const findGroup = await groupService.findBySrNo(Grp_SrNo);
         if (!findGroup) {
             if (!findParentGroup)
-                return errorMid(400, `Group with sr_no: ${sr_no} not found`, req, res);
+                return errorMid(400, `Group with Grp_SrNo: ${Grp_SrNo} not found`, req, res);
         }
-        const deletedGroup = await groupService.deleteGroup(sr_no);
+        const deletedGroup = await groupService.deleteGroup(Grp_SrNo);
         return res.status(200).send({
             success: true,
             message: "Group deleted successfully",
