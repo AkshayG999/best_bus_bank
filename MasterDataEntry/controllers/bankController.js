@@ -2,11 +2,14 @@ const bankService = require("../services/bankService");
 const { sequelize } = require("../../db/db");
 const { Sequelize, Op } = require("sequelize");
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
+const AuditLogRepository = require("../../auditServices/auditLogService");
 
 
 // Create a new bank
 exports.createBank = async (req, res, next) => {
-    let transaction;
+    let transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         let { TrDt, BankCode, BankName, Remarks } = req.body;
         let data = {};
@@ -18,10 +21,6 @@ exports.createBank = async (req, res, next) => {
             data.TrDt = new Date();
         }
 
-        transaction = await sequelize.transaction({
-            isolationLevel: Sequelize.Transaction.SERIALIZABLE,
-        });
-
         const TrNo = await procedureStoreController.createRecordWithSrNo(
             "bank_tr_no",
             transaction
@@ -31,9 +30,19 @@ exports.createBank = async (req, res, next) => {
         if (Remarks) {
             data.Remarks = Remarks;
         }
-        console.log(data);
+        // console.log(data);
 
         const newBank = await bankService.createBank(data, transaction);
+
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "bank",
+            entityId: newBank.TrNo,
+            action: "CREATE",
+            beforeAction: null,
+            afterAction: newBank,
+        }, transaction);
+
         await transaction.commit();
 
         return res.status(201).send({
@@ -95,6 +104,9 @@ exports.getBankByTrNo = async (req, res, next) => {
 
 // Update a bank by TrNo
 exports.updateBank = async (req, res, next) => {
+    let transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const TrNo = req.params.TrNo;
         let { TrDt, BankCode, BankName, Remarks } = req.body;
@@ -128,30 +140,66 @@ exports.updateBank = async (req, res, next) => {
             dataForUpdate.Remarks = Remarks;
         };
 
-        const affectedRows = await bankService.updateBank(TrNo, dataForUpdate);
-        // console.log(affectedRows);
+        const affectedRows = await bankService.updateBank(TrNo, dataForUpdate, transaction);
 
-        if (affectedRows == 0) {
-            return next({ status: 400, message: 'Bank not updated' });
-        }
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "bank",
+            entityId: TrNo,
+            action: "UPDATE",
+            beforeAction: bank.dataValues,
+            afterAction: affectedRows[0],
+        }, transaction);
+        // console.log(log)
+
+        await transaction.commit();
+
         return res.status(200).json({ success: true, message: "Bank updated successfully", result: affectedRows });
 
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         next(error);
     }
 }
 
 // Delete a bank by TrNo
 exports.deleteBank = async (req, res, next) => {
+    let transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const TrNo = req.params.TrNo;
+        const bank = await bankService.getBankByTrNo(TrNo);
+        if (!bank) {
+            return next({ status: 404, message: `Bank with TR No:[${TrNo}] not found` });
+        }
+
         const affectedRows = await bankService.deleteBank(TrNo);
-        if (affectedRows > 0) {
-            return res.status(200).json({ success: true, message: "Bank deleted successfully" });
-        } else {
+        // console.log(affectedRows);
+
+        if (affectedRows < 1) {
             return next({ status: 400, message: 'Bank not Deleted' });
         }
+
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "bank",
+            entityId: TrNo,
+            action: "DELETE",
+            beforeAction: bank.dataValues,
+            afterAction: null,
+        }, transaction);
+
+        await transaction.commit();
+        return res.status(200).json({ success: true, message: "Bank deleted successfully" });
+
+
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         next(error);
     }
 }

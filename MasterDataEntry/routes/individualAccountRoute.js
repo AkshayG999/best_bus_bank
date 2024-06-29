@@ -6,15 +6,15 @@ const { checkPermissionsMiddleware } = require("../../middlewareServices/permiss
 
 
 
-// router.get('/', authenticateToken, checkPermissionsMiddleware('18e9b143528rg7sc6', 'individualAccount Creation'), individualAccountController.getindividualAccounts)
-// router.post('/', authenticateToken, checkPermissionsMiddleware('18e9b143528rg7sc6', 'individualAccount Creation', true), individualAccountController.createindividualAccount)
+// router.get('/',  checkPermissionsMiddleware('18e9b143528rg7sc6', 'individualAccount Creation'), individualAccountController.getindividualAccounts)
+// router.post('/',  checkPermissionsMiddleware('18e9b143528rg7sc6', 'individualAccount Creation', true), individualAccountController.createindividualAccount)
 
 
 router.post('/', individualAccountController.create)
-router.get('/:TrNo', individualAccountController.getByTrNo)
+router.get('/:AccSrNo', individualAccountController.getByTrNo)
 router.get('/', individualAccountController.getAll)
-router.put('/:TrNo', individualAccountController.update)
-router.delete('/:TrNo', individualAccountController.delete)
+router.put('/:AccSrNo', individualAccountController.update)
+router.delete('/:AccSrNo', individualAccountController.delete)
 
 
 

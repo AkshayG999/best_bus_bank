@@ -4,11 +4,16 @@ const featuresHelper = require("../helper/featuresHelper");
 const rolePermissionHelper = require("../helper/rolePermissionHelper");
 const featuresService = require("../services/featuresService");
 const rolePermissionsService = require("../services/rolePermissionsService");
-
+const { sequelize } = require("../../db/db");
+const { Sequelize, Op } = require("sequelize");
+const AuditLogRepository = require('../../auditServices/auditLogService');
 
 
 
 exports.createRolePermission = async (req, res) => {
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { name } = req.body;
 
@@ -24,7 +29,25 @@ exports.createRolePermission = async (req, res) => {
             );
         }
 
-        let role = await rolePermissionsService.createRolePermissions(name);
+        let role = await rolePermissionsService.createRolePermissions(name, transaction);
+        if (!role) {
+            return errorMid(
+                400,
+                "Role creation failed",
+                req,
+                res
+            );
+        }
+        await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "role_permissions",
+            entityId: role.id,
+            action: "CREATE",
+            beforeAction: null,
+            afterAction: role,
+        }, transaction);
+
+        await transaction.commit();
 
         return res
             .status(200)
@@ -35,6 +58,9 @@ exports.createRolePermission = async (req, res) => {
             });
 
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.error(error);
         return handleErrors(error, req, res);
     }
@@ -143,6 +169,9 @@ exports.getRolePermissionById = async (req, res) => {
 };
 
 exports.updateRolePermission = async (req, res) => {
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { id } = req.params;
         const { permissions } = req.body;
@@ -225,8 +254,21 @@ exports.updateRolePermission = async (req, res) => {
             const rolePermissionUpdate =
                 await rolePermissionsService.updateRolesPermissions(
                     id,
-                    filterPermissionsList
+                    filterPermissionsList,
+                    transaction
                 );
+
+            await AuditLogRepository.log({
+                SystemID: req.systemID,
+                entityName: "role_permissions",
+                entityId: id,
+                action: "UPDATE",
+                beforeAction: role,
+                afterAction: rolePermissionUpdate,
+            }, transaction);
+
+            await transaction.commit();
+
             return res.send({
                 success: true,
                 message: "Permissions updated successfully",
@@ -249,9 +291,20 @@ exports.updateRolePermission = async (req, res) => {
             const rolePermissionUpdate =
                 await rolePermissionsService.updateRolesPermissions(
                     id,
-                    filterPermissionsList
+                    filterPermissionsList,
+                    transaction
                 );
 
+            await AuditLogRepository.log({
+                SystemID: req.systemID,
+                entityName: "role_permissions",
+                entityId: id,
+                action: "UPDATE",
+                beforeAction: role,
+                afterAction: rolePermissionUpdate,
+            }, transaction);
+
+            await transaction.commit();
             return res.send({
                 success: true,
                 message: "Permissions updated successfully",
@@ -259,6 +312,9 @@ exports.updateRolePermission = async (req, res) => {
             });
         }
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.error(error);
         return handleErrors(error, req, res);
     }
@@ -266,13 +322,43 @@ exports.updateRolePermission = async (req, res) => {
 
 
 exports.deleteRolePermission = async (req, res) => {
-    const { id } = req.params;
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
+        const { id } = req.params;
 
-        let dataForUpdate = { roleId: null, permissions: filterPermissionsList }
-        const userPermissions = await userService.updatePersonRole(systemID, dataForUpdate);
+        const role = await rolePermissionsService.getRolesById(id);
+        if (!role) {
+            return errorMid(404, "Role not found", req, res);
+        }
+
+        const deletedRole = await rolePermissionsService.deleteRolesPermissions(id, transaction);
+        if (!deletedRole) {
+            return errorMid(400, "Role not deleted", req, res);
+        }
+
+        await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "role_permissions",
+            entityId: id,
+            action: "DELETE",
+            beforeAction: role,
+            afterAction: null,
+        }, transaction);
+
+        await transaction.commit();
+
+        return res.send({
+            success: true,
+            message: "Role deleted successfully",
+            result: deletedRole,
+        });
 
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.error(error);
         return handleErrors(error, req, res);
     }

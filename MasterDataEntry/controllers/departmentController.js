@@ -3,10 +3,13 @@ const departmentService = require("../services/departmentService");
 const { sequelize } = require("../../db/db");
 const { Sequelize } = require("sequelize");
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
+const AuditLogRepository = require("../../auditServices/auditLogService");
 
 
 exports.createDepartment = async (req, res, next) => {
-    let transaction;
+    let transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const {
             EntryNo,
@@ -29,9 +32,6 @@ exports.createDepartment = async (req, res, next) => {
         } = req.body;
 
         let data = {};
-        transaction = await sequelize.transaction({
-            isolationLevel: Sequelize.Transaction.SERIALIZABLE,
-        });
 
         if (!MPayNo) return next({ status: 400, message: "MPay is Required" });
         data.MPayNo = MPayNo;
@@ -53,9 +53,17 @@ exports.createDepartment = async (req, res, next) => {
         data.DeptSrNo = DeptSrNo;
 
         const department = await departmentService.create(data, transaction);
-        if (!department) {
+        if (!department || !department.DeptSrNo) {
             return next({ status: 400, message: "Department creation failed" });
         }
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "department",
+            entityId: department.DeptSrNo,
+            action: "CREATE",
+            beforeAction: null,
+            afterAction: department,
+        }, transaction);
 
         await transaction.commit();
 
@@ -100,6 +108,9 @@ exports.getById = async (req, res, next) => {
 }
 
 exports.updateDepartment = async (req, res, next) => {
+    let transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { DeptSrNo } = req.params;
         const { SPayNo, MPayNo, DeptName, Depo_SrNo } = req.body;
@@ -115,16 +126,36 @@ exports.updateDepartment = async (req, res, next) => {
         if (DeptName) dataForUpdate.DeptName = DeptName.toUpperCase();
         if (Depo_SrNo) dataForUpdate.Depo_SrNo = Depo_SrNo;
 
-        const updatedDepartment = await departmentService.updateDepartment(DeptSrNo, dataForUpdate);
+        const updatedDepartment = await departmentService.update(DeptSrNo, dataForUpdate, transaction);
+
+        if (!updatedDepartment) {
+            return next({ status: 400, message: "Department updation failed" });
+        }
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "department",
+            entityId: DeptSrNo,
+            action: "UPDATE",
+            beforeAction: department.dataValues,
+            afterAction: updatedDepartment[0],
+        }, transaction);
+
+        await transaction.commit();
 
         return res.status(200).send({ success: true, message: "Department updated successfully", result: updatedDepartment });
 
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         next(error);
     }
 }
 
 exports.deleteDepartment = async (req, res, next) => {
+    let transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { DeptSrNo } = req.params;
         const department = await departmentService.findById(DeptSrNo);
@@ -133,8 +164,26 @@ exports.deleteDepartment = async (req, res, next) => {
         }
         const result = await departmentService.delete(DeptSrNo);
 
+        if (!result) {
+            return next({ status: 400, message: "Department deletion failed" });
+        }
+
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "department",
+            entityId: DeptSrNo,
+            action: "DELETE",
+            beforeAction: department.dataValues,
+            afterAction: null,
+        }, transaction);
+
+        await transaction.commit();
+
         return res.status(200).send({ success: true, message: "Department deleted successfully", result: result });
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         next(error);
     }
 }

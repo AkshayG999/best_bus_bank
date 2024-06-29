@@ -2,9 +2,9 @@ const rolePermissions = require('../../db/db').rolePermissions;
 
 
 
-exports.createRolePermissions = async (name) => {
+exports.createRolePermissions = async (name, transaction) => {
     try {
-        return await rolePermissions.create({ name })
+        return await rolePermissions.create({ name }, { transaction })
     }
     catch (err) {
         return err
@@ -29,17 +29,20 @@ exports.getRolesById = async (id) => {
     }
 }
 
-exports.updateRolesPermissions = async (id, updatedPermissions) => {
+exports.updateRolesPermissions = async (id, updatedPermissions, transaction) => {
     try {
-        const role = await rolePermissions.findByPk(id);
-        if (role) {
-
-            return await role.update({ permissions: updatedPermissions }, { attributes: ['id', 'name', 'permissions'] });
-            // return { success: true, message: 'Permissions updated successfully' };
-        } else {
-            return { success: false, message: 'Role not found' };
+        const [updateCount, updatedRows] = await rolePermissions.update(
+            { permissions: updatedPermissions },
+            {
+                where: { id },
+                returning: true,
+                transaction,
+            }
+        );
+        if (updateCount === 0) {
+            return null;
         }
-
+        return updatedRows[0];
     } catch (error) {
         console.error('Error updating permissions:', error);
         return { success: false, message: 'An error occurred while updating permissions' };

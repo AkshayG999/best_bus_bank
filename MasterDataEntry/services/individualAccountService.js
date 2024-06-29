@@ -11,10 +11,10 @@ exports.create = async (data, transaction) => {
         throw error;
     }
 }
-exports.findByTrNo = async (TrNo, populate = false) => {
+exports.findByTrNo = async (AccSrNo, populate = false) => {
     try {
         const individualAccount = await individualAccountModel.findOne({
-            where: { TrNo: TrNo },
+            where: { AccSrNo: AccSrNo },
             include: populate ? [{ model: groupModel, attributes: ['sr_no', 'tr_no', 'groupName'] }] : []
         });
         return individualAccount;
@@ -36,19 +36,22 @@ exports.getAll = async (filter, populate = false) => {
 }
 
 
-exports.update = async (TrNo, dataForUpdate) => {
+exports.update = async (AccSrNo, dataForUpdate, transaction) => {
     try {
-        await individualAccountModel.update(dataForUpdate, { where: { TrNo: TrNo } });
-        const updatedIndividualAccount = await individualAccountModel.findByPk(TrNo);
-        return updatedIndividualAccount;
+        const result = await individualAccountModel.update(dataForUpdate, { where: { AccSrNo: AccSrNo }, returning: true }, { transaction });
+        if (result[0] === 0) {
+            throw new Error(`No record found with AccSrNo ${AccSrNo}.`);
+        }
+        return result[1];
+
     } catch (error) {
         throw error;
     }
 }
 
-exports.delete = async (TrNo) => {
+exports.delete = async (AccSrNo, transaction) => {
     try {
-        await individualAccountModel.destroy({ where: { TrNo: TrNo } });
+        return await individualAccountModel.destroy({ where: { AccSrNo: AccSrNo } }, { transaction });
     } catch (error) {
         throw error;
     }

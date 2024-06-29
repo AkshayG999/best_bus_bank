@@ -2,12 +2,15 @@ const branchService = require('../services/branchService');
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
 const { sequelize } = require("../../db/db");
 const { Sequelize, Op } = require("sequelize");
+const AuditLogRepository = require('../../auditServices/auditLogService');
 
 
 module.exports = {
 
     async createBranch(req, res, next) {
-        let transaction;
+        let transaction = await sequelize.transaction({
+            isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+        });
         try {
             let {
                 Branch_TrDt,
@@ -22,7 +25,8 @@ module.exports = {
                 BankCode,
                 PettyCash_SrNo,
                 BankAccSrNo,
-                CashAccSrNo
+                CashAccSrNo,
+                Branch_active
             } = req.body;
             let data = {};
 
@@ -91,9 +95,10 @@ module.exports = {
             }
             data.CashAccSrNo = CashAccSrNo;
 
-            transaction = await sequelize.transaction({
-                isolationLevel: Sequelize.Transaction.SERIALIZABLE,
-            });
+            if (!Branch_active) {
+                return next({ status: 400, message: "Branch active is required" });
+            }
+            data.Branch_active = Branch_active;
 
             const Branch_Tr = await procedureStoreController.createRecordWithSrNo(
                 "Branch_Tr",
@@ -103,6 +108,19 @@ module.exports = {
             data.Branch_Code = Branch_Tr;
 
             const newBranch = await branchService.createBranch(data, transaction);
+            console.log(newBranch);
+            if (!newBranch || !newBranch.Branch_Tr) {
+                return next({ status: 500, message: "Error while creating branch or Branch_Tr is missing" });
+            }
+            const log = await AuditLogRepository.log({
+                SystemID: req.systemID,
+                entityName: "branch",
+                entityId: newBranch.Branch_Tr,
+                action: "CREATE",
+                beforeAction: null,
+                afterAction: newBranch,
+            }, transaction);
+
             await transaction.commit();
 
             return res.status(201).send({
@@ -159,6 +177,9 @@ module.exports = {
 
 
     async updateBranch(req, res, next) {
+        let transaction = await sequelize.transaction({
+            isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+        });
         try {
             const { Branch_Tr } = req.params;
             const {
@@ -234,18 +255,36 @@ module.exports = {
                 dataForUpdate.CashAccSrNo = CashAccSrNo;
             }
 
-            const result = await branchService.updateBranch(Branch_Tr, dataForUpdate);
-            if (result.updatedRowsCount === 0) {
+            const updateBranch = await branchService.updateBranch(Branch_Tr, dataForUpdate, transaction);
+
+            if (!updateBranch) {
                 return next({ status: 404, message: 'Branch not update' });
             }
-            return res.status(200).json(result.updatedRows[0]);
+            const log = await AuditLogRepository.log({
+                SystemID: req.systemID,
+                entityName: "branch",
+                entityId: Branch_Tr,
+                action: "UPDATE",
+                beforeAction: branch.dataValues,
+                afterAction: updateBranch[0],
+            }, transaction);
+            // console.log(log)
+
+            await transaction.commit();
+            return res.status(200).send({ success: true, message: "Branch updated successfully", result: updateBranch[0] });
         } catch (error) {
+            if (transaction) {
+                await transaction.rollback();
+            }
             next(error);
         }
     },
 
 
     async deleteBranch(req, res, next) {
+        let transaction = await sequelize.transaction({
+            isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+        });
         try {
             const { Branch_Tr } = req.params;
             const branch = await branchService.getBranchById(Branch_Tr);
@@ -254,11 +293,23 @@ module.exports = {
             }
             const deletedRowCount = await branchService.deleteBranch(Branch_Tr);
             if (deletedRowCount === 0) {
-                return next({ status: 404, message: 'Branch not update' });
-            } else {
-                return res.status(200).send({ success: true, message: "Branch deleted successfully" });
+                return next({ status: 404, message: 'Branch not delete' });
             }
+
+            const log = await AuditLogRepository.log({
+                SystemID: req.systemID,
+                entityName: "branch",
+                entityId: Branch_Tr,
+                action: "DELETE",
+                beforeAction: branch.dataValues,
+            }, transaction);
+
+            await transaction.commit();
+            return res.status(200).send({ success: true, message: "Branch deleted successfully" });
         } catch (error) {
+            if (transaction) {
+                await transaction.rollback();
+            }
             next(error);
         }
     }

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const parentGroupController = require('../controllers/parentGroupController')
+const parentGroupController = require('../controllers/parentGroupController');
 
 
 router.post("/", parentGroupController.createParentGroup)

@@ -3,10 +3,13 @@ const bankBranchService = require('../services/bankBranchService');
 const bankService = require("../services/bankService");
 const { sequelize } = require("../../db/db");
 const { Sequelize, Op } = require("sequelize");
+const AuditLogRepository = require("../../auditServices/auditLogService");
 
 
 exports.createBranch = async (req, res, next) => {
-    let transaction;
+    let transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         let { TrDt, BankCode, BankName, ParentBank } = req.body;
 
@@ -27,10 +30,6 @@ exports.createBranch = async (req, res, next) => {
             return next({ status: 400, message: "Parent Bank not found or invalid Parent Bank" });
         }
 
-        transaction = await sequelize.transaction({
-            isolationLevel: Sequelize.Transaction.SERIALIZABLE,
-        });
-
         const TrNo = await procedureStoreController.createRecordWithSrNo(
             "branch_tr_no",
             transaction
@@ -42,6 +41,19 @@ exports.createBranch = async (req, res, next) => {
         BankName = BankName.toUpperCase();
 
         const newBranch = await bankBranchService.create({ TrNo, TrDt, BankCode, BankName, ParentBank }, transaction);
+        if (!newBranch.dataValues) {
+            return next({ status: 400, message: "Failed to create Bank Branch" });
+        }
+        // console.log(newBranch)
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "bank-branch",
+            entityId: newBranch.TrNo,
+            action: "CREATE",
+            beforeAction: null,
+            afterAction: newBranch,
+        }, transaction);
+
         await transaction.commit();
 
         return res.status(201).send({ success: true, message: "Bank Branch created successfully", result: newBranch });
@@ -84,6 +96,9 @@ exports.getAllBranches = async (req, res, next) => {
 }
 
 exports.updateBranch = async (req, res, next) => {
+    let transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { TrNo } = req.params;
         let { BankCode, BankName, ParentBank } = req.body;
@@ -93,7 +108,7 @@ exports.updateBranch = async (req, res, next) => {
             return next({ status: 400, message: "TrNo is required" });
         }
 
-        const branch = await bankBranchService.getById(TrNo);
+        const branch = await bankBranchService.getById(TrNo, false);
         if (!branch) {
             return next({ status: 400, message: "Bank Branch not found" });
         }
@@ -119,25 +134,60 @@ exports.updateBranch = async (req, res, next) => {
             dataForUpdate.ParentBank = ParentBank;
         }
 
-        const updatedBranch = await bankBranchService.update(TrNo, branchData);
+        const updatedBranch = await bankBranchService.update(TrNo, dataForUpdate, transaction);
         if (!updatedBranch) {
             return next({ status: 400, message: "Bank Branch not found" });
         }
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "bank-branch",
+            entityId: TrNo,
+            action: "UPDATE",
+            beforeAction: branch.dataValues,
+            afterAction: updatedBranch[0],
+        }, transaction);
+        // console.log(log)
+
+        await transaction.commit();
         return res.status(200).send({ success: true, message: "Bank Branch updated successfully", result: updatedBranch });
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         next(error);
     }
 }
 
 exports.deleteBranch = async (req, res, next) => {
+    let transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { TrNo } = req.params;
-        const deletedBranch = await bankBranchService.delete(TrNo);
-        if (!deletedBranch) {
+
+        const branch = await bankBranchService.getById(TrNo, false);
+        if (!branch) {
             return next({ status: 400, message: "Bank Branch not found" });
         }
+        const deletedBranch = await bankBranchService.delete(TrNo);
+        if (!deletedBranch) {
+            return next({ status: 400, message: "Error in Bank Branch delete" });
+        }
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "bank-branch",
+            entityId: TrNo,
+            action: "DELETE",
+            beforeAction: branch.dataValues,
+            afterAction: null,
+        }, transaction);
+
+        await transaction.commit();
         return res.status(200).send({ success: true, message: "Bank Branch deleted successfully" });
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         next(error);
     }
 }

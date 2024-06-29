@@ -18,7 +18,7 @@ module.exports = {
         }
     },
 
-    async findById(DeptSrNo) {
+    async findById(DeptSrNo, populate = false) {
         try {
             return await departmentModel.findByPk(DeptSrNo,
                 {
@@ -30,11 +30,15 @@ module.exports = {
         }
     },
 
-    async update(DeptSrNo, dataForUpdate) {
+    async update(DeptSrNo, dataForUpdate, transaction) {
         try {
-            return await departmentModel.update(dataForUpdate, {
-                where: { DeptSrNo }
-            });
+            const result = await departmentModel.update(dataForUpdate, {
+                where: { DeptSrNo }, returning: true
+            }, { transaction });
+            if (result[0] === 0) {
+                throw new Error(`No record found with Branch_Tr ${Branch_Tr}.`);
+            }
+            return result[1];
         } catch (error) {
             throw error;
         }

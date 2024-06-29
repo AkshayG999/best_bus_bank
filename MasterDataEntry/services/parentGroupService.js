@@ -28,12 +28,19 @@ exports.getAll = async (filter, populate = false) => {
 };
 
 
-exports.updateParentGroup = async (sr_no, data) => {
-    return await parentGroupModel.update(data, {
-        where: {
-            sr_no: sr_no
+exports.updateParentGroup = async (sr_no, data, transaction) => {
+    try {
+        const result = await parentGroupModel.update(data, {
+            where: { sr_no: sr_no }, returning: true
+        }, { transaction });
+        
+        if (result[0] == 0) {
+            return null
         }
-    });
+        return result[1][0]
+    } catch (error) {
+        return error
+    }
 }
 
 exports.deleteParentGroup = async (sr_no) => {

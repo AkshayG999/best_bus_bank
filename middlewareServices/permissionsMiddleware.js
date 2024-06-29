@@ -2,6 +2,7 @@ const featuresService = require("../adminServices/services/featuresService");
 const userService = require("../userServices/services/userService");
 const { errorMid, handleErrors } = require("./errorMid");
 
+
 exports.checkPermissionsMiddleware = (
     featureID,
     featureName='',

@@ -6,10 +6,10 @@ const { authenticateToken } = require('../../middlewareServices/authMid');
 
 
 
-router.post('/', authenticateToken, branchController.createBranch);
-router.get('/', authenticateToken, branchController.getAllBranches);
-router.get('/:TrNo', authenticateToken, branchController.getBranchById);
-router.put('/:TrNo', authenticateToken, branchController.updateBranch);
-router.delete('/:TrNo', authenticateToken, branchController.deleteBranch);
+router.post('/', branchController.createBranch);
+router.get('/', branchController.getAllBranches);
+router.get('/:TrNo', branchController.getBranchById);
+router.put('/:TrNo', branchController.updateBranch);
+router.delete('/:TrNo', branchController.deleteBranch);
 
 module.exports = router;

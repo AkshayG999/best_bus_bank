@@ -1,0 +1,6 @@
+﻿SrNo,Code,MemberShipType,Share_AccNo,ShareVal,Ent_AccNo,Ent_Val,Nomination_AccNo,Nomination_Val,Nominal_MemShip_AccNo,Nominal_MemShip_Val
+1,R,REGULAR,1584,500,1654,10,1649,100,0,0
+2,N,NOMINAL,0,0,0,0,0,0,1655,10
+4,B,SOCIETY EMPLOYEE,0,0,1654,10,0,0,1655,10
+5,X,AC CLOSED,0,0,0,0,0,0,NULL,NULL
+7,T,TEMP MEMBER,0,0,0,0,0,0,NULL,NULL

@@ -17,25 +17,31 @@ exports.getAll = async (filter) => {
     });
 }
 
-exports.getById = async (TrNo) => {
+exports.getById = async (TrNo, populate = true) => {
     return await bankBranchModel.findByPk(TrNo, {
-        include: [{ model: bankModel, as: 'bank' }]
+        include: populate ? [{ model: bankModel, as: 'bank' }] : []
+
     });
 }
 
-exports.update = async (TrNo, branchData) => {
-    const branch = await bankBranchModel.findByPk(TrNo);
-    if (!branch) {
-        throw new Error("Branch not found");
+exports.update = async (TrNo, branchData, transaction) => {
+    try {
+        const result = await bankBranchModel.update(branchData, { where: { TrNo }, returning: true }, { transaction });
+        if (result[0] === 0) {
+            throw new Error(`No record found with SRNo ${SRNo}.`);
+        }
+        return result[1]; // Returning the updated records
+
+    } catch (error) {
+        return error;
     }
-    await bankBranchModel.update(branchData);
-    return branch;
 }
 
 exports.delete = async (TrNo, transaction) => {
-    const branch = await bankBranchModel.findByPk(TrNo);
-    if (!branch) {
-        throw new Error("Branch not found");
+    try {
+        const result = await bankBranchModel.destroy({ where: { TrNo } });
+        return result;
+    } catch (error) {
+        return error;
     }
-    await bankBranchModel.destroy({ transaction });
 }

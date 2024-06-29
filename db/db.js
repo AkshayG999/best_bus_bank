@@ -3,15 +3,26 @@ const { dbConfig } = require('../config/config');
 const user = require("../userServices/models/userModel");
 const featuresModel = require("../adminServices/models/featuresModel");
 const rolePermissionsModel = require("../adminServices/models/rolePermissionsModel");
-const parentGroup = require("../MasterDataEntry/models/parentGroupModel");
-const group = require("../MasterDataEntry/models/groupModel");
-const individualAccount = require("../MasterDataEntry/models/individualAccountModel");
-const bank = require("../MasterDataEntry/models/bankModel");
-const bankBranch = require("../MasterDataEntry/models/bankBranchModel");
-const branch = require("../MasterDataEntry/models/branchModel");
-const department = require("../MasterDataEntry/models/departmentModel");
-const zone = require("../MasterDataEntry/models/zoneModel");
-const depo = require("../MasterDataEntry/models/depoModel");
+const parentGroup = require("../masterDataEntry/models/parentGroupModel");
+const group = require("../masterDataEntry/models/groupModel");
+const individualAccount = require("../masterDataEntry/models/individualAccountModel");
+const bank = require("../masterDataEntry/models/bankModel");
+const bankBranch = require("../masterDataEntry/models/bankBranchModel");
+const branch = require("../masterDataEntry/models/branchModel");
+const department = require("../masterDataEntry/models/departmentModel");
+const zone = require("../masterDataEntry/models/zoneModel");
+const depo = require("../masterDataEntry/models/depoModel");
+const auditLog = require("../auditServices/auditLogModel");
+const memberInformation = require("../memberRegistration/models/informationModel");
+const memberAddress = require("../memberRegistration/models/addressModel");
+const memberBankInfo= require('../memberRegistration/models/bankInfoModel')
+const memberDocument= require('../memberRegistration/models/documentModel')
+const memberNominee = require("../memberRegistration/models/nomineeModel");
+const memberInstallment = require("../memberRegistration/models/installmentModel");
+const memberShipType = require("../memberRegistration/models/memberShipTypeModel");
+const memberStatus = require("../memberRegistration/models/memberStatusModel");
+
+
 
 
 
@@ -25,8 +36,9 @@ const sequelize = new Sequelize(
         dialect: dbConfig.dialect,
         logging: false,
         dialectOptions: {
+            // connectTimeout: 60000,
             "ssl": {
-                "require": true,
+                "require": false,
                 "rejectUnauthorized": false
             },
             encrypt: dbConfig.options.encrypt,
@@ -35,6 +47,9 @@ const sequelize = new Sequelize(
                 minVersion: dbConfig.options.cryptoCredentialsDetails.minVersion
             },
             // ssl: dbConfig.options.ssl // Optionally provide SSL configuration
+        },
+        pool: {
+            // acquire: 60000
         }
     }
 );
@@ -74,6 +89,17 @@ const branchModel = branch(sequelize);
 const departmentModel = department(sequelize);
 const zoneModel = zone(sequelize);
 const depoModel = depo(sequelize);
+const auditLogModel = auditLog(sequelize);
+
+// Member Info 
+const memberInformationModel = memberInformation(sequelize);
+const memberAddressModel = memberAddress(sequelize);
+const memberBankInfoModel = memberBankInfo(sequelize);
+const memberDocumentModel = memberDocument(sequelize);
+const memberNomineeModel = memberNominee(sequelize);
+const memberInstallmentModel = memberInstallment(sequelize);
+const memberShipTypeModel = memberShipType(sequelize);
+const memberStatusModel = memberStatus(sequelize);
 
 
 // Associations between models here
@@ -101,5 +127,7 @@ departmentModel.belongsTo(depoModel, { foreignKey: 'Depo_SrNo', as: 'depo' });
 
 module.exports = {
     db, sequelize, userModel, bankModel, groupModel, parentGroupModel, individualAccountModel,
-    bankBranchModel, branchModel, departmentModel, features, rolePermissions, zoneModel, depoModel
+    bankBranchModel, branchModel, departmentModel, features, rolePermissions, zoneModel, depoModel, auditLogModel,
+    memberInformationModel, memberAddressModel, memberBankInfoModel, memberDocumentModel, memberNomineeModel, memberInstallmentModel, 
+    memberShipTypeModel, memberStatusModel
 };

@@ -24,9 +24,9 @@ module.exports = {
     },
 
     // Get branch by id
-    async getBranchById(id) {
+    async getBranchById(Branch_Tr) {
         try {
-            const branch = await branchModel.findByPk(id);
+            const branch = await branchModel.findByPk(Branch_Tr);
             return branch;
         } catch (error) {
             throw error;
@@ -34,13 +34,16 @@ module.exports = {
     },
 
     // Update branch by id
-    async updateBranch(Branch_Tr, newData) {
+    async updateBranch(Branch_Tr, newData, transaction) {
         try {
-            const [updatedRowsCount, updatedRows] = await branchModel.update(newData, {
+            const result = await branchModel.update(newData, {
                 where: { Branch_Tr },
                 returning: true,
-            });
-            return { updatedRowsCount, updatedRows };
+            }, { transaction });
+            if (result[0] === 0) {
+                throw new Error(`No record found with Branch_Tr ${Branch_Tr}.`);
+            }
+            return result[1];
         } catch (error) {
             throw error;
         }

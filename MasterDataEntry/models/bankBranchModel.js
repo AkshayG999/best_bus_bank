@@ -3,7 +3,7 @@ const { DataTypes } = require('sequelize');
 module.exports = function (sequelize) {
     const attributes = {
         TrNo: {
-            type: DataTypes.STRING(20),
+            type: DataTypes.STRING,
             allowNull: false,
             primaryKey: true,
         },

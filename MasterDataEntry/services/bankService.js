@@ -24,10 +24,22 @@ exports.getBankByTrNo = async (TrNo) => {
     return await bankModel.findByPk(TrNo);
 }
 
-exports.updateBank = async (TrNo, updateData) => {
-    return await bankModel.update(updateData, { where: { TrNo } });
+exports.updateBank = async (TrNo, updateData, transaction) => {
+    try {
+        const result = await bankModel.update(updateData, { where: { TrNo }, returning: true }, { transaction });
+        if (result[0] === 0) {
+            throw new Error(`No record found with SRNo ${TrNo}.`);
+        }
+        return result[1];
+    } catch (error) {
+        return error;
+    }
 }
 
 exports.deleteBank = async (TrNo) => {
-    return await bankModel.destroy({ where: { TrNo } });
+    try {
+        return await bankModel.destroy({ where: { TrNo } });
+    } catch (error) {
+        return error;
+    }
 }

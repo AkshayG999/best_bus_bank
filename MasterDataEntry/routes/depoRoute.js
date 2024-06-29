@@ -1,8 +1,9 @@
 const express = require('express');
 const depoController = require('../controllers/depoController');
+const { authenticateToken } = require('../../middlewareServices/authMid');
 const router = express.Router();
 
-router.post('/ ', depoController.createDepo);
+router.post('/', depoController.createDepo);
 router.get('/', depoController.getAllDepos);
 router.get('/:SRNo', depoController.getDepoById);
 router.put('/:SRNo', depoController.updateDepo);

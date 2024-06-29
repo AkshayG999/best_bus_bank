@@ -1,24 +1,27 @@
 const { errorMid, handleErrors } = require("../../middlewareServices/errorMid");
 const featuresHelper = require("../helper/featuresHelper");
 const featuresService = require("../services/featuresService");
+    const { sequelize } = require("../../db/db");
+    const { Sequelize, Op } = require("sequelize");
+    const AuditLogRepository = require('../../auditServices/auditLogService');
 
 
 
-exports.createFeatures = async (req, res) => {
+exports.createFeatures = async (req, res, next) => {
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { name, icon, link, parentFeatureId } = req.body;
         if (!name) {
-            return errorMid(400, "Name is required", req, res);
+            return next({ status: 400, message: "Name is required" });
         }
         if (parentFeatureId) {
             let findParentFeature = await featuresService.getFeaturesById(
                 parentFeatureId
             );
             if (!findParentFeature) {
-                return errorMid(
-                    400, `${parentFeatureId} is not a parent feature Id`,
-                    req, res
-                );
+                return next({ status: 400, message: `${parentFeatureId} is not a parent feature Id` });
             }
         }
         let data = { name: name, description: name, label: name, link: link };
@@ -32,14 +35,28 @@ exports.createFeatures = async (req, res) => {
             data.icon = icon;
         }
         const feature = await featuresService.createFeatures(data);
+        await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "featureModel",
+            entityId: feature.id,
+            action: "CREATE",
+            beforeAction: null,
+            afterAction: feature,
+        }, transaction);
+
+        await transaction.commit();
+
         return res.status(201).json({
             success: true,
             message: "Created successfully",
             result: feature,
         });
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.error(error);
-        return handleErrors(error, req, res);
+        return next(error);
     }
 };
 
@@ -196,9 +213,12 @@ exports.getFeaturesById = async (req, res) => {
 };
 
 exports.updateFeaturesById = async (req, res) => {
-    const { id } = req.params;
-    const { name, parentFeatureId, icon, link, } = req.body;
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
+        const { id } = req.params;
+        const { name, parentFeatureId, icon, link, } = req.body;
         let featureA = await featuresService.getFeaturesById(id);
         if (!featureA) {
             return errorMid(
@@ -243,22 +263,48 @@ exports.updateFeaturesById = async (req, res) => {
             dataForUpdate.icon = icon;
         }
 
-        featureA = await featuresService.updateFeatures(id, dataForUpdate);
+        const featureUpdate = await featuresService.updateFeatures(id, dataForUpdate, transaction);
+
+        await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "featureModel",
+            entityId: id,
+            action: "UPDATE",
+            beforeAction: featureA,
+            afterAction: featureUpdate,
+        }, transaction);
+
+        await transaction.commit();
         return res.status(200).send({
             success: true,
             message: "Updated successfully",
-            result: featureA,
+            result: featureUpdate,
         });
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.error(error);
         return handleErrors(error, req, res);
     }
 };
 
 exports.deleteFeaturesById = async (req, res) => {
-    const { id } = req.params;
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
-        const deletedCount = await featuresService.deleteFeatures(id);
+        const { id } = req.params;
+        const feature = await featuresService.getFeaturesById(id);
+        if (!feature) {
+            return errorMid(
+                400,
+                `feature with ${id} not found`,
+                req,
+                res
+            );
+        }
+        const deletedCount = await featuresService.deleteFeatures(id, transaction);
         if (deletedCount === 0) {
             return errorMid(
                 400,
@@ -267,10 +313,23 @@ exports.deleteFeaturesById = async (req, res) => {
                 res
             );
         }
+        await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "featureModel",
+            entityId: id,
+            action: "UPDATE",
+            beforeAction: feature,
+            afterAction: null,
+        }, transaction);
+
+        await transaction.commit();
         return res
             .status(200)
             .json({ success: true, message: "Feature deleted successfully" });
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.error(error);
         return handleErrors(error, req, res);
     }

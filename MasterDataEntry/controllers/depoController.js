@@ -1,16 +1,16 @@
 const depoService = require("../services/depoService");
 const { sequelize } = require("../../db/db");
 const { Sequelize } = require("sequelize");
+const AuditLogRepository = require("../../auditServices/auditLogService");
+const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
 
 exports.createDepo = async (req, res, next) => {
-    let transaction;
+    let transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { DepoName } = req.body;
         let data = {};
-
-        transaction = await sequelize.transaction({
-            isolationLevel: Sequelize.Transaction.SERIALIZABLE,
-        });
 
         const SRNo = await procedureStoreController.createRecordWithSrNo(
             "Depo_SRNo",
@@ -21,8 +21,11 @@ exports.createDepo = async (req, res, next) => {
         data.DepoName = DepoName.toUpperCase();
 
         const depo = await depoService.createDepo(data, transaction);
-        await transaction.commit();
 
+        const log = await AuditLogRepository.log({ SystemID: req.systemID, entityName: "depo", entityId: depo.SRNo, action: "CREATE", afterAction: depo }, transaction);
+        // console.log(log);
+
+        await transaction.commit();
         return res
             .status(201)
             .send({
@@ -73,34 +76,69 @@ exports.getDepoById = async (req, res, next) => {
 };
 
 exports.updateDepo = async (req, res, next) => {
+    let transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { DepoName } = req.body;
-
+        const SRNo = parseInt(req.params.SRNo, 10);
         const dataForUpdate = { DepoName: DepoName.toUpperCase() };
 
-        const updatedDepo = await depoService.updateDepo(
-            req.params.SRNo,
-            dataForUpdate
-        );
-        if (updatedDepo) {
-            res.status(200).json(updatedDepo);
-        } else {
-            res.status(404).json({ error: "Depo not found" });
+        const depo = await depoService.getDepoById(SRNo);
+        if (!depo) {
+            return next({ status: 404, message: "Depo not found" });
         }
+
+        const updatedDepo = await depoService.updateDepo(SRNo, dataForUpdate, { transaction });
+        if (!updatedDepo) {
+            return next({ status: 404, message: "Depo not found after update" });
+        }
+
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "depo",
+            entityId: SRNo,
+            action: "UPDATE",
+            beforeAction: depo,
+            afterAction: updatedDepo,
+        }, transaction);
+        // console.log(log);
+
+        await transaction.commit();
+
+        return res.status(200).send({ success: true, message: "Depo updated successfully", result: updatedDepo });
+
     } catch (error) {
         next(error);
     }
 };
 
 exports.deleteDepo = async (req, res, next) => {
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
-        const result = await depoService.deleteDepo(req.params.SRNo);
-        if (result) {
-            res.status(204).json();
-        } else {
-            res.status(404).json({ error: "Depo not found" });
+        const { SRNo } = req.req.params.SRNo;
+        const depo = await depoService.getDepoById(SRNo);
+        if (!depo) {
+            return next({ status: 404, message: "Depo not found" });
         }
+
+        const result = await depoService.deleteDepo(SRNo, transaction);
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "depo",
+            entityId: SRNo,
+            action: "DELETE",
+            beforeAction: depo,
+        }, transaction);
+
+        await transaction.commit();
+        return res.status(200).send({ success: true, message: "Depo deleted successfully", result: result });
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         next(error);
     }
 };

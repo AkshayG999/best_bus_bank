@@ -1,3 +1,4 @@
+const { where } = require("sequelize");
 const { features } = require("../../db/db");
 
 
@@ -47,25 +48,21 @@ exports.createFeatures = async (data) => {
 //     return await Promise.all(creationPromises);
 // }
 
-exports.updateFeatures = async (id, dataForUpdate) => {
+exports.updateFeatures = async (id, dataForUpdate, transaction) => {
     try {
-        const feature = await features.findByPk(id);
-        if (!feature) {
-            throw new Error("Feature C not found");
+        const result = await features.update(dataForUpdate, { where: { id }, returning: true }, { transaction });
+        if (result[0] == 0) {
+            throw new Error("Feature not found");
         }
-        return await feature.update(dataForUpdate);
+        return result[1][0];
     } catch (err) {
         return err;
     }
 };
 
-exports.deleteFeatures = async (id) => {
+exports.deleteFeatures = async (id, transaction) => {
     try {
-        const feature = await features.findByPk(id);
-        if (!feature) {
-            throw new Error("Feature not found");
-        }
-        return await feature.destroy();
+        return await features.destroy({ where: { id } }, { transaction });
     } catch (err) {
         return err;
     }

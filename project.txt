@@ -1,0 +1,150 @@
+.
+├── ReadME.md
+├── adminServices
+│   ├── controllers
+│   │   ├── featuresController.js
+│   │   ├── rolePermissionController.js
+│   │   ├── userController.js
+│   │   └── userPermissionsController.js
+│   ├── helper
+│   │   ├── featuresHelper.js
+│   │   └── rolePermissionHelper.js
+│   ├── models
+│   │   ├── featuresModel.js
+│   │   └── rolePermissionsModel.js
+│   ├── routes
+│   │   ├── featuresRoute.js
+│   │   ├── index.js
+│   │   ├── rolePermissionsRoute.js
+│   │   ├── userPermissionsRoute.js
+│   │   └── userRoutes.js
+│   └── services
+│       ├── featuresService.js
+│       └── rolePermissionsService.js
+├── auditServices
+│   ├── SequelizeFilterUtils.js
+│   ├── SequelizeRepository.js
+│   ├── auditLogModel.js
+│   └── auditLogService.js
+├── config
+│   └── config.js
+├── data.js
+├── dataBaseBackup
+│   ├── dataImport.js
+│   ├── index.js
+│   └── member
+│       ├── Mast_MemberInformation.csv
+│       ├── Mast_MemberInformation_Address.csv
+│       ├── Mast_MemberInformation_AttachDocument.csv
+│       ├── Mast_MemberInformation_BankInfo.csv
+│       ├── Mast_MemberInformation_Nominee.csv
+│       └── instmast.csv
+├── db
+│   └── db.js
+├── masterDataEntry
+│   ├── controllers
+│   │   ├── bankBranchController.js
+│   │   ├── bankController.js
+│   │   ├── branchController.js
+│   │   ├── departmentController.js
+│   │   ├── depoController.js
+│   │   ├── groupController.js
+│   │   ├── individualAccountController.js
+│   │   └── parentGroupController.js
+│   ├── helper
+│   │   └── helper.js
+│   ├── middleware
+│   │   └── roleAuth.js
+│   ├── models
+│   │   ├── bankBranchModel.js
+│   │   ├── bankModel.js
+│   │   ├── branchModel.js
+│   │   ├── departmentModel.js
+│   │   ├── depoModel.js
+│   │   ├── groupModel.js
+│   │   ├── individualAccountModel.js
+│   │   ├── parentGroupModel.js
+│   │   └── zoneModel.js
+│   ├── public
+│   │   └── features.js
+│   ├── routes
+│   │   ├── bankBranchRoute.js
+│   │   ├── bankRoute.js
+│   │   ├── branchRoute.js
+│   │   ├── departmentRoute.js
+│   │   ├── depoRoute.js
+│   │   ├── groupRoute.js
+│   │   ├── index.js
+│   │   ├── individualAccountRoute.js
+│   │   └── parentGroupRoute.js
+│   ├── services
+│   │   ├── bankBranchService.js
+│   │   ├── bankService.js
+│   │   ├── branchService.js
+│   │   ├── departmentService.js
+│   │   ├── depoService.js
+│   │   ├── groupService.js
+│   │   ├── individualAccountService.js
+│   │   └── parentGroupService.js
+│   └── utils
+│       └── errorHandler.js
+├── memberRegistration
+│   ├── controllers
+│   │   ├── memberAddressController.js
+│   │   ├── memberBankInfoController.js
+│   │   ├── memberDocumentController.js
+│   │   ├── memberInformationController.js
+│   │   ├── memberInstallmentController.js
+│   │   └── memberNomineeController.js
+│   ├── helper
+│   ├── models
+│   │   ├── memberAddressModel.js
+│   │   ├── memberBankInfoModel.js
+│   │   ├── memberDocumentModel.js
+│   │   ├── memberInformationModel.js
+│   │   ├── memberInstallmentModel.js
+│   │   └── memberNomineeModel.js
+│   ├── routes
+│   │   ├── index.js
+│   │   ├── memberAddressRoute.js
+│   │   ├── memberBankInfoRoute.js
+│   │   ├── memberDocumentRoute.js
+│   │   ├── memberInformationRoute.js
+│   │   ├── memberInstallmentRoute.js
+│   │   └── memberNomineeRoute.js
+│   └── services
+│       ├── memberAddressService.js
+│       ├── memberBankInfoService.js
+│       ├── memberDocumentService.js
+│       ├── memberInformationService.js
+│       ├── memberInstallmentService.js
+│       └── memberNomineeService.js
+├── middlewareServices
+│   ├── authMid.js
+│   ├── errorMid.js
+│   └── permissionsMiddleware.js
+├── package-lock.json
+├── package.json
+├── procedureStoreServices
+│   ├── controller
+│   │   └── procedureStoreController.js
+│   └── model
+│       └── procedureStoreModel.js
+├── project.txt
+├── routes
+│   └── index.js
+├── server.js
+└── userServices
+    ├── controllers
+    │   └── userController.js
+    ├── helper
+    │   └── helper.js
+    ├── models
+    │   └── userModel.js
+    ├── routes
+    │   ├── index.js
+    │   └── userRoutes.js
+    └── services
+        └── userService.js
+
+38 directories, 110 files

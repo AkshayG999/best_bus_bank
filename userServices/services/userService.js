@@ -68,17 +68,19 @@ exports.updateUser = async (systemID, dataForUpdate) => {
   return { Id, Name, Email };
 };
 
-exports.updatePersonRole = async (systemID, dataForUpdate) => {
-  let user = await userModel.findOne({
-    where: {
-      systemID: systemID,
-    },
-  });
-  if (user) {
-    return await user.update(dataForUpdate);
-    // return { success: true, message: 'Permissions updated successfully' };
-  } else {
-    return { success: false, message: "User not found" };
+exports.updatePersonRole = async (systemID, dataForUpdate, transaction) => {
+  try {
+    const [updateCount, updatedRows] = await userModel.update(dataForUpdate, {
+      where: { systemID }, returning: true,
+      transaction,
+    });
+    if (updateCount === 0) {
+      return null;
+    }
+    return updatedRows[0];
+  } catch (error) {
+    console.log(error);
+    return error;
   }
 };
 

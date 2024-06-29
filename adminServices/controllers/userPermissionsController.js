@@ -4,10 +4,16 @@ const rolePermissionHelper = require('../../adminServices/helper/rolePermissionH
 const featuresService = require('../../adminServices/services/featuresService');
 const featuresHelper = require('../../adminServices/helper/featuresHelper');
 const { errorMid, handleErrors } = require("../../middlewareServices/errorMid");
+const { sequelize } = require("../../db/db");
+const { Sequelize, Op } = require("sequelize");
+const AuditLogRepository = require('../../auditServices/auditLogService');
 
 
 
 exports.addRolePermissionsToUser = async (req, res) => {
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { systemID } = req.params;
         const { roleId } = req.body;
@@ -26,12 +32,29 @@ exports.addRolePermissionsToUser = async (req, res) => {
 
         let dataForUpdate = { roleId, permissions: role.dataValues.permissions }
 
-        const userPermissions = await userService.updatePersonRole(systemID, dataForUpdate);
+        const userPermissions = await userService.updatePersonRole(systemID, dataForUpdate, transaction);
 
-        console.log(userPermissions, user.dataValues, role.dataValues)
+        if (!userPermissions) {
+            return errorMid(404, "User Permissions Does not exist", req, res);
+        }
+        await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "user",
+            entityId: createdPerson.systemID,
+            action: "CREATE",
+            beforeAction: null,
+            afterAction: userPermissions,
+        }, transaction);
+
+        await transaction.commit();
+        console.log(userPermissions, user.dataValues, role.dataValues);
+
         return res.status(200).send({ success: true, message: "Permission Added successfully", result: userPermissions })
 
     } catch (err) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.log({ err });
         return handleErrors(err, req, res);
     }
@@ -164,12 +187,14 @@ exports.fetchUserPermissionsAll = async (req, res) => {
 }
 
 exports.updateUserPermissions = async (req, res) => {
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { systemID } = req.params;
         const { permissions } = req.body;
 
         const user = await userService.findPersonBySystemID(systemID);
-
         if (!user) {
             return errorMid(404, "User Does not exist", req, res);
         }
@@ -229,11 +254,28 @@ exports.updateUserPermissions = async (req, res) => {
 
         let dataForUpdate = { roleId: null, permissions: filterPermissionsList }
 
-        const userPermissions = await userService.updatePersonRole(systemID, dataForUpdate);
+        const userPermissions = await userService.updatePersonRole(systemID, dataForUpdate, transaction);
+        if (!userPermissions) {
+            return errorMid(404, "User permissions not update", req, res);
+        }
+
+        await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "user",
+            entityId: systemID,
+            action: "UPDATE",
+            beforeAction: user,
+            afterAction: userPermissions
+        }, transaction);
+
+        await transaction.commit();
 
         return res.status(200).send({ status: true, message: "Permission updated successfully", result: userPermissions })
     }
     catch (err) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.log({ err });
         return handleErrors(err, req, res);
     }

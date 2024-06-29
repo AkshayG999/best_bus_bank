@@ -3,9 +3,12 @@ const parentGroupService = require("../services/parentGroupService");
 const { sequelize } = require("../../db/db");
 const { Sequelize, Op } = require("sequelize");
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
+const AuditLogRepository = require("../../auditServices/auditLogService");
 
 exports.createParentGroup = async (req, res) => {
-    let transaction;
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         let { name } = req.body;
         if (!name) {
@@ -17,9 +20,6 @@ exports.createParentGroup = async (req, res) => {
             return errorMid(400, `${name} Parent group already exists`, req, res);
         }
 
-        transaction = await sequelize.transaction({
-            isolationLevel: Sequelize.Transaction.SERIALIZABLE,
-        });
         const sr_no = await procedureStoreController.createRecordWithSrNo(
             "parent_group_sr_no",
             transaction
@@ -29,6 +29,25 @@ exports.createParentGroup = async (req, res) => {
             { sr_no, name },
             transaction
         );
+
+        if (!createNewParentGroup) {
+            return errorMid(
+                400,
+                `Parent group not created`,
+                req,
+                res
+            );
+        }
+
+        await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "parent_group",
+            entityId: sr_no,
+            action: "CREATE",
+            beforeAction: null,
+            afterAction: createNewParentGroup,
+        }, transaction);
+
         await transaction.commit();
 
         return res.status(201).send({
@@ -68,7 +87,10 @@ exports.getParentGroups = async (req, res) => {
 };
 
 
-exports.updateParentGroup = async (req, res) => {
+exports.updateParentGroup = async (req, res, next) => {
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { sr_no } = req.params;
         let { name } = req.body;
@@ -96,22 +118,40 @@ exports.updateParentGroup = async (req, res) => {
         if (!dataForUpdate)
             return errorMid(400, "Please provide valid data to update", req, res);
 
-        const updatedGroup = await parentGroupService.updateParentGroup(
-            sr_no,
-            dataForUpdate
-        );
+        const updatedGroup = await parentGroupService.updateParentGroup(sr_no, dataForUpdate, transaction);
+
+        if (!updatedGroup) {
+            return errorMid(400, `Parent group not updated`, req, res);
+        }
+
+        await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "parent_group",
+            entityId: sr_no,
+            action: "UPDATE",
+            beforeAction: findGroup,
+            afterAction: updatedGroup,
+        }, transaction);
+
+        await transaction.commit();
         return res.status(200).send({
             success: true,
             message: "Parent group updated successfully",
             result: updatedGroup,
         });
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.log(error);
-        return handleErrors(error, req, res);
+        return next(error);
     }
 };
 
-exports.deleteParentGroup = async (req, res) => {
+exports.deleteParentGroup = async (req, res, next) => {
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         const { sr_no } = req.params;
 
@@ -125,14 +165,32 @@ exports.deleteParentGroup = async (req, res) => {
             );
         }
 
-        const deletedGroup = await parentGroupService.deleteParentGroup(sr_no);
+        const deletedGroup = await parentGroupService.deleteParentGroup(sr_no, transaction);
+        if (!deletedGroup) {
+            return errorMid(400, `Parent group not deleted`, req, res);
+        }
+
+        await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "parent_group",
+            entityId: sr_no,
+            action: "DELETE",
+            beforeAction: findGroup,
+            afterAction: null,
+        }, transaction);
+
+        await transaction.commit();
+
         return res.status(200).send({
             success: true,
             message: "Group deleted successfully",
             result: deletedGroup,
         });
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.log(error);
-        return handleErrors(error, req, res);
+        return next(error);
     }
 };

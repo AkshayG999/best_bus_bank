@@ -4,11 +4,13 @@ const { sequelize } = require("../../db/db");
 const { Sequelize } = require("sequelize");
 const { handleErrors, errorMid } = require("../../middlewareServices/errorMid");
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
+const AuditLogRepository = require("../../auditServices/auditLogService");
 
 
-exports.create = async (req, res) => {
-    let transaction;
-
+exports.create = async (req, res, next) => {
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
         let {
             AccountName,
@@ -112,11 +114,6 @@ exports.create = async (req, res) => {
                 res
             );
 
-        // Begin a transaction with SERIALIZABLE isolation level
-        transaction = await sequelize.transaction({
-            isolationLevel: Sequelize.Transaction.SERIALIZABLE,
-        });
-
         const TrNo = await procedureStoreController.generateGroupUniqueCode(
             "IndividualAccount_tr_no",
             "AC",
@@ -154,6 +151,23 @@ exports.create = async (req, res) => {
                 ExceptionAmt,
             }, transaction);
 
+        if (!individualAccount) {
+            return errorMid(
+                400,
+                `IndividualAccount with Account Name: [${AccountName}] not created`,
+                req,
+                res
+            );
+        }
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "individual-account",
+            entityId: AccSrNo,
+            action: "CREATE",
+            beforeAction: null,
+            afterAction: individualAccount,
+        }, transaction);
+
         await transaction.commit();
 
         return res.status(201).send({
@@ -166,16 +180,24 @@ exports.create = async (req, res) => {
             await transaction.rollback();
         }
         console.error("Error creating IndividualAccount:", error);
-        return handleErrors(error, req, res);
+        return next(error);
     }
 };
 
-exports.getByTrNo = async (req, res) => {
+exports.getByTrNo = async (req, res, next) => {
     try {
-        const { TrNo } = req.params;
+        const { AccSrNo } = req.params;
 
-        const individualAccounts =
-            await individualAccountService.findByTrNo(TrNo);
+        const individualAccounts = await individualAccountService.findByTrNo(AccSrNo);
+
+        if (!individualAccounts) {
+            return errorMid(
+                400,
+                `IndividualAccount with AccSrNo: [${AccSrNo}] not found`,
+                req,
+                res
+            );
+        }
 
         res.status(200).send({
             success: true,
@@ -184,16 +206,17 @@ exports.getByTrNo = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching IndividualAccounts:", error);
-        return handleErrors(error, req, res);
+        return next(error, req, res);
     }
 };
 
-exports.getAll = async (req, res) => {
+exports.getAll = async (req, res, next) => {
     try {
-        const { TrNo, AccountName, GroupName } = req.query;
+        const { AccSrNo, TrNo, AccountName, GroupName } = req.query;
         const filter = {};
 
         if (TrNo) filter.TrNo = TrNo;
+        if (AccSrNo) filter.AccSrNo = AccSrNo;
         if (AccountName) filter.AccountName = { [Op.iLike]: `%${AccountName}%` };
         if (GroupName) filter.GroupName = GroupName;
 
@@ -207,19 +230,21 @@ exports.getAll = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching IndividualAccounts:", error);
-        return handleErrors(error, req, res);
+        return next(error, req, res);
     }
 };
 
-exports.update = async (req, res) => {
+exports.update = async (req, res, next) => {
+    const transaction = await sequelize.transaction({
+        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+    });
     try {
-        const { TrNo } = req.params;
+        const { AccSrNo } = req.params;
         const {
             AccountName,
             GroupName,
             BankSrNo,
             OpClosingRelatedTo,
-            AccSrNo,
             OP_Balance,
             CL_Balance,
             ACC_DRCR,
@@ -235,8 +260,17 @@ exports.update = async (req, res) => {
 
         if (BankSrNo) dataForUpdate.BankSrNo = BankSrNo;
         if (OpClosingRelatedTo) dataForUpdate.OpClosingRelatedTo = OpClosingRelatedTo;
-        if (AccSrNo) dataForUpdate.AccSrNo = AccSrNo;
         if (SYSAcc) dataForUpdate.SYSAcc = SYSAcc;
+
+        const individualAccounts = await individualAccountService.findByTrNo(AccSrNo);
+        if (!individualAccounts) {
+            return errorMid(
+                400,
+                `IndividualAccount with AccSrNo: [${AccSrNo}] not found`,
+                req,
+                res
+            );
+        }
 
         if (AccountName) {
             const individualAccounts = await individualAccountService.getAll({ AccountName });
@@ -314,24 +348,42 @@ exports.update = async (req, res) => {
             return errorMid(400, "Please provide valid data to update", req, res);
         }
 
-        const updatedIndividualAccount = await individualAccountService.update(TrNo, dataForUpdate);
+        const updatedIndividualAccount = await individualAccountService.update(AccSrNo, dataForUpdate, transaction);
 
+        if (!updatedIndividualAccount) {
+            return errorMid(400, `IndividualAccount with AccSrNo: ${AccSrNo} not Updated`, req, res);
+        }
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "individual-account",
+            entityId: AccSrNo,
+            action: "UPDATE",
+            beforeAction: individualAccounts,
+            afterAction: updatedIndividualAccount[0],
+        }, transaction);
+
+        await transaction.commit();
         return res.status(200).json({
             success: true,
             message: "IndividualAccount updated successfully",
-            result: updatedIndividualAccount,
+            result: updatedIndividualAccount[0],
         });
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.error("Error updating IndividualAccount:", error);
-        return handleErrors(error, req, res);
+        return next(error);
     }
 };
 
-exports.delete = async (req, res) => {
-    try {
-        const { TrNo } = req.params;
 
-        const findIndividualAccount = await individualAccountService.findByTrNo(TrNo);
+exports.delete = async (req, res, next) => {
+    const transaction = await sequelize.transaction();
+    try {
+        const { AccSrNo } = req.params;
+
+        const findIndividualAccount = await individualAccountService.findByTrNo(AccSrNo);
         if (!findIndividualAccount)
             return errorMid(
                 400,
@@ -341,15 +393,35 @@ exports.delete = async (req, res) => {
             );
 
         const deletedIndividualAccount =
-            await individualAccountService.delete(TrNo);
+            await individualAccountService.delete(AccSrNo);
 
+        if (!deletedIndividualAccount)
+            return errorMid(
+                400,
+                `IndividualAccount with AccSrNo: ${AccSrNo} not deleted`,
+                req,
+                res
+            );
+
+        const log = await AuditLogRepository.log({
+            SystemID: req.systemID,
+            entityName: "individual-account",
+            entityId: AccSrNo,
+            action: "DELETE",
+            beforeAction: findIndividualAccount,
+        }, transaction);
+
+        await transaction.commit();
         return res.status(200).json({
             success: true,
             message: "IndividualAccount deleted successfully",
             result: deletedIndividualAccount,
         });
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         console.error("Error deleting IndividualAccount:", error);
-        return handleErrors(error, req, res);
+        return next(error);
     }
 };

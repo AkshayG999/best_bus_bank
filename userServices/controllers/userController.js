@@ -6,10 +6,15 @@ const generator = require('generate-password');
 const ShortUniqueId = require('short-unique-id');
 const { generateUserFriendlyPassword } = require('../helper/helper');
 const { errorMid, handleErrors } = require('../../middlewareServices/errorMid');
-
+const { sequelize } = require("../../db/db");
+const { Sequelize, Op } = require("sequelize");
+const AuditLogRepository = require('../../auditServices/auditLogService');
 
 
 exports.signUp = async (req, res) => {
+  const transaction = await sequelize.transaction({
+    isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+  });
   try {
     let { name, email, password } = req.body;
 
@@ -53,9 +58,22 @@ exports.signUp = async (req, res) => {
     const createdPerson = await userService.createPerson({ name, email, password: hashedPassword, systemID });
     createdPerson['password'] = password;
 
+    const log = await AuditLogRepository.log({
+      SystemID: req.systemID,
+      entityName: "user",
+      entityId: createdPerson.systemID,
+      action: "CREATE",
+      beforeAction: null,
+      afterAction: createdPerson,
+    }, transaction);
+
+    await transaction.commit();
     return res.status(201).json({ success: true, message: "User created successfully", result: createdPerson });
 
   } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
     console.log(error);
     return handleErrors(error, req, res);
   }
@@ -85,6 +103,9 @@ exports.getAll = async (req, res) => {
 
 
 exports.updateUser = async (req, res) => {
+  const transaction = await sequelize.transaction({
+    isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+  });
   try {
     const { systemID } = req.params;
     const { name, email, password, bankId, branchId, departmentId } = req.body;
@@ -116,8 +137,22 @@ exports.updateUser = async (req, res) => {
     if (!dataForUpdate) return errorMid(400, "Please provide valid data to update", req, res);
 
     const updatedPerson = await userService.updateUser(systemID, dataForUpdate);
+
+    const log = await AuditLogRepository.log({
+      SystemID: req.systemID,
+      entityName: "user",
+      entityId: updatedPerson.systemID,
+      action: "UPDATE",
+      beforeAction: userIsExist,
+      afterAction: updatedPerson,
+    }, transaction);
+
+    await transaction.commit();
     return res.status(200).json({ success: true, message: "User updated successfully", result: updatedPerson });
   } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
     return handleErrors(error, req, res);
   }
 }
@@ -125,6 +160,9 @@ exports.updateUser = async (req, res) => {
 
 
 exports.deleteByID = async (req, res) => {
+  const transaction = await sequelize.transaction({
+    isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+  });
   try {
     const { systemID } = req.params;
 
@@ -135,9 +173,22 @@ exports.deleteByID = async (req, res) => {
 
     const deletedPerson = await userService.deletePerson(systemID);
 
+    const log = await AuditLogRepository.log({
+      SystemID: req.systemID,
+      entityName: "user",
+      entityId: deletedPerson.systemID,
+      action: "DELETE",
+      beforeAction: userIsExist,
+      afterAction: null,
+    }, transaction);
+
+    await transaction.commit();
     return res.status(200).json({ success: true, message: "User deleted successfully", result: deletedPerson });
 
   } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
     return handleErrors(error, req, res);
   }
 }
@@ -198,6 +249,9 @@ exports.getBySystemID = async (req, res) => {
 
 
 exports.updatePassword = async (req, res) => {
+  const transaction = await sequelize.transaction({
+    isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+  });
   try {
     const { systemID } = req.params;
     const { currentPassword, newPassword } = req.body;
@@ -220,8 +274,22 @@ exports.updatePassword = async (req, res) => {
 
     const updatedPerson = await userService.updatePersonPassword(systemID, hashedPassword);
 
+    await AuditLogRepository.log({
+      SystemID: req.systemID,
+      entityName: "user",
+      entityId: updatedPerson.systemID,
+      action: "UPDATE",
+      beforeAction: user,
+      afterAction: updatedPerson,
+    }, transaction);
+
+    await transaction.commit();
+
     return res.status(200).json({ success: true, message: "Password updated successfully", result: updatedPerson });
   } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
     return handleErrors(error, req, res);
   }
 }
