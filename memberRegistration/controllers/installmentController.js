@@ -12,7 +12,7 @@ exports.createInstallment = async (req, res, next) => {
 
         const srno = await procedureStoreController.createRecordWithSrNo("member_instalment_srno", transaction);
 
-        const newInstallment = await memberInstallmentService.create({...data,srno}, transaction);
+        const newInstallment = await memberInstallmentService.create({ ...data, srno }, transaction);
 
         await AuditLogRepository.log({
             SystemID: req.systemID,
@@ -28,6 +28,7 @@ exports.createInstallment = async (req, res, next) => {
         res.status(201).json({ success: true, message: "Member installment created successfully", result: newInstallment });
     } catch (error) {
         if (transaction) await transaction.rollback();
+        console.log(error);
         next(error);
     }
 };
