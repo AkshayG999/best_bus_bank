@@ -133,13 +133,12 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
         return date.isValid() ? date.toISOString() : null;
     }
 
-    // Function to normalize keys by removing any quotes and whitespace
     function normalizeKeys(row) {
         const normalizedRow = {};
         for (let key in row) {
             if (row.hasOwnProperty(key)) {
-                const normalizedKey = key.replace(/^['"]|['"]$/g, ''); // Remove both single and double quotes
-                normalizedRow[normalizedKey.trim()] = row[key]; // Trim any whitespace around the key
+                const normalizedKey = key.replace(/^['"]|['"]$/g, '');  
+                normalizedRow[normalizedKey.trim()] = row[key];  
             }
         }
         return normalizedRow;
@@ -162,7 +161,11 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
                     const attribute = model.rawAttributes[columnName];
                     const dataType = attribute.type.key;
 
-                    const rowValue = normalizedRow[columnName];
+                    let rowValue = normalizedRow[columnName];
+
+                    if (columnName === 'EntryNo') {
+                        rowValue = rowValue.toString(); // Convert EntryNo to string
+                    }
 
                     // console.log(`Processing ${columnName}: ${rowValue}`); // Debug each column
 
@@ -177,7 +180,7 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
                         cleanedRow[columnName] = rowValue;
                     }
                 }
-                // console.log('Processed Row:', cleanedRow); // Debug: Print the cleaned row
+                console.log('Processed Row:', cleanedRow); // Debug: Print the cleaned row
                 results.push(cleanedRow);
             })
             .on('end', async () => {

@@ -1,60 +1,70 @@
-const memberAddressService = require('../services/memberAddressService');
+const memberAddressService = require('../services/addressService');
+const { sequelize } = require('../../db/db');
 
 
-
-exports.create = async function (req, res, next) {
+exports.createMemberAddress = async (req, res, next) => {
+    let transaction;
     try {
-        const address = await memberAddressService.createAddress(req.body);
-        res.status(201).json(address);
+        transaction = await sequelize.transaction();
+        const data = req.body;
+        
+        const newAddress = await memberAddressService.create(data, transaction);
+        await transaction.commit();
+        return res.status(201).json({ success: true, message: "Member Address created successfully", result: newAddress });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        if (transaction) await transaction.rollback();
+        next(error);
     }
 };
 
-// Get all addresses
-exports.getAll = async function (req, res, next) {
+exports.getAllMemberAddresses = async (req, res, next) => {
     try {
-        const addresses = await memberAddressService.getAllAddresses();
-        res.status(200).json(addresses);
+        const filter = req.query;
+        const addresses = await memberAddressService.getAll(filter);
+        return res.status(200).json({ success: true, message: "Fetched successfully", result: addresses });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
-// Get an address by EntryNo
-exports.getById = async function (req, res, next) {
+exports.getMemberAddressById = async (req, res, next) => {
     try {
-        const { entryNo } = req.params;
-        const address = await memberAddressService.getAddressById(entryNo);
-        if (address) {
-            res.status(200).json(address);
-        } else {
-            res.status(404).json({ message: 'Address not found' });
+        const { EntryNo } = req.params;
+        const address = await memberAddressService.getById(EntryNo);
+        if (!address) {
+            return next({ status: 404, message: "Member Address not found" });
         }
+        return res.status(200).json({ success: true, message: "Fetched successfully", result: address });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
-
-// Update an existing address by EntryNo
-exports.update = async function (req, res, next) {
+exports.updateMemberAddress = async (req, res, next) => {
+    let transaction;
     try {
-        const { entryNo } = req.params;
-        const address = await memberAddressService.updateAddress(entryNo, req.body);
-        res.status(200).json(address);
+        transaction = await sequelize.transaction();
+        const { EntryNo } = req.params;
+        const data = req.body;
+        const updatedAddress = await memberAddressService.update(EntryNo, data, transaction);
+        await transaction.commit();
+        return res.status(200).json({ success: true, message: "Member Address updated successfully", result: updatedAddress });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        if (transaction) await transaction.rollback();
+        next(error);
     }
 };
 
-// Delete an address by EntryNo
-exports.delete = async function (req, res, next) {
+exports.deleteMemberAddress = async (req, res, next) => {
+    let transaction;
     try {
-        const { entryNo } = req.params;
-        await memberAddressService.deleteAddress(entryNo);
-        res.status(204).send();
+        transaction = await sequelize.transaction();
+        const { EntryNo } = req.params;
+        await memberAddressService.delete(EntryNo, transaction);
+        await transaction.commit();
+        return res.status(200).json({ success: true, message: "Member Address deleted successfully" });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        if (transaction) await transaction.rollback();
+        next(error);
     }
 };

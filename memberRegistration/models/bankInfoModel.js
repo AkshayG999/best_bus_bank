@@ -4,10 +4,9 @@ module.exports = function (sequelize) {
 
     return sequelize.define('member_bank_info', {
         EntryNo: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             primaryKey: true,
             allowNull: false,
-            autoIncrement: true
         },
         Mem_Bank_AcNo: {
             type: DataTypes.STRING,

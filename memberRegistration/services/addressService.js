@@ -1,44 +1,49 @@
-const { member_address } = require('../../db/db');
+const { memberAddressModel } = require('../../db/db');
 
-
-// Get all addresses
-async function getAllAddresses() {
-    return await member_address.findAll();
-}
-
-// Get an address by EntryNo
-async function getAddressById(entryNo) {
-    return await member_address.findByPk(entryNo);
-}
-
-// Create a new address
-async function createAddress(addressData) {
-    return await member_address.create(addressData);
-}
-
-// Update an existing address by EntryNo
-async function updateAddress(entryNo, addressData) {
-    const address = await getAddressById(entryNo);
-    if (address) {
-        return await address.update(addressData);
+exports.create = async (data, transaction) => {
+    try {
+        return await memberAddressModel.create(data, { transaction });
+    } catch (error) {
+        throw error;
     }
-    throw new Error('Address not found');
-}
+};
 
-// Delete an address by EntryNo
-async function deleteAddress(entryNo) {
-    const address = await getAddressById(entryNo);
-    if (address) {
-        await address.destroy();
-    } else {
-        throw new Error('Address not found');
+exports.getAll = async (filter) => {
+    try {
+        return await memberAddressModel.findAll({ where: filter });
+    } catch (error) {
+        throw error;
     }
-}
+};
 
-module.exports = {
-    getAllAddresses,
-    getAddressById,
-    createAddress,
-    updateAddress,
-    deleteAddress,
+exports.getById = async (EntryNo) => {
+    try {
+        return await memberAddressModel.findByPk(EntryNo);
+    } catch (error) {
+        throw error;
+    }
+};
+
+exports.update = async (EntryNo, data, transaction) => {
+    try {
+        const [rowsUpdate, [updatedAddress]] = await memberAddressModel.update(data, {
+            where: { EntryNo },
+            returning: true,
+            transaction
+        });
+        if (rowsUpdate === 0) {
+            throw new Error(`No record found with EntryNo ${EntryNo}.`);
+        }
+        return updatedAddress;
+    } catch (error) {
+        throw error;
+    }
+};
+
+exports.delete = async (EntryNo, transaction) => {
+    try {
+        return await memberAddressModel.destroy({ where: { EntryNo }, transaction });
+    } catch (error) {
+        throw error;
+    }
 };

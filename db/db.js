@@ -49,29 +49,13 @@ const sequelize = new Sequelize(
             // ssl: dbConfig.options.ssl // Optionally provide SSL configuration
         },
         pool: {
-            // acquire: 60000
+            max: 10,
+            min: 0,
+            acquire: 30000,
+            idle: 10000
         }
     }
 );
-
-// const sequelize = new Sequelize(
-//     dbConfig.database,
-//     dbConfig.user,
-//     dbConfig.password,
-//     {
-//         host: dbConfig.server,
-//         port: dbConfig.port, // Use the specified port
-//         dialect: 'postgres', // Use the correct dialect for PostgreSQL
-//         dialectOptions: {
-//             encrypt: dbConfig.options.encrypt,
-//             trustServerCertificate: dbConfig.options.trustServerCertificate,
-//             cryptoCredentialsDetails: {
-//                 minVersion: dbConfig.options.cryptoCredentialsDetails.minVersion
-//             },
-//             // ssl: dbConfig.options.ssl // Optionally provide SSL configuration
-//         }
-//     }
-// );
 
 
 const db = {};
