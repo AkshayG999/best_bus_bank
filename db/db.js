@@ -15,8 +15,8 @@ const depo = require("../masterDataEntry/models/depoModel");
 const auditLog = require("../auditServices/auditLogModel");
 const memberInformation = require("../memberRegistration/models/informationModel");
 const memberAddress = require("../memberRegistration/models/addressModel");
-const memberBankInfo= require('../memberRegistration/models/bankInfoModel')
-const memberDocument= require('../memberRegistration/models/documentModel')
+const memberBankInfo = require('../memberRegistration/models/bankInfoModel')
+const memberDocument = require('../memberRegistration/models/documentModel')
 const memberNominee = require("../memberRegistration/models/nomineeModel");
 const memberInstallment = require("../memberRegistration/models/installmentModel");
 const memberShipType = require("../memberRegistration/models/memberShipTypeModel");
@@ -110,8 +110,8 @@ departmentModel.belongsTo(depoModel, { foreignKey: 'Depo_SrNo', as: 'depo' });
 
 
 module.exports = {
-    db, sequelize, userModel, bankModel, groupModel, parentGroupModel, individualAccountModel,
+    db, sequelize, Sequelize, userModel, bankModel, groupModel, parentGroupModel, individualAccountModel,
     bankBranchModel, branchModel, departmentModel, features, rolePermissions, zoneModel, depoModel, auditLogModel,
-    memberInformationModel, memberAddressModel, memberBankInfoModel, memberDocumentModel, memberNomineeModel, memberInstallmentModel, 
+    memberInformationModel, memberAddressModel, memberBankInfoModel, memberDocumentModel, memberNomineeModel, memberInstallmentModel,
     memberShipTypeModel, memberStatusModel
 };

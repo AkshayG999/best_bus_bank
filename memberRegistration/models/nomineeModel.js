@@ -4,10 +4,9 @@ const { DataTypes } = require('sequelize');
 module.exports = function (sequelize) {
     return sequelize.define('member_nominee', {
         EntryNo: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             primaryKey: true,
             allowNull: false,
-            autoIncrement: true
         },
         Mem_EntryNo: {
             type: DataTypes.STRING,

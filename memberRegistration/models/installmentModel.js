@@ -2,6 +2,12 @@ const { DataTypes } = require('sequelize');
 
 module.exports = function (sequelize) {
     return sequelize.define('member_installment', {
+        srno: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            allowNull: false,
+            autoIncrement: true
+        },
         MNO: {
             type: DataTypes.INTEGER,
             allowNull: true
@@ -117,12 +123,6 @@ module.exports = function (sequelize) {
         MEDILN_ROI: {
             type: DataTypes.DECIMAL(5, 2),
             allowNull: true
-        },
-        srno: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            allowNull: false,
-            autoIncrement: true
         }
     }, {
         tableName: 'member_installment',

@@ -1,14 +1,22 @@
 const memberNomineeService = require('../services/nomineeService');
 const { sequelize, Sequelize } = require('../../db/db');
 const AuditLogRepository = require('../../auditServices/auditLogService');
+const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
+
 
 
 exports.createNominee = async (req, res, next) => {
     let transaction;
     try {
         transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
-        
-        const newNominee = await memberNomineeService.create(req.body, transaction);
+        const data = req.body;
+        const EntryNo = await procedureStoreController.generateGroupUniqueCode(
+            "member_nominee_EntryNo",
+            "NOM",
+            transaction
+        );
+        console.log(EntryNo);
+        const newNominee = await memberNomineeService.create({...data,EntryNo}, transaction);
 
         await AuditLogRepository.log({
             SystemID: req.systemID,
