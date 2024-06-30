@@ -1,4 +1,4 @@
-const { memberBankInfoModel } = require('../../db/db'); 
+const { memberBankInfoModel } = require('../../db/db');
 
 exports.create = async (data) => {
     try {
@@ -26,11 +26,11 @@ exports.getById = async (EntryNo) => {
 
 exports.update = async (EntryNo, data) => {
     try {
-        const [updated] = await memberBankInfoModel.update(data, { where: { EntryNo } });
-        if (updated) {
-            return await memberBankInfoModel.findByPk(EntryNo);
+        const [rowsUpdate, [updatedData]] = await memberBankInfoModel.update(data, { where: { EntryNo } });
+        if (rowsUpdate === 0) {
+            throw new Error(`No record found with EntryNo ${EntryNo}.`);
         }
-        throw new Error('Bank info not found or not updated');
+        return updatedData;
     } catch (error) {
         throw new Error(`Failed to update bank info: ${error.message}`);
     }
