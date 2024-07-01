@@ -1,7 +1,7 @@
 const express = require('express');
 const adminServicesRoutes = require('../adminServices/routes/index');
 const userServicesRoutes = require('../userServices/routes/index');
-const masterDataEntryRoutes = require('../masterDataEntry/routes/index');
+const masterDataEntryRoutes = require('../master_data_entry/routes/index');
 const memberRegistrationRoutes = require('../memberRegistration/routes/index');
 const { authenticateToken } = require('../middlewareServices/authMid');
 
