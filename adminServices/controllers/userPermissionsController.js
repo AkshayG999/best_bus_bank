@@ -40,9 +40,9 @@ exports.addRolePermissionsToUser = async (req, res) => {
         await AuditLogRepository.log({
             SystemID: req.systemID,
             entityName: "user",
-            entityId: createdPerson.systemID,
+            entityId: user.systemID,
             action: "CREATE",
-            beforeAction: null,
+            beforeAction: user,
             afterAction: userPermissions,
         }, transaction);
 
