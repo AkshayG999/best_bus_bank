@@ -4,12 +4,8 @@ const { sequelize } = require("../../db/db");
 const { Sequelize } = require("sequelize");
 
 
-exports.basicDetailsCreate = async (req, res, next) => {
-    let transaction = await sequelize.transaction({
-        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
-    });
+exports.basicDetailsCreate = async (memberData, transaction) => {
     try {
-        const memberData = req.body;
         const EntryNo = await procedureStoreController.generateGroupUniqueCode(
             "member_information_EntryNo",
             "MEM",
@@ -21,14 +17,13 @@ exports.basicDetailsCreate = async (req, res, next) => {
 
         const newMember = await memberInformationService.createMember({ ...memberData, EntryNo, mem_SrNo });
         await transaction.commit();
-
-        res.status(201).json({ message: 'Member created successfully', result: newMember });
+        return newMember;
     } catch (error) {
         if (transaction) {
             await transaction.rollback();
         }
         console.error(error);
-        next(error);
+        return null;
     }
 };
 
@@ -58,15 +53,13 @@ exports.basicDetailsUpdate = async (req, res, next) => {
 
 // ______________________________________________________________________________________________________________________________________________
 
-exports.personalInfoUpdate = async (req, res, next) => {
+exports.personalInfoUpdate = async (memberData, transaction) => {
     try {
-        const { id } = req.params;
-        const memberData = req.body;
-        const updatedMember = await memberInformationService.updateMember(id, memberData);
-        res.status(201).json({ message: 'Member created successfully', result: updatedMember });
+        const updatedMember = await memberInformationService.updateMember(id, memberData, transaction);
+        return updatedMember;
     } catch (error) {
         console.log(error);
-        next(error);
+        return null;
     }
 };
 
