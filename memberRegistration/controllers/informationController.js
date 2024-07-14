@@ -55,6 +55,19 @@ exports.personalInfoGet = async (EntryNo) => {
     }
 };
 
+exports.deleteMember = async (EntryNo, transaction) => {
+    try {
+        const member = await memberInformationService.basicDetailsGet(EntryNo);
+        if (!member) {
+            throw new Error('Member not found');
+        }
+        const deleted = await memberInformationService.deleteMember(EntryNo, transaction);
+        return deleted;
+    } catch (error) {
+        throw new Error(`Failed to delete Member details: ${error.message}`);
+    }
+};
+
 exports.personalInfoUpdate = async (memberData, transaction) => {
     try {
         const updatedMember = await memberInformationService.updateMember(memberData.EntryNo, memberData, transaction);
@@ -111,15 +124,4 @@ exports.getAllMembers = async (req, res, next) => {
 //     }
 // };
 
-exports.deleteMember = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const deleted = await memberInformationService.deleteMember(id);
-        if (!deleted) {
-            return res.status(404).json({ message: 'Member not found' });
-        }
-        res.status(200).json({ message: 'Member deleted successfully' });
-    } catch (error) {
-        next(error);
-    }
-};
+

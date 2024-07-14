@@ -67,27 +67,21 @@ exports.updateNominee = async (Mem_EntryNo, nominee, transaction) => {
     }
 };
 
-exports.deleteNominee = async (req, res, next) => {
-    let transaction;
+exports.deleteNominee = async (Mem_EntryNo, transaction) => {
     try {
-        transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
+        const deleted = await memberNomineeService.delete(Mem_EntryNo, transaction);
 
-        const deleted = await memberNomineeService.delete(req.params.EntryNo, transaction);
+        // await AuditLogRepository.log({
+        //     SystemID: req.systemID,
+        //     entityName: "member_nominee",
+        //     entityId: req.params.EntryNo,
+        //     action: "DELETE",
+        //     beforeAction: req.params.EntryNo,
+        //     afterAction: null,
+        // }, transaction);
 
-        await AuditLogRepository.log({
-            SystemID: req.systemID,
-            entityName: "member_nominee",
-            entityId: req.params.EntryNo,
-            action: "DELETE",
-            beforeAction: req.params.EntryNo,
-            afterAction: null,
-        }, transaction);
-
-        await transaction.commit();
-
-        res.status(200).json({ success: true, message: "Member nominee deleted successfully" });
+        return deleted;
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
+        throw new Error(`Failed to delete member nominee: ${error.message}`);
     }
 };

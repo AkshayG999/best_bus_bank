@@ -1,11 +1,11 @@
 const { sequelize } = require("../../db/db");
 const { Sequelize } = require("sequelize");
-const { basicDetailsCreate, basicDetailsGet, personalInfoGet, updateMember } = require("./informationController");
-const { createMemberAddress, getMemberAddressById, updateMemberAddress } = require("./addressController");
-const { createBankInfo, getBankInfo, updateBankInfo } = require("./bankInfoController");
-const { createDocument, getDocumentByEntryNo, updateDocument } = require("./documentController");
-const { createNominee, getNomineeByMem_EntryNo, updateNominee } = require("./nomineeController");
-const { createInstallment, updateInstallment, getInstallment } = require("./installmentController");
+const { basicDetailsCreate, basicDetailsGet, personalInfoGet, updateMember, deleteMember } = require("./informationController");
+const { createMemberAddress, getMemberAddressById, updateMemberAddress, deleteMemberAddress } = require("./addressController");
+const { createBankInfo, getBankInfo, updateBankInfo, deleteBankInfo } = require("./bankInfoController");
+const { createDocument, getDocumentByEntryNo, updateDocument, deleteDocument } = require("./documentController");
+const { createNominee, getNomineeByMem_EntryNo, updateNominee, deleteNominee } = require("./nomineeController");
+const { createInstallment, updateInstallment, getInstallment, deleteInstallment } = require("./installmentController");
 
 
 
@@ -28,6 +28,8 @@ exports.createMember = async (req, res, next) => {
         const newMember = await basicDetailsCreate({ ...basicDetails, ...personalInfo }, transaction);
         if (!newMember) throw new Error("Failed to create basic details.");
         const EntryNo = newMember.dataValues.EntryNo;
+        const MNO = newMember.dataValues.mem_SrNo;
+        const MemCode = newMember.dataValues.MemCode;
 
         // Create address
         const newAddress = await createMemberAddress({ EntryNo, ...address }, transaction);
@@ -46,7 +48,7 @@ exports.createMember = async (req, res, next) => {
         if (!newNominee) throw new Error("Failed to create nominee.");
 
         // Create installment
-        const newInstallment = await createInstallment(EntryNo, installment, transaction);
+        const newInstallment = await createInstallment({ "MNO": MNO, "CHECKNO": MemCode, ...installment }, transaction);
         if (!newInstallment) throw new Error("Failed to create installment.");
 
         // Commit transaction
@@ -81,6 +83,7 @@ exports.getMemberInformations = async (req, res, next) => {
         const { EntryNo } = req.params;
 
         const basicDetails = await basicDetailsGet(EntryNo);
+        const MNO = basicDetails.dataValues.mem_SrNo;
 
         const personalInfo = await personalInfoGet(EntryNo);
 
@@ -92,7 +95,7 @@ exports.getMemberInformations = async (req, res, next) => {
 
         const nominee = await getNomineeByMem_EntryNo(EntryNo);
 
-        const installment = await getInstallment(EntryNo);
+        const installment = await getInstallment(MNO);
 
         res.status(201).json({
             success: true,
@@ -103,7 +106,7 @@ exports.getMemberInformations = async (req, res, next) => {
             bankDetails,
             document,
             nominee,
-            // installment: newInstallment
+            installment
         });
     } catch (error) {
         console.log(error);
@@ -128,6 +131,7 @@ exports.updateMember = async (req, res, next) => {
         // Update basic details
         const updatedBasicDetails = await updateMember(EntryNo, { ...basicDetails, ...personalInfo }, transaction);
         if (!updatedBasicDetails) throw new Error("Failed to update basic details.");
+        const MNO = updatedBasicDetails.dataValues.mem_SrNo;
 
         // Update address
         const updatedAddress = await updateMemberAddress(EntryNo, address, transaction);
@@ -145,9 +149,9 @@ exports.updateMember = async (req, res, next) => {
         const updatedNominee = await updateNominee(EntryNo, nominee, transaction);
         if (!updatedNominee) throw new Error("Failed to update nominee.");
 
-        // // Update installment
-        // const updatedInstallment = await updateInstallment(EntryNo, installment, transaction);
-        // if (!updatedInstallment) throw new Error("Failed to update installment.");
+        // Update installment
+        const updatedInstallment = await updateInstallment(MNO, installment, transaction);
+        if (!updatedInstallment) throw new Error("Failed to update installment.");
 
         // Commit transaction
         console.log("transaction committed...");
@@ -162,10 +166,62 @@ exports.updateMember = async (req, res, next) => {
             bankDetails: updatedBankInfo,
             document: updatedDocument,
             nominee: updatedNominee,
-            // installment: updatedInstallment
+            installment: updatedInstallment
         });
     } catch (error) {
         console.log("transaction rollback...");
+        if (transaction) {
+            await transaction.rollback();
+        }
+        console.log(error);
+        next(error);
+    }
+};
+
+
+exports.deleteMember = async (req, res, next) => {
+    let transaction;
+    const { EntryNo, mem_SrNo } = req.params;
+
+    try {
+        transaction = await sequelize.transaction({
+            isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+        });
+
+        // Delete basic details
+        const deletedBasicDetails = await deleteMember(EntryNo, transaction);
+        if (!deletedBasicDetails) throw new Error("Failed to delete basic details.");
+
+        // Delete address
+        const deletedAddress = await deleteMemberAddress(EntryNo, transaction);
+        if (!deletedAddress) throw new Error("Failed to delete address.");
+
+        // Delete bank details
+        const deletedBankInfo = await deleteBankInfo(EntryNo, transaction);
+        if (!deletedBankInfo) throw new Error("Failed to delete bank details.");
+
+        // Delete document
+        const deletedDocument = await deleteDocument(EntryNo, transaction);
+        if (!deletedDocument) throw new Error("Failed to delete document.");
+
+        // Delete nominee
+        const deletedNominee = await deleteNominee(EntryNo, transaction);
+        if (!deletedNominee) throw new Error("Failed to delete nominee.");
+
+        // Delete installment
+        const deletedInstallment = await deleteInstallment(mem_SrNo, transaction);
+        if (!deletedInstallment) throw new Error("Failed to delete installment.");
+
+        // Commit transaction
+        console.log("Transaction committed...");
+        await transaction.commit();
+
+        res.status(200).json({
+            success: true,
+            message: "Member deleted successfully",
+        });
+    } catch (error) {
+        console.log("Transaction rollback...");
         if (transaction) {
             await transaction.rollback();
         }

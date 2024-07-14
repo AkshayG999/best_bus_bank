@@ -57,14 +57,14 @@ exports.update = async (EntryNo, bankDetails, transaction) => {
     }
 }
 
-exports.delete = async (EntryNo) => {
+exports.delete = async (EntryNo, transaction) => {
     try {
-        const deleted = await memberBankInfoModel.destroy({ where: { EntryNo } });
-        if (deleted) {
-            return true;
-        }
-        throw new Error('Bank info not found or not deleted');
+        const deleted = await memberBankInfoModel.destroy({
+            where: { EntryNo },
+            transaction
+        });
+        return deleted;
     } catch (error) {
-        throw new Error(`Failed to delete bank info: ${error.message}`);
+        throw new Error(`Failed to delete bank details: ${error.message}`);
     }
 }

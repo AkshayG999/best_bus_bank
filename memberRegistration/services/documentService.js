@@ -57,7 +57,6 @@ exports.update = async (EntryNo, updateData, transaction = null) => {
 
 exports.delete = async (EntryNo, transaction = null) => {
     try {
-        // Use a transaction if provided.
         const options = transaction ? { transaction } : {};
         const deleted = await memberDocumentModel.destroy({
             where: { EntryNo },

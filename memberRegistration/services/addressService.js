@@ -50,6 +50,6 @@ exports.delete = async (EntryNo, transaction) => {
     try {
         return await memberAddressModel.destroy({ where: { EntryNo }, transaction });
     } catch (error) {
-        throw error;
+        throw new Error(`Failed to delete address: ${error.message}`);
     }
 };

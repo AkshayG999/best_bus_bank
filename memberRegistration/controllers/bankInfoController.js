@@ -52,15 +52,11 @@ exports.updateBankInfo = async (EntryNo, bankDetails, transaction) => {
     }
 }
 
-exports.deleteBankInfo = async (req, res, next) => {
+exports.deleteBankInfo = async (EntryNo, transaction) => {
     try {
-        const { EntryNo } = req.params;
-        const deleted = await memberBankInfoService.delete(EntryNo);
-        if (!deleted) {
-            return res.status(404).json({ success: false, message: "Bank Info not found or not deleted" });
-        }
-        res.status(200).json({ success: true, message: "Bank Info deleted successfully" });
+        return await memberBankInfoService.delete(EntryNo, transaction);
+
     } catch (error) {
-        next(error);
+        throw new Error(error);
     }
 }

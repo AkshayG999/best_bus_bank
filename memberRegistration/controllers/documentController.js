@@ -85,34 +85,20 @@ exports.updateDocument = async (EntryNo, document, transaction) => {
     }
 };
 
-exports.deleteDocument = async (req, res, next) => {
-    let transaction;
+exports.deleteDocument = async (EntryNo, transaction) => {
     try {
-        transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
+        const deleted = await memberDocumentService.delete(EntryNo, transaction);
 
-        const { EntryNo } = req.params;
-
-        const document = await memberDocumentService.getById(EntryNo);
-        if (!document) {
-            return next({ status: 404, message: "Member document not found" });
-        }
-
-        await memberDocumentService.delete(EntryNo, transaction);
-
-        await AuditLogRepository.log({
-            SystemID: req.systemID,
-            entityName: "member_document",
-            entityId: EntryNo,
-            action: "DELETE",
-            beforeAction: document.dataValues,
-            afterAction: null,
-        }, transaction);
-
-        await transaction.commit();
-
-        res.status(200).json({ success: true, message: "Member document deleted successfully" });
+        // await AuditLogRepository.log({
+        //     SystemID: req.systemID,
+        //     entityName: "member_document",
+        //     entityId: EntryNo,
+        //     action: "DELETE",
+        //     beforeAction: document.dataValues,
+        //     afterAction: null,
+        // }, transaction);
+        return deleted;
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
+        throw new Error(`Failed to delete document: ${error.message}`);
     }
 };

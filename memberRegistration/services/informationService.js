@@ -73,13 +73,14 @@ exports.updateMember = async (EntryNo, newData, transaction) => {
 };
 
 
-exports.deleteMember = async (id) => {
+exports.deleteMember = async (EntryNo, transaction) => {
     try {
-        const deletedCount = await memberInformationModel.destroy({
-            where: { EntryNo: id }
+        const deleted = await memberInformationModel.destroy({
+            where: { EntryNo },
+            transaction
         });
-        return deletedCount;
+        return deleted;
     } catch (error) {
-        throw error;
+        throw new Error(`Failed to delete Member details: ${error.message}`);
     }
 };

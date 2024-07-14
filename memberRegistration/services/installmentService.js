@@ -1,3 +1,4 @@
+const { where } = require('sequelize');
 const { memberInstallmentModel } = require('../../db/db');
 
 
@@ -18,15 +19,16 @@ exports.getAll = async (filter = {}) => {
     }
 };
 
-exports.get = async (srno) => {
+exports.get = async (MNO) => {
     try {
-        const installment = await memberInstallmentModel.findByPk(srno);
-        if (!installment) throw new Error(`Installment with srno ${srno} not found`);
+        const installment = await memberInstallmentModel.findOne({ where: { MNO } });
+        if (!installment) throw new Error(`Installment with MNO ${MNO} not found`);
         return installment;
     } catch (error) {
         throw new Error(`Failed to fetch member installment: ${error.message}`);
     }
 };
+
 exports.getById = async (srno) => {
     try {
         const installment = await memberInstallmentModel.findByPk(srno);
@@ -37,16 +39,16 @@ exports.getById = async (srno) => {
     }
 };
 
-exports.update = async (srno, updateData, transaction = null) => {
+exports.update = async (MNO, updateData, transaction = null) => {
     try {
         const options = transaction ? { transaction } : {};
         const [rowsUpdate, [updatedData]] = await memberInstallmentModel.update(updateData, {
-            where: { srno },
+            where: { MNO },
             returning: true,
             ...options
         });
 
-        if (rowsUpdate === 0) throw new Error(`No installment found with srno ${srno}`);
+        if (rowsUpdate === 0) throw new Error(`No installment found with MNO ${MNO}`);
 
         return updatedData;
     } catch (error) {
@@ -54,15 +56,15 @@ exports.update = async (srno, updateData, transaction = null) => {
     }
 };
 
-exports.delete = async (srno, transaction = null) => {
+exports.delete = async (MNO, transaction) => {
     try {
         const options = transaction ? { transaction } : {};
         const deleted = await memberInstallmentModel.destroy({
-            where: { srno },
+            where: { MNO },
             ...options
         });
 
-        if (deleted === 0) throw new Error(`No installment found with srno ${srno}`);
+        if (deleted === 0) throw new Error(`No installment found with MNO ${MNO}`);
         return deleted;
     } catch (error) {
         throw new Error(`Failed to delete member installment: ${error.message}`);

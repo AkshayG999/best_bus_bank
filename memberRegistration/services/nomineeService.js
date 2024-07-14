@@ -54,15 +54,15 @@ exports.update = async (Mem_EntryNo, updateData, transaction = null) => {
     }
 };
 
-exports.delete = async (EntryNo, transaction = null) => {
+exports.delete = async (Mem_EntryNo, transaction = null) => {
     try {
         const options = transaction ? { transaction } : {};
         const deleted = await memberNomineeModel.destroy({
-            where: { EntryNo },
+            where: { Mem_EntryNo },
             ...options
         });
 
-        if (deleted === 0) throw new Error(`No nominee found with EntryNo ${EntryNo}`);
+        if (deleted === 0) throw new Error(`No nominee found with EntryNo ${Mem_EntryNo}`);
         return deleted;
     } catch (error) {
         throw new Error(`Failed to delete member nominee: ${error.message}`);

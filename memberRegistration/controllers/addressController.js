@@ -44,16 +44,12 @@ exports.updateMemberAddress = async (EntryNo, address, transaction) => {
     }
 };
 
-exports.deleteMemberAddress = async (req, res, next) => {
-    let transaction;
+
+exports.deleteMemberAddress = async (EntryNo, transaction) => {
     try {
-        transaction = await sequelize.transaction();
-        const { EntryNo } = req.params;
-        await memberAddressService.delete(EntryNo, transaction);
-        await transaction.commit();
-        return res.status(200).json({ success: true, message: "Member Address deleted successfully" });
+        const deleted = await memberAddressService.delete(EntryNo, transaction);
+        return deleted;
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
+        throw new Error(`Failed to delete address: ${error.message}`);
     }
 };
