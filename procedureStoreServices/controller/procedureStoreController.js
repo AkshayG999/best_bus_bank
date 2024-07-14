@@ -40,7 +40,7 @@ async function generateGroupUniqueCode(name, code, transaction) {
     }
     try {
         // Lock the row for update
-        const find = await procedure_store_model.findOne({ where: { name: name }, ...t, lock: transaction.LOCK.UPDATE });
+        const find = await procedure_store_model.findOne({ where: { name: name } });
         if (!find) {
             await procedure_store_model.create({ name }, t);
         }

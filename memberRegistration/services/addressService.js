@@ -4,10 +4,16 @@ exports.create = async (data, transaction) => {
     try {
         return await memberAddressModel.create(data, { transaction });
     } catch (error) {
+        throw new Error(error);
+    }
+};
+exports.getByEntryNo = async (EntryNo) => {
+    try {
+        return await memberAddressModel.findOne({ where: { EntryNo } });
+    } catch (error) {
         throw error;
     }
 };
-
 exports.getAll = async (filter) => {
     try {
         return await memberAddressModel.findAll({ where: filter });
@@ -32,7 +38,7 @@ exports.update = async (EntryNo, data, transaction) => {
             transaction
         });
         if (rowsUpdate === 0) {
-            throw new Error(`No record found with EntryNo ${EntryNo}.`);
+            throw new Error(`No record Address found with EntryNo ${EntryNo}.`);
         }
         return updatedAddress;
     } catch (error) {

@@ -180,7 +180,7 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
                         cleanedRow[columnName] = rowValue;
                     }
                 }
-                console.log('Processed Row:', cleanedRow); // Debug: Print the cleaned row
+                // console.log('Processed Row:', cleanedRow); // Debug: Print the cleaned row
                 results.push(cleanedRow);
             })
             .on('end', async () => {

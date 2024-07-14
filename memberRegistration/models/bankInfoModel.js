@@ -5,7 +5,6 @@ module.exports = function (sequelize) {
     return sequelize.define('member_bank_info', {
         EntryNo: {
             type: DataTypes.STRING,
-            primaryKey: true,
             allowNull: false,
         },
         Mem_Bank_AcNo: {

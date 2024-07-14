@@ -1,12 +1,36 @@
 const memberBankInfoService = require('../services/bankInfoService');
 
 
-exports.createBankInfo = async (req, res, next) => {
+exports.createBankInfo = async (data, transaction) => {
     try {
-        const newBankInfo = await memberBankInfoService.create(req.body);
-        res.status(201).json({ success: true, message: "Bank Info created successfully", result: newBankInfo });
+        const newBankInfo = await memberBankInfoService.create(data, transaction);
+        return newBankInfo;
     } catch (error) {
-        next(error);
+        console.error(error);
+        throw new Error(error);
+    }
+}
+
+exports.getBankInfo = async (EntryNo) => {
+    try {
+        const bankInfo = await memberBankInfoService.getByEntryNo(EntryNo);
+        if (!bankInfo) {
+            throw new Error("Bank Info not found");
+        }
+        return bankInfo;
+    } catch (error) {
+        throw new Error(error);
+    }
+}
+exports.getBankInfoById = async (EntryNo) => {
+    try {
+        const bankInfo = await memberBankInfoService.getByEntryNo(EntryNo);
+        if (!bankInfo) {
+            throw new Error("Bank Info not found");
+        }
+        return bankInfo;
+    } catch (error) {
+        throw new Error(error);
     }
 }
 
@@ -19,29 +43,12 @@ exports.getAllBankInfo = async (req, res, next) => {
     }
 }
 
-exports.getBankInfoById = async (req, res, next) => {
+exports.updateBankInfo = async (EntryNo, bankDetails, transaction) => {
     try {
-        const { EntryNo } = req.params;
-        const bankInfo = await memberBankInfoService.getById(EntryNo);
-        if (!bankInfo) {
-            return res.status(404).json({ success: false, message: "Bank Info not found" });
-        }
-        res.status(200).json({ success: true, message: "Fetched successfully", result: bankInfo });
+        const updatedBankInfo = await memberBankInfoService.update(EntryNo, bankDetails, transaction);
+        return updatedBankInfo
     } catch (error) {
-        next(error);
-    }
-}
-
-exports.updateBankInfo = async (req, res, next) => {
-    try {
-        const { EntryNo } = req.params;
-        const updatedBankInfo = await memberBankInfoService.update(EntryNo, req.body);
-        if (!updatedBankInfo) {
-            return res.status(404).json({ success: false, message: "Bank Info not found or not updated" });
-        }
-        res.status(200).json({ success: true, message: "Bank Info updated successfully", result: updatedBankInfo });
-    } catch (error) {
-        next(error);
+        throw new Error(error);
     }
 }
 

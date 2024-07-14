@@ -4,34 +4,23 @@ const { Sequelize, Op } = require("sequelize");
 const AuditLogRepository = require('../../auditServices/auditLogService');
 
 
-exports.createDocument = async (req, res, next) => {
-    let transaction;
+exports.createDocument = async (EntryNo, data, transaction) => {
     try {
-        transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
+        const newDocument = await memberDocumentService.create({ EntryNo, ...data }, transaction);
 
-        const { EntryNo, Pancard, Adharcard, OfficeId, VoterID, Driving, ElectricityBill, TeleBill, RationCard, Passport, Remarks } = req.body;
+        // await AuditLogRepository.log({
+        //     SystemID: req.systemID,
+        //     entityName: "member_document",
+        //     entityId: newDocument.EntryNo,
+        //     action: "CREATE",
+        //     beforeAction: null,
+        //     afterAction: newDocument,
+        // }, transaction);
 
-        const newDocument = await memberDocumentService.create({
-            EntryNo,
-            Pancard, Adharcard, OfficeId, VoterID, Driving,
-            ElectricityBill, TeleBill, RationCard, Passport, Remarks
-        }, transaction);
-
-        await AuditLogRepository.log({
-            SystemID: req.systemID,
-            entityName: "member_document",
-            entityId: newDocument.EntryNo,
-            action: "CREATE",
-            beforeAction: null,
-            afterAction: newDocument,
-        }, transaction);
-
-        await transaction.commit();
-
-        res.status(201).json({ success: true, message: "Member document created successfully", result: newDocument });
+        return newDocument;
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
+        console.error(error);
+        throw new Error(error);
     }
 };
 
@@ -53,6 +42,17 @@ exports.getAllDocuments = async (req, res, next) => {
     }
 };
 
+exports.getDocumentByEntryNo = async (EntryNo) => {
+    try {
+        const document = await memberDocumentService.getByEntryNo(EntryNo);
+        if (!document) {
+            throw new Error("Member document not found");
+        }
+        return document;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
 exports.getDocumentById = async (req, res, next) => {
     try {
         const { EntryNo } = req.params;
@@ -66,36 +66,22 @@ exports.getDocumentById = async (req, res, next) => {
     }
 };
 
-exports.updateDocument = async (req, res, next) => {
-    let transaction;
+exports.updateDocument = async (EntryNo, document, transaction) => {
     try {
-        transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
+        const updatedDocument = await memberDocumentService.update(EntryNo, document, transaction);
 
-        const { EntryNo } = req.params;
-        const updateData = req.body;
+        // await AuditLogRepository.log({
+        //     SystemID: req.systemID, // Assuming you have a way to get systemID
+        //     entityName: "member_document",
+        //     entityId: EntryNo,
+        //     action: "UPDATE",
+        //     beforeAction: existingDocument.dataValues,
+        //     afterAction: updatedDocument.dataValues,
+        // }, transaction);
 
-        const existingDocument = await memberDocumentService.getById(EntryNo);
-        if (!existingDocument) {
-            return next({ status: 404, message: "Member document not found" });
-        }
-
-        const updatedDocument = await memberDocumentService.update(EntryNo, updateData, transaction);
-
-        await AuditLogRepository.log({
-            SystemID: req.systemID, // Assuming you have a way to get systemID
-            entityName: "member_document",
-            entityId: EntryNo,
-            action: "UPDATE",
-            beforeAction: existingDocument.dataValues,
-            afterAction: updatedDocument.dataValues,
-        }, transaction);
-
-        await transaction.commit();
-
-        res.status(200).json({ success: true, message: "Member document updated successfully", result: updatedDocument });
+        return updatedDocument;
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
+        throw new Error(error);
     }
 };
 
@@ -114,7 +100,7 @@ exports.deleteDocument = async (req, res, next) => {
         await memberDocumentService.delete(EntryNo, transaction);
 
         await AuditLogRepository.log({
-            SystemID: req.systemID, // Assuming you have a way to get systemID
+            SystemID: req.systemID,
             entityName: "member_document",
             entityId: EntryNo,
             action: "DELETE",

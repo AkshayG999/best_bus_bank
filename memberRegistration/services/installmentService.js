@@ -18,6 +18,15 @@ exports.getAll = async (filter = {}) => {
     }
 };
 
+exports.get = async (srno) => {
+    try {
+        const installment = await memberInstallmentModel.findByPk(srno);
+        if (!installment) throw new Error(`Installment with srno ${srno} not found`);
+        return installment;
+    } catch (error) {
+        throw new Error(`Failed to fetch member installment: ${error.message}`);
+    }
+};
 exports.getById = async (srno) => {
     try {
         const installment = await memberInstallmentModel.findByPk(srno);
@@ -38,7 +47,7 @@ exports.update = async (srno, updateData, transaction = null) => {
         });
 
         if (rowsUpdate === 0) throw new Error(`No installment found with srno ${srno}`);
-        
+
         return updatedData;
     } catch (error) {
         throw new Error(`Failed to update member installment: ${error.message}`);

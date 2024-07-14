@@ -1,8 +1,9 @@
+const { where } = require('sequelize');
 const { memberBankInfoModel } = require('../../db/db');
 
-exports.create = async (data) => {
+exports.create = async (data, transaction) => {
     try {
-        return await memberBankInfoModel.create(data);
+        return await memberBankInfoModel.create(data, { transaction });
     } catch (error) {
         throw new Error(`Failed to create bank info: ${error.message}`);
     }
@@ -16,6 +17,14 @@ exports.getAll = async () => {
     }
 }
 
+exports.getByEntryNo = async (EntryNo) => {
+    try {
+        return await memberBankInfoModel.findOne({ where: { EntryNo } });
+    } catch (error) {
+        throw new Error(`Failed to fetch bank info by ID: ${error.message}`);
+    }
+}
+
 exports.getById = async (EntryNo) => {
     try {
         return await memberBankInfoModel.findByPk(EntryNo);
@@ -24,12 +33,24 @@ exports.getById = async (EntryNo) => {
     }
 }
 
-exports.update = async (EntryNo, data) => {
+exports.update = async (EntryNo, bankDetails, transaction) => {
     try {
-        const [rowsUpdate, [updatedData]] = await memberBankInfoModel.update(data, { where: { EntryNo } });
-        if (rowsUpdate === 0) {
-            throw new Error(`No record found with EntryNo ${EntryNo}.`);
+        if (!bankDetails || typeof bankDetails !== 'object') {
+            throw new Error("Invalid bank details provided.");
         }
+
+        const [rowsUpdate, updatedDataArray] = await memberBankInfoModel.update(bankDetails, {
+            where: { EntryNo },
+            returning: true,
+            transaction
+        });
+
+        // Check if no rows were updated
+        if (rowsUpdate === 0) {
+            throw new Error(`No bank record found with EntryNo ${EntryNo}.`);
+        }
+
+        const updatedData = updatedDataArray[0];
         return updatedData;
     } catch (error) {
         throw new Error(`Failed to update bank info: ${error.message}`);

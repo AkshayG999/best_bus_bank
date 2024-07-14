@@ -1,4 +1,3 @@
-// routes/memberInformationRoute.js
 const express = require('express');
 const router = express.Router();
 const memberInformationController = require('../controllers/informationController');
@@ -6,7 +5,7 @@ const memberInformationController = require('../controllers/informationControlle
 // Basic Details
 router.post('/basic-details', memberInformationController.basicDetailsCreate);
 router.get('/basic-details/:id', memberInformationController.basicDetailsGet);
-router.put('/basic-details/:id', memberInformationController.basicDetailsUpdate);
+// router.put('/basic-details/:id', memberInformationController.basicDetailsUpdate);
 
 // Personal Info
 router.put('/personal-info/:id', memberInformationController.personalInfoUpdate);

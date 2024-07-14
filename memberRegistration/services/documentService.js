@@ -1,9 +1,9 @@
+const { where } = require('sequelize');
 const { memberDocumentModel } = require('../../db/db');
 
 
 exports.create = async (data, transaction = null) => {
     try {
-        // If a transaction is provided, it will be used for this create operation.
         const options = transaction ? { transaction } : {};
         return await memberDocumentModel.create(data, options);
     } catch (error) {
@@ -19,6 +19,15 @@ exports.getAll = async (filter = {}) => {
     }
 };
 
+exports.getByEntryNo = async (EntryNo) => {
+    try {
+        const document = await memberDocumentModel.findOne({ where: { EntryNo } });
+        if (!document) throw new Error(`Document with EntryNo ${EntryNo} not found`);
+        return document;
+    } catch (error) {
+        throw new Error(`Failed to fetch member document: ${error.message}`);
+    }
+};
 exports.getById = async (EntryNo) => {
     try {
         const document = await memberDocumentModel.findByPk(EntryNo);
@@ -32,14 +41,14 @@ exports.getById = async (EntryNo) => {
 exports.update = async (EntryNo, updateData, transaction = null) => {
     try {
         const options = transaction ? { transaction } : {};
-        const [rowsUpdate, [updatedData]]= await memberDocumentModel.update(updateData, {
+        const [rowsUpdate, [updatedData]] = await memberDocumentModel.update(updateData, {
             where: { EntryNo },
             returning: true,
             ...options
         });
 
         if (rowsUpdate === 0) throw new Error(`No document found with EntryNo ${EntryNo}`);
-        
+
         return updatedData;
     } catch (error) {
         throw new Error(`Failed to update member document: ${error.message}`);

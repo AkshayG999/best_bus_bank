@@ -8,8 +8,10 @@ const nomineeRoute = require('./nomineeRoute')
 const installmentRoute = require('./installmentRoute')
 const memberShipTypeRoute = require('./memberShipTypeRoute');
 const memberStatusRoute = require('./memberStatusRoute');
+const memberRegistrationRoute = require('./memberRegistrationRoute');
+const memberRelationRoutes = require('./memberRelationRoutes');
 
-
+router.use('/member', memberRegistrationRoute);
 router.use('/member-information', memberInformationRoute);
 router.use('/member-addresses', memberAddressRoutes);
 router.use('/member-bank-info', memberBankInfoRoutes);
@@ -20,6 +22,7 @@ router.use('/member-installments', installmentRoute);
 
 router.use('/membership-types', memberShipTypeRoute);
 router.use('/member-status', memberStatusRoute);
+router.use('/relations', memberRelationRoutes);
 
 
 module.exports = router;

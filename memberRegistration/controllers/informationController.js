@@ -6,73 +6,62 @@ const { Sequelize } = require("sequelize");
 
 exports.basicDetailsCreate = async (memberData, transaction) => {
     try {
-        const EntryNo = await procedureStoreController.generateGroupUniqueCode(
-            "member_information_EntryNo",
-            "MEM",
-            transaction
-        );
-        console.log(EntryNo);
+        const EntryNo = await procedureStoreController.generateGroupUniqueCode("member_information_EntryNo", "MEM", transaction);
         const mem_SrNo = await procedureStoreController.createRecordWithSrNo("member_information_mem_SrNo", transaction);
-        // console.log(mem_SrNo);
+        console.log(EntryNo);
+        console.log(mem_SrNo);
 
-        const newMember = await memberInformationService.createMember({ ...memberData, EntryNo, mem_SrNo });
-        await transaction.commit();
+        const newMember = await memberInformationService.createMember({ EntryNo, mem_SrNo, ...memberData }, transaction);
         return newMember;
     } catch (error) {
-        if (transaction) {
-            await transaction.rollback();
-        }
         console.error(error);
-        return null;
+        throw new Error(error);
     }
 };
 
-exports.basicDetailsGet = async (req, res, next) => {
+exports.basicDetailsGet = async (EntryNo) => {
     try {
-        const { id } = req.params;
-        const member = await memberInformationService.basicDetailsGet(id);
+
+        const member = await memberInformationService.basicDetailsGet(EntryNo);
         if (!member) {
-            return res.status(404).json({ message: 'Member not found' });
+            throw new Error('Member not found');
         }
-        res.status(200).json({ message: 'Member fetched successfully', data: member });
+        return member;
     } catch (error) {
-        next(error);
+        throw new Error(error);
     }
 };
 
-exports.basicDetailsUpdate = async (req, res, next) => {
+exports.updateMember = async (EntryNo, memberData, transaction) => {
     try {
-        const { id } = req.params;
-        const memberData = req.body;
-        const updatedMember = await memberInformationService.updateMember(id, memberData);
-        res.status(201).json({ message: 'Member created successfully', result: updatedMember });
+        const updatedMember = await memberInformationService.updateMember(EntryNo, memberData, transaction);
+        return updatedMember;
     } catch (error) {
-        next(error);
+        throw new Error(error);
     }
 };
 
 // ______________________________________________________________________________________________________________________________________________
 
+exports.personalInfoGet = async (EntryNo) => {
+    try {
+        const member = await memberInformationService.personalInfoGet(EntryNo);
+        if (!member) {
+            return res.status(404).json({ message: 'Member not found' });
+        }
+        return member;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
 exports.personalInfoUpdate = async (memberData, transaction) => {
     try {
-        const updatedMember = await memberInformationService.updateMember(id, memberData, transaction);
+        const updatedMember = await memberInformationService.updateMember(memberData.EntryNo, memberData, transaction);
         return updatedMember;
     } catch (error) {
         console.log(error);
         return null;
-    }
-};
-
-exports.personalInfoGet = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const member = await memberInformationService.personalInfoGet(id);
-        if (!member) {
-            return res.status(404).json({ message: 'Member not found' });
-        }
-        res.status(200).json({ message: 'Member fetched successfully', data: member });
-    } catch (error) {
-        next(error);
     }
 };
 
@@ -108,19 +97,19 @@ exports.getAllMembers = async (req, res, next) => {
     }
 };
 
-exports.updateMember = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const memberData = req.body;
-        const updatedMember = await memberInformationService.updateMember(id, memberData);
-        if (!updatedMember) {
-            return res.status(404).json({ message: 'Member not found' });
-        }
-        res.status(200).json({ message: 'Member updated successfully', data: updatedMember });
-    } catch (error) {
-        next(error);
-    }
-};
+// exports.updateMember = async (req, res, next) => {
+//     try {
+//         const { id } = req.params;
+//         const memberData = req.body;
+//         const updatedMember = await memberInformationService.updateMember(id, memberData);
+//         if (!updatedMember) {
+//             return res.status(404).json({ message: 'Member not found' });
+//         }
+//         res.status(200).json({ message: 'Member updated successfully', data: updatedMember });
+//     } catch (error) {
+//         next(error);
+//     }
+// };
 
 exports.deleteMember = async (req, res, next) => {
     try {

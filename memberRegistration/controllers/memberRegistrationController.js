@@ -1,43 +1,175 @@
 const { sequelize } = require("../../db/db");
 const { Sequelize } = require("sequelize");
-const memberInformationService = require('../services/informationService');
-const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
-const { basicDetailsCreate, personalInfoUpdate } = require("./informationController");
+const { basicDetailsCreate, basicDetailsGet, personalInfoGet, updateMember } = require("./informationController");
+const { createMemberAddress, getMemberAddressById, updateMemberAddress } = require("./addressController");
+const { createBankInfo, getBankInfo, updateBankInfo } = require("./bankInfoController");
+const { createDocument, getDocumentByEntryNo, updateDocument } = require("./documentController");
+const { createNominee, getNomineeByMem_EntryNo, updateNominee } = require("./nomineeController");
+const { createInstallment, updateInstallment, getInstallment } = require("./installmentController");
+
+
+
 
 exports.createMember = async (req, res, next) => {
-    let transaction = await sequelize.transaction({
-        isolationLevel: Sequelize.Transaction.SERIALIZABLE,
-    });
+    let transaction;
 
     try {
+        transaction = await sequelize.transaction({
+            isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+        });
+
         let { basicDetails, personalInfo, address, bankDetails, document, nominee, installment } = req.body;
 
-        // Create basic details
-        const newMember = await basicDetailsCreate(basicDetails, transaction);
+        if (!basicDetails || !personalInfo || !address || !bankDetails || !document || !nominee || !installment) {
+            next("All member details must be provided.");
+        }
 
-        // Create personal info
-        await personalInfoUpdate(personalInfo, transaction);
+        // Create basic details
+        const newMember = await basicDetailsCreate({ ...basicDetails, ...personalInfo }, transaction);
+        if (!newMember) throw new Error("Failed to create basic details.");
+        const EntryNo = newMember.dataValues.EntryNo;
 
         // Create address
-        await memberInformationService.createAddress(newMember.id, address, transaction);
+        const newAddress = await createMemberAddress({ EntryNo, ...address }, transaction);
+        if (!newAddress) throw new Error("Failed to create address.");
 
         // Create bank details
-        await memberInformationService.createBankDetails(newMember.id, bankDetails, transaction);
+        const newBankInfo = await createBankInfo({ EntryNo, ...bankDetails }, transaction);
+        if (!newBankInfo) throw new Error("Failed to create bank details.");
 
         // Create document
-        await memberInformationService.createDocument(newMember.id, document, transaction);
+        const newDocument = await createDocument(EntryNo, document, transaction);
+        if (!newDocument) throw new Error("Failed to create document.");
 
         // Create nominee
-        await memberInformationService.createNominee(newMember.id, nominee, transaction);
+        const newNominee = await createNominee(EntryNo, nominee, transaction);
+        if (!newNominee) throw new Error("Failed to create nominee.");
 
         // Create installment
-        await memberInformationService.createInstallment(newMember.id, installment, transaction);
+        const newInstallment = await createInstallment(EntryNo, installment, transaction);
+        if (!newInstallment) throw new Error("Failed to create installment.");
 
         // Commit transaction
+        console.log("transaction commited...");
         await transaction.commit();
-        res.status(201).json({ message: "Member created successfully", memberId: newMember.id });
+
+        res.status(201).json({
+            success: true,
+            message: "Member created successfully",
+            EntryNo: newMember.EntryNo,
+            basicDetails: newMember,
+            personalInfo: newMember,
+            address: newAddress,
+            bankDetails: newBankInfo,
+            document: newDocument,
+            nominee: newNominee,
+            installment: newInstallment
+        });
     } catch (error) {
-        if (transaction) await transaction.rollback();
+        console.log("transaction rollback...");
+        if (transaction) {
+            await transaction.rollback();
+        }
+        console.log(error)
+        next(error);
+    }
+};
+
+
+exports.getMemberInformations = async (req, res, next) => {
+    try {
+        const { EntryNo } = req.params;
+
+        const basicDetails = await basicDetailsGet(EntryNo);
+
+        const personalInfo = await personalInfoGet(EntryNo);
+
+        const address = await getMemberAddressById(EntryNo);
+
+        const bankDetails = await getBankInfo(EntryNo);
+
+        const document = await getDocumentByEntryNo(EntryNo);
+
+        const nominee = await getNomineeByMem_EntryNo(EntryNo);
+
+        const installment = await getInstallment(EntryNo);
+
+        res.status(201).json({
+            success: true,
+            message: "Member fetch successfully",
+            basicDetails,
+            personalInfo,
+            address,
+            bankDetails,
+            document,
+            nominee,
+            // installment: newInstallment
+        });
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+}
+
+exports.updateMember = async (req, res, next) => {
+    let transaction;
+    const { EntryNo } = req.params;
+    let { basicDetails, personalInfo, address, bankDetails, document, nominee, installment } = req.body;
+
+    try {
+        transaction = await sequelize.transaction({
+            isolationLevel: Sequelize.Transaction.SERIALIZABLE,
+        });
+
+        if (!basicDetails || !personalInfo || !address || !bankDetails || !document || !nominee || !installment) {
+            throw new Error("All member details must be provided.");
+        }
+
+        // Update basic details
+        const updatedBasicDetails = await updateMember(EntryNo, { ...basicDetails, ...personalInfo }, transaction);
+        if (!updatedBasicDetails) throw new Error("Failed to update basic details.");
+
+        // Update address
+        const updatedAddress = await updateMemberAddress(EntryNo, address, transaction);
+        if (!updatedAddress) throw new Error("Failed to update address.");
+
+        // Update bank details
+        const updatedBankInfo = await updateBankInfo(EntryNo, bankDetails, transaction);
+        if (!updatedBankInfo) throw new Error("Failed to update bank details.");
+
+        // Update document
+        const updatedDocument = await updateDocument(EntryNo, document, transaction);
+        if (!updatedDocument) throw new Error("Failed to update document.");
+
+        // Update nominee
+        const updatedNominee = await updateNominee(EntryNo, nominee, transaction);
+        if (!updatedNominee) throw new Error("Failed to update nominee.");
+
+        // // Update installment
+        // const updatedInstallment = await updateInstallment(EntryNo, installment, transaction);
+        // if (!updatedInstallment) throw new Error("Failed to update installment.");
+
+        // Commit transaction
+        console.log("transaction committed...");
+        await transaction.commit();
+
+        res.status(200).json({
+            success: true,
+            message: "Member updated successfully",
+            basicDetails: updatedBasicDetails,
+            personalInfo: updatedBasicDetails,
+            address: updatedAddress,
+            bankDetails: updatedBankInfo,
+            document: updatedDocument,
+            nominee: updatedNominee,
+            // installment: updatedInstallment
+        });
+    } catch (error) {
+        console.log("transaction rollback...");
+        if (transaction) {
+            await transaction.rollback();
+        }
+        console.log(error);
         next(error);
     }
 };

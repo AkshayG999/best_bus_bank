@@ -5,7 +5,6 @@ module.exports = function (sequelize) {
     return sequelize.define('member_address', {
         EntryNo: {
             type: DataTypes.STRING,
-            primaryKey: true,
             allowNull: false,
         },
         Resi_Add_01: {
