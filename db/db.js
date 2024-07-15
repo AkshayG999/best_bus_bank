@@ -22,6 +22,7 @@ const memberInstallment = require("../memberRegistration/models/installmentModel
 const memberShipType = require("../memberRegistration/models/memberShipTypeModel");
 const memberStatus = require("../memberRegistration/models/memberStatusModel");
 const memberRelation = require("../memberRegistration/models/relationModel");
+const gender = require("../memberRegistration/models/genderModel");
 
 
 
@@ -86,6 +87,7 @@ const memberInstallmentModel = memberInstallment(sequelize);
 const memberShipTypeModel = memberShipType(sequelize);
 const memberStatusModel = memberStatus(sequelize);
 const memberRelationModel = memberRelation(sequelize);
+const genderModel = gender(sequelize);
 
 
 // Associations between models here
@@ -115,5 +117,5 @@ module.exports = {
     db, sequelize, Sequelize, userModel, bankModel, groupModel, parentGroupModel, individualAccountModel,
     bankBranchModel, branchModel, departmentModel, features, rolePermissions, zoneModel, depoModel, auditLogModel,
     memberInformationModel, memberAddressModel, memberBankInfoModel, memberDocumentModel, memberNomineeModel, memberInstallmentModel,
-    memberShipTypeModel, memberStatusModel, memberRelationModel
+    memberShipTypeModel, memberStatusModel, memberRelationModel, genderModel
 };

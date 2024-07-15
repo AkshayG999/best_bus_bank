@@ -36,7 +36,7 @@ app.get('/test', (req, res) => {
     res.send("Server is running..");
 });
 
-sequelize.sync({ alter: true })
+// sequelize.sync({ alter: true })
 // .then(() => {
 //     console.log('Database synchronized successfully.');
 // })

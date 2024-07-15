@@ -1,20 +1,20 @@
-const { memberShipTypeModel } = require('../../db/db');  
+const { memberStatusModel } = require('../../db/db');  
 
 class StatusService {
     async getAllStatuses() {
-        return await memberShipTypeModel.findAll();
+        return await memberStatusModel.findAll();
     }
 
     async getStatusById(id) {
-        return await memberShipTypeModel.findByPk(id);
+        return await memberStatusModel.findByPk(id);
     }
 
     async createStatus(data) {
-        return await memberShipTypeModel.create(data);
+        return await memberStatusModel.create(data);
     }
 
     async updateStatus(id, data) {
-        const status = await memberShipTypeModel.findByPk(id);
+        const status = await memberStatusModel.findByPk(id);
         if (!status) {
             throw new Error('Status not found');
         }
@@ -22,7 +22,7 @@ class StatusService {
     }
 
     async deleteStatus(id) {
-        const status = await memberShipTypeModel.findByPk(id);
+        const status = await memberStatusModel.findByPk(id);
         if (!status) {
             throw new Error('Status not found');
         }
