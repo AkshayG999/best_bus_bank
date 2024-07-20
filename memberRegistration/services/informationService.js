@@ -1,4 +1,4 @@
-const { memberInformationModel } = require('../../db/db');
+const { branchModel, memberInformationModel } = require('../../db/db');
 
 
 exports.createMember = async (data, transaction) => {
@@ -48,7 +48,11 @@ exports.getAllMembers = async (page = 1, limit = 10) => {
         const offset = (page - 1) * limit;
         const members = await memberInformationModel.findAndCountAll({
             offset: offset,
-            limit: limit
+            limit: limit,
+            include: [{
+                model: branchModel, as: 'branch',
+                // attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
+            }]
         });
         return members;
     } catch (error) {

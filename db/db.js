@@ -110,6 +110,8 @@ departmentModel.belongsTo(depoModel, { foreignKey: 'Depo_SrNo', as: 'depo' });
 // userModel.belongsTo(branchModel, { foreignKey: 'branchId', as: 'branch' });
 // userModel.belongsTo(departmentModel, { foreignKey: 'departmentId', as: 'department' });
 
+memberInformationModel.belongsTo(branchModel, { foreignKey: 'Mem_Branch', as: 'branch' });
+// branchModel.hasMany(memberInformationModel, { foreignKey: 'Mem_Branch' });
 
 
 

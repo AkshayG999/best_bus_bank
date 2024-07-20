@@ -20,7 +20,6 @@ router.use('/member-document', memberDocumentRoutes);
 router.use('/member-nominees', nomineeRoute);
 router.use('/member-installments', installmentRoute);
 
-
 router.use('/membership-types', memberShipTypeRoute);
 router.use('/member-status', memberStatusRoute);
 router.use('/relations', memberRelationRoutes);

@@ -25,7 +25,13 @@ module.exports = function (sequelize) {
         Mem_Branch: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null
+            // defaultValue: null,
+            references: {
+                model: 'branch',
+                key: 'Branch_Tr'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
         },
         MemCode: {
             type: DataTypes.STRING, // Check No.

@@ -119,12 +119,13 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
         'DOUBLE': parseFloat,
         'DECIMAL': (value) => sanitizeInput(value, parseFloat),
         'BOOLEAN': (value) => value === 'true' ? true : (value === 'false' ? false : null),
-        'STRING': (value) => value === '' ? null : value,
+        'STRING': (value) => value.trim() === '' ? null : value.trim(),
         'TEXT': (value) => value === '' ? null : value,
         'DATE': (value) => value === '' ? null : validateDate(value),
         'DATEONLY': (value) => value === '' ? null : validateDate(value),
         'TIME': (value) => value === '' ? null : value,
         'TIMESTAMP': (value) => value === '' ? null : validateDate(value),
+        'SMALLINT': (value) => sanitizeInput1(value, parseInt),
     };
 
     function validateDate(dateString) {
@@ -143,7 +144,12 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
         }
         return normalizedRow;
     }
-
+    const sanitizeInput1 = (value, typeParser) => {
+        if (value === '' || value === 'NULL') return null;
+        const parsedValue = typeParser ? typeParser(value) : value;
+        return isNaN(parsedValue) && typeParser ? null : parsedValue;
+    };
+    
     return new Promise((resolve, reject) => {
         const results = [];
 
