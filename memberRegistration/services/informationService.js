@@ -1,4 +1,4 @@
-const { branchModel, memberInformationModel } = require('../../db/db');
+const { branchModel, memberInformationModel, memberShipTypeModel, departmentModel, depoModel, memberStatusModel, genderModel } = require('../../db/db');
 
 
 exports.createMember = async (data, transaction) => {
@@ -49,10 +49,27 @@ exports.getAllMembers = async (page = 1, limit = 10) => {
         const members = await memberInformationModel.findAndCountAll({
             offset: offset,
             limit: limit,
-            include: [{
-                model: branchModel, as: 'branch',
-                // attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
-            }]
+            include: [
+                // {
+                //     model: branchModel, as: 'branch',
+                //     // attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
+                // },
+                // {
+                //     model: departmentModel, as: 'department',
+                // },
+                // {
+                //     model: depoModel, as: 'depo',
+                // },
+                // {
+                //     model: memberShipTypeModel, as: 'member_ship_type',
+                // },
+                // {
+                //     model: memberStatusModel, as: 'member_status',
+                // },
+                {
+                    model: genderModel, as: 'gender',
+                },
+            ]
         });
         return members;
     } catch (error) {

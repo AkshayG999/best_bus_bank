@@ -79,24 +79,48 @@ module.exports = function (sequelize) {
             defaultValue: null
         },
         DeptSrNo: {
-            type: DataTypes.STRING,
+            type: DataTypes.INTEGER,
             allowNull: true,
-            defaultValue: null
+            // defaultValue: null,
+            references: {
+                model: 'department',
+                key: 'DeptSrNo'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
         },
         Depo_No: {
-            type: DataTypes.STRING,
+            type: DataTypes.INTEGER,
             allowNull: true,
-            defaultValue: null
+            // defaultValue: null
+            references: {
+                model: 'depo',
+                key: 'SRNo'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
         },
         MemberShipType: {
-            type: DataTypes.STRING, // Ref to MemberShip type
+            type: DataTypes.INTEGER, // Ref to MemberShip type
             allowNull: true,
-            defaultValue: null
+            // defaultValue: null
+            references: {
+                model: 'member_ship_type',
+                key: 'SrNo'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
         },
         MemberShipStatus: {
-            type: DataTypes.STRING, // Ref to  MEM stat
+            type: DataTypes.INTEGER, // Ref to  MEM stat
             allowNull: true,
-            defaultValue: null
+            // defaultValue: null
+            references: {
+                model: 'member_status',
+                key: 'SrNo'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
         },
         REMARK: {
             type: DataTypes.TEXT,
@@ -106,7 +130,13 @@ module.exports = function (sequelize) {
         Mem_Gender: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null
+            // defaultValue: null,
+            references: {
+                model: 'gender',
+                key: 'SrNo'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
         },
         Mem_Married: {
             type: DataTypes.BOOLEAN,

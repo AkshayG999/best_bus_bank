@@ -111,7 +111,13 @@ departmentModel.belongsTo(depoModel, { foreignKey: 'Depo_SrNo', as: 'depo' });
 // userModel.belongsTo(departmentModel, { foreignKey: 'departmentId', as: 'department' });
 
 memberInformationModel.belongsTo(branchModel, { foreignKey: 'Mem_Branch', as: 'branch' });
-// branchModel.hasMany(memberInformationModel, { foreignKey: 'Mem_Branch' });
+memberInformationModel.belongsTo(departmentModel, { foreignKey: 'DeptSrNo', as: 'department' });
+memberInformationModel.belongsTo(depoModel, { foreignKey: 'Depo_No', as: 'depo' });
+memberInformationModel.belongsTo(memberShipTypeModel, { foreignKey: 'MemberShipType', as: 'member_ship_type' });
+memberInformationModel.belongsTo(memberStatusModel, { foreignKey: 'MemberShipStatus', as: 'member_status' });
+memberInformationModel.belongsTo(genderModel, { foreignKey: 'Mem_Gender', as: 'gender' });
+
+memberNomineeModel.belongsTo(memberRelationModel, { foreignKey: 'Nom_Rel', as: 'member_relation' });
 
 
 

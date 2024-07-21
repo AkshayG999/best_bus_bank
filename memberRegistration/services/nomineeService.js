@@ -1,5 +1,5 @@
 const { where } = require('sequelize');
-const { memberNomineeModel } = require('../../db/db');
+const { memberNomineeModel, memberRelationModel } = require('../../db/db');
 
 exports.create = async (data, transaction = null) => {
     try {
@@ -12,7 +12,7 @@ exports.create = async (data, transaction = null) => {
 
 exports.getAll = async (filter = {}) => {
     try {
-        return await memberNomineeModel.findAll({ where: filter });
+        return await memberNomineeModel.findAll({ where: filter, include: [{ model: memberRelationModel, as: "member_relation" }] });
     } catch (error) {
         throw new Error(`Failed to fetch member nominees: ${error.message}`);
     }
@@ -20,7 +20,7 @@ exports.getAll = async (filter = {}) => {
 
 exports.getByMem_EntryNo = async (Mem_EntryNo) => {
     try {
-        const nominee = await memberNomineeModel.findOne({ where: { Mem_EntryNo } });
+        const nominee = await memberNomineeModel.findOne({ where: { Mem_EntryNo }, include: [{ model: memberRelationModel, as: "member_relation" }] });
         if (!nominee) throw new Error(`Nominee with EntryNo ${Mem_EntryNo} not found`);
         return nominee;
     } catch (error) {
