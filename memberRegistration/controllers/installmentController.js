@@ -4,32 +4,34 @@ const AuditLogRepository = require('../../auditServices/auditLogService');
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
 
 
-exports.createInstallment = async (req, res, next) => {
-    let transaction;
+exports.createInstallment = async (data, transaction) => {
     try {
-        transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
-        const data = req.body;
-
         const srno = await procedureStoreController.createRecordWithSrNo("member_instalment_srno", transaction);
 
         const newInstallment = await memberInstallmentService.create({ ...data, srno }, transaction);
 
-        await AuditLogRepository.log({
-            SystemID: req.systemID,
-            entityName: "member_installment",
-            entityId: newInstallment.srno,
-            action: "CREATE",
-            beforeAction: null,
-            afterAction: newInstallment,
-        }, transaction);
+        // await AuditLogRepository.log({
+        //     SystemID: req.systemID,
+        //     entityName: "member_installment",
+        //     entityId: newInstallment.srno,
+        //     action: "CREATE",
+        //     beforeAction: null,
+        //     afterAction: newInstallment,
+        // }, transaction);
 
-        await transaction.commit();
-
-        res.status(201).json({ success: true, message: "Member installment created successfully", result: newInstallment });
+        return newInstallment;
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        console.log(error);
-        next(error);
+        console.log("createInstallment:", error);
+        throw new Error(error);
+    }
+};
+
+exports.getInstallment = async (MNO) => {
+    try {
+        const installment = await memberInstallmentService.get(MNO);
+        return installment;
+    } catch (error) {
+        throw new Error(error);
     }
 };
 
@@ -51,52 +53,40 @@ exports.getAllInstallments = async (req, res, next) => {
     }
 };
 
-exports.updateInstallment = async (req, res, next) => {
-    let transaction;
+exports.updateInstallment = async (MNO, installment, transaction) => {
     try {
-        transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
+        const updatedInstallment = await memberInstallmentService.update(MNO, installment, transaction);
 
-        const updatedInstallment = await memberInstallmentService.update(req.params.srno, req.body, transaction);
+        // await AuditLogRepository.log({
+        //     SystemID: req.systemID,
+        //     entityName: "member_installment",
+        //     entityId: req.params.srno,
+        //     action: "UPDATE",
+        //     beforeAction: req.body,
+        //     afterAction: updatedInstallment,
+        // }, transaction);
 
-        await AuditLogRepository.log({
-            SystemID: req.systemID,
-            entityName: "member_installment",
-            entityId: req.params.srno,
-            action: "UPDATE",
-            beforeAction: req.body,
-            afterAction: updatedInstallment,
-        }, transaction);
-
-        await transaction.commit();
-
-        res.status(200).json({ success: true, message: "Member installment updated successfully", result: updatedInstallment });
+        return updatedInstallment;
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
+        throw new Error(error);
     }
 };
 
-exports.deleteInstallment = async (req, res, next) => {
-    let transaction;
+exports.deleteInstallment = async (MNO, transaction) => {
     try {
-        transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
+        const deleted = await memberInstallmentService.delete(MNO, transaction);
 
-        const deleted = await memberInstallmentService.delete(req.params.srno, transaction);
+        // await AuditLogRepository.log({
+        //     SystemID: req.systemID,
+        //     entityName: "member_installment",
+        //     entityId: req.params.srno,
+        //     action: "DELETE",
+        //     beforeAction: req.params.srno,
+        //     afterAction: null,
+        // }, transaction);
 
-        await AuditLogRepository.log({
-            SystemID: req.systemID,
-            entityName: "member_installment",
-            entityId: req.params.srno,
-            action: "DELETE",
-            beforeAction: req.params.srno,
-            afterAction: null,
-        }, transaction);
-
-        await transaction.commit();
-
-        res.status(200).json({ success: true, message: "Member installment deleted successfully" });
+        return deleted;
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
+        throw new Error(`Failed to delete member installment: ${error.message}`);
     }
 };

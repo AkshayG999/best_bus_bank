@@ -1,34 +1,34 @@
-const { memberInformationModel } = require('../../db/db');
+const { branchModel, memberInformationModel, memberShipTypeModel, departmentModel, depoModel, memberStatusModel, genderModel } = require('../../db/db');
 
 
-exports.createMember = async (data) => {
+exports.createMember = async (data, transaction) => {
     try {
-        const newMember = await memberInformationModel.create(data);
+        const newMember = await memberInformationModel.create(data, { transaction });
         return newMember;
     } catch (error) {
-        throw error;
+        throw new Error(error);
     }
 };
 
 exports.basicDetailsGet = async (id) => {
     try {
         const member = await memberInformationModel.findByPk(id, {
-            attributes: ['mem_SrNo', 'EntryDT', 'Mem_Branch', 'MemCode', 'SHFOLIO', 'Mem_Name', 'MPayNo', 'SPayNo', 'MemberShipType', 'MemberShipStatus', 'DeptSrNo', 'Depo_No', 'REMARK', 'STAT']
+            attributes: ['EntryNo', 'mem_SrNo', 'EntryDT', 'Mem_Branch', 'MemCode', 'SHFOLIO', 'Mem_Name', 'MPayNo', 'SPayNo', 'MemberShipType', 'MemberShipStatus', 'DeptSrNo', 'Depo_No', 'REMARK', 'STAT']
         });
         return member;
     } catch (error) {
-        throw error;
+        throw new Error(error);
     }
 };
 
 exports.personalInfoGet = async (id) => {
     try {
         const member = await memberInformationModel.findByPk(id, {
-            attributes: ['mem_SrNo', 'Mem_Name', 'DOB', 'DOJBest', 'DojSoc', 'DOR', 'Mem_Gender', 'Mem_Married', 'Mem_MobileNo', 'Mem_EMailId', 'TelPhNo']
+            attributes: ['EntryNo', 'mem_SrNo', 'Mem_Name', 'DOB', 'DOJBest', 'DojSoc', 'DOR', 'Mem_Gender', 'Mem_Married', 'Mem_MobileNo', 'Mem_EMailId', 'TelPhNo']
         });
         return member;
     } catch (error) {
-        throw error;
+        throw new Error(error);
     }
 };
 
@@ -48,7 +48,28 @@ exports.getAllMembers = async (page = 1, limit = 10) => {
         const offset = (page - 1) * limit;
         const members = await memberInformationModel.findAndCountAll({
             offset: offset,
-            limit: limit
+            limit: limit,
+            include: [
+                // {
+                //     model: branchModel, as: 'branch',
+                //     // attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
+                // },
+                // {
+                //     model: departmentModel, as: 'department',
+                // },
+                // {
+                //     model: depoModel, as: 'depo',
+                // },
+                // {
+                //     model: memberShipTypeModel, as: 'member_ship_type',
+                // },
+                // {
+                //     model: memberStatusModel, as: 'member_status',
+                // },
+                {
+                    model: genderModel, as: 'gender',
+                },
+            ]
         });
         return members;
     } catch (error) {
@@ -57,14 +78,14 @@ exports.getAllMembers = async (page = 1, limit = 10) => {
 };
 
 // Update a member by ID
-exports.updateMember = async (id, newData) => {
+exports.updateMember = async (EntryNo, newData, transaction) => {
     try {
         const [updatedCount, updatedMembers] = await memberInformationModel.update(newData, {
-            where: { mem_SrNo: id },
+            where: { EntryNo: EntryNo },
             returning: true
-        });
+        }, { transaction });
         if (updatedCount === 0) {
-            throw new Error(`No member found with EntryNo ${id}.`);
+            throw new Error(`No member found with EntryNo ${EntryNo}.`);
         }
         return updatedMembers[0];
     } catch (error) {
@@ -73,13 +94,14 @@ exports.updateMember = async (id, newData) => {
 };
 
 
-exports.deleteMember = async (id) => {
+exports.deleteMember = async (EntryNo, transaction) => {
     try {
-        const deletedCount = await memberInformationModel.destroy({
-            where: { EntryNo: id }
+        const deleted = await memberInformationModel.destroy({
+            where: { EntryNo },
+            transaction
         });
-        return deletedCount;
+        return deleted;
     } catch (error) {
-        throw error;
+        throw new Error(`Failed to delete Member details: ${error.message}`);
     }
 };

@@ -21,6 +21,8 @@ const memberNominee = require("../memberRegistration/models/nomineeModel");
 const memberInstallment = require("../memberRegistration/models/installmentModel");
 const memberShipType = require("../memberRegistration/models/memberShipTypeModel");
 const memberStatus = require("../memberRegistration/models/memberStatusModel");
+const memberRelation = require("../memberRegistration/models/relationModel");
+const gender = require("../memberRegistration/models/genderModel");
 
 //Account Services Database Registrations
 
@@ -93,6 +95,8 @@ const memberNomineeModel = memberNominee(sequelize);
 const memberInstallmentModel = memberInstallment(sequelize);
 const memberShipTypeModel = memberShipType(sequelize);
 const memberStatusModel = memberStatus(sequelize);
+const memberRelationModel = memberRelation(sequelize);
+const genderModel = gender(sequelize);
 
 //Account Services
 const autoNoForAllModel = autoNoForAll(sequelize);
@@ -131,6 +135,14 @@ vmainModel.hasMany(accountBreakupModel, { foreignKey: 'TransNo' });
 // userModel.belongsTo(branchModel, { foreignKey: 'branchId', as: 'branch' });
 // userModel.belongsTo(departmentModel, { foreignKey: 'departmentId', as: 'department' });
 
+memberInformationModel.belongsTo(branchModel, { foreignKey: 'Mem_Branch', as: 'branch' });
+memberInformationModel.belongsTo(departmentModel, { foreignKey: 'DeptSrNo', as: 'department' });
+memberInformationModel.belongsTo(depoModel, { foreignKey: 'Depo_No', as: 'depo' });
+memberInformationModel.belongsTo(memberShipTypeModel, { foreignKey: 'MemberShipType', as: 'member_ship_type' });
+memberInformationModel.belongsTo(memberStatusModel, { foreignKey: 'MemberShipStatus', as: 'member_status' });
+memberInformationModel.belongsTo(genderModel, { foreignKey: 'Mem_Gender', as: 'gender' });
+
+memberNomineeModel.belongsTo(memberRelationModel, { foreignKey: 'Nom_Rel', as: 'member_relation' });
 
 
 
@@ -138,5 +150,5 @@ module.exports = {
     db, sequelize, Sequelize, userModel, bankModel, groupModel, parentGroupModel, individualAccountModel,
     bankBranchModel, branchModel, departmentModel, features, rolePermissions, zoneModel, depoModel, auditLogModel,
     memberInformationModel, memberAddressModel, memberBankInfoModel, memberDocumentModel, memberNomineeModel, memberInstallmentModel,
-    memberShipTypeModel, memberStatusModel, autoNoForAllModel, accountRunningNoModel, accountBreakupModel, vmainModel, vmainRelModel
+    memberShipTypeModel, memberStatusModel, autoNoForAllModel, accountRunningNoModel, accountBreakupModel, vmainModel, vmainRelModel, memberRelationModel, genderModel
 };

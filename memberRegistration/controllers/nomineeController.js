@@ -5,37 +5,31 @@ const procedureStoreController = require("../../procedureStoreServices/controlle
 
 
 
-exports.createNominee = async (req, res, next) => {
-    let transaction;
+exports.createNominee = async (Mem_EntryNo, data, transaction) => {
     try {
-        transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
-        const data = req.body;
         const EntryNo = await procedureStoreController.generateGroupUniqueCode(
             "member_nominee_EntryNo",
             "NOM",
             transaction
         );
         console.log(EntryNo);
-        const newNominee = await memberNomineeService.create({...data,EntryNo}, transaction);
+        const newNominee = await memberNomineeService.create({ ...data, EntryNo, Mem_EntryNo }, transaction);
 
-        await AuditLogRepository.log({
-            SystemID: req.systemID,
-            entityName: "member_nominee",
-            entityId: newNominee.EntryNo,
-            action: "CREATE",
-            beforeAction: null,
-            afterAction: newNominee,
-        }, transaction);
-
-        await transaction.commit();
-
-        res.status(201).json({ success: true, message: "Member nominee created successfully", result: newNominee });
+        return newNominee;
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
+        console.error(error);
+        throw new Error(error);
     }
 };
 
+exports.getNomineeByMem_EntryNo = async (Mem_EntryNo) => {
+    try {
+        const nominee = await memberNomineeService.getByMem_EntryNo(Mem_EntryNo);
+        return nominee;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
 exports.getNomineeById = async (req, res, next) => {
     try {
         const nominee = await memberNomineeService.getById(req.params.EntryNo);
@@ -54,52 +48,40 @@ exports.getAllNominees = async (req, res, next) => {
     }
 };
 
-exports.updateNominee = async (req, res, next) => {
-    let transaction;
+exports.updateNominee = async (Mem_EntryNo, nominee, transaction) => {
     try {
-        transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
+        const updatedNominee = await memberNomineeService.update(Mem_EntryNo, nominee, transaction);
 
-        const updatedNominee = await memberNomineeService.update(req.params.EntryNo, req.body, transaction);
+        // await AuditLogRepository.log({
+        //     SystemID: req.systemID,
+        //     entityName: "member_nominee",
+        //     entityId: req.params.EntryNo,
+        //     action: "UPDATE",
+        //     beforeAction: req.body,
+        //     afterAction: updatedNominee,
+        // }, transaction);
 
-        await AuditLogRepository.log({
-            SystemID: req.systemID,
-            entityName: "member_nominee",
-            entityId: req.params.EntryNo,
-            action: "UPDATE",
-            beforeAction: req.body,
-            afterAction: updatedNominee,
-        }, transaction);
-
-        await transaction.commit();
-
-        res.status(200).json({ success: true, message: "Member nominee updated successfully", result: updatedNominee });
+        return updatedNominee;
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
+        throw new Error(error);
     }
 };
 
-exports.deleteNominee = async (req, res, next) => {
-    let transaction;
+exports.deleteNominee = async (Mem_EntryNo, transaction) => {
     try {
-        transaction = await sequelize.transaction({ isolationLevel: Sequelize.Transaction.SERIALIZABLE });
+        const deleted = await memberNomineeService.delete(Mem_EntryNo, transaction);
 
-        const deleted = await memberNomineeService.delete(req.params.EntryNo, transaction);
+        // await AuditLogRepository.log({
+        //     SystemID: req.systemID,
+        //     entityName: "member_nominee",
+        //     entityId: req.params.EntryNo,
+        //     action: "DELETE",
+        //     beforeAction: req.params.EntryNo,
+        //     afterAction: null,
+        // }, transaction);
 
-        await AuditLogRepository.log({
-            SystemID: req.systemID,
-            entityName: "member_nominee",
-            entityId: req.params.EntryNo,
-            action: "DELETE",
-            beforeAction: req.params.EntryNo,
-            afterAction: null,
-        }, transaction);
-
-        await transaction.commit();
-
-        res.status(200).json({ success: true, message: "Member nominee deleted successfully" });
+        return deleted;
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
+        throw new Error(`Failed to delete member nominee: ${error.message}`);
     }
 };

@@ -17,7 +17,6 @@ app.use(helmet());
 // Enable compression
 app.use(compression());
 
-// Enable CORS with default options
 app.use(cors());
 
 app.use(express.json());
@@ -31,10 +30,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 app.use('/', routes);
-
-// Global error handler
 app.use(errorHandler);
-
 
 app.get('/test', (req, res) => {
     res.send("Server is running..");
@@ -48,16 +44,14 @@ sequelize.sync({ alter: true })
         console.error('Error synchronizing database:', err);
     });
 
-// Start server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-// Graceful shutdown
+
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection:', reason);
-    // Perform cleanup if necessary
     process.exit(1);
 });
 
@@ -66,7 +60,6 @@ process.on('SIGTERM', () => {
     console.log('Closing http server.');
     app.close(() => {
         console.log('Http server closed.');
-        // Close db connections here if needed
         process.exit(0);
     });
 });

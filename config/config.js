@@ -1,5 +1,15 @@
 const fs = require('fs');
+require("dotenv").config();
 
+
+// console.log("DB Config:", {
+//     username: process.env.USER_NAME,
+//     password: process.env.PASSWORD,
+//     database: process.env.DB,
+//     host: process.env.HOST,
+//     port: process.env.POSTGRES_PORT,
+//     dialect: process.env.DIALECT
+// });
 
 module.exports = {
     dbConfig: {
@@ -20,7 +30,21 @@ module.exports = {
             //     ca: cert
             // }
         }
-    }
+    },
+    development: {
+        username: process.env.USER_NAME,
+        password: process.env.PASSWORD,
+        database: process.env.DB,
+        host: process.env.HOST,
+        port: process.env.POSTGRES_PORT,
+        dialect: process.env.DIALECT,
+        dialectOptions: {
+            ssl: {
+                require: true,
+                rejectUnauthorized: false
+            }
+        }
+    },
 };
 
 

@@ -4,14 +4,13 @@ const { DataTypes } = require('sequelize');
 module.exports = function (sequelize) {
 
     return sequelize.define('member_information', {
-        mem_SrNo: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            primaryKey: true,
-            autoIncrement: true
-        },
         EntryNo: {
             type: DataTypes.STRING,
+            allowNull: false,
+            primaryKey: true,
+        },
+        mem_SrNo: {
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         EntryDT: {
@@ -21,162 +20,198 @@ module.exports = function (sequelize) {
         TokenNo: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         Mem_Branch: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            // defaultValue: null,
+            references: {
+                model: 'branch',
+                key: 'Branch_Tr'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
         },
         MemCode: {
             type: DataTypes.STRING, // Check No.
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         SHFOLIO: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         Mem_Name: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         DOB: {
             type: DataTypes.DATE,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         DOJBest: {
             type: DataTypes.DATE,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         DojSoc: {
             type: DataTypes.DATE,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         DOR: {
             type: DataTypes.DATE,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         MPayNo: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         SPayNo: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         DeptSrNo: {
-            type: DataTypes.STRING,
+            type: DataTypes.INTEGER,
             allowNull: true,
-            defaultValue: null 
+            // defaultValue: null,
+            references: {
+                model: 'department',
+                key: 'DeptSrNo'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
         },
         Depo_No: {
-            type: DataTypes.STRING,
+            type: DataTypes.INTEGER,
             allowNull: true,
-            defaultValue: null 
+            // defaultValue: null
+            references: {
+                model: 'depo',
+                key: 'SRNo'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
         },
         MemberShipType: {
-            type: DataTypes.STRING, // Ref to MemberShip type
+            type: DataTypes.INTEGER, // Ref to MemberShip type
             allowNull: true,
-            defaultValue: null 
+            // defaultValue: null
+            references: {
+                model: 'member_ship_type',
+                key: 'SrNo'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
         },
         MemberShipStatus: {
-            type: DataTypes.STRING, // Ref to  MEM stat
+            type: DataTypes.INTEGER, // Ref to  MEM stat
             allowNull: true,
-            defaultValue: null 
+            // defaultValue: null
+            references: {
+                model: 'member_status',
+                key: 'SrNo'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
         },
         REMARK: {
             type: DataTypes.TEXT,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         Mem_Gender: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            // defaultValue: null,
+            references: {
+                model: 'gender',
+                key: 'SrNo'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
         },
         Mem_Married: {
             type: DataTypes.BOOLEAN,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         Mem_MobileNo: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         Mem_EMailId: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         TelPhNo: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         BD_DD: {
             type: DataTypes.INTEGER,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         BD_MM: {
             type: DataTypes.INTEGER,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         BD_YYYY: {
             type: DataTypes.INTEGER,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         DSTAT: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         STAT: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         ACCOUNTSTA: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         OPP_STATUS: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         Pancard: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         AdharCard: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         AccNo: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         },
         Accno_TransNo: {
             type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: null 
+            defaultValue: null
         }
     }, {
         tableName: 'member_information',

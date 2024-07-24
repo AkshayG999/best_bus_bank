@@ -5,7 +5,6 @@ module.exports = function (sequelize) {
     return sequelize.define('member_document', {
         EntryNo: {
             type: DataTypes.STRING,
-            primaryKey: true,
             allowNull: false,
         },
         Pancard: {

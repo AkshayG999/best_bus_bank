@@ -2,18 +2,26 @@ const memberAddressService = require('../services/addressService');
 const { sequelize } = require('../../db/db');
 
 
-exports.createMemberAddress = async (req, res, next) => {
-    let transaction;
+exports.createMemberAddress = async (data, transaction) => {
     try {
-        transaction = await sequelize.transaction();
-        const data = req.body;
-        
         const newAddress = await memberAddressService.create(data, transaction);
-        await transaction.commit();
-        return res.status(201).json({ success: true, message: "Member Address created successfully", result: newAddress });
+        return newAddress
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
+        console.log(error);
+        throw new Error(error);
+    }
+};
+
+
+exports.getMemberAddressById = async (EntryNo) => {
+    try {
+        const address = await memberAddressService.getByEntryNo(EntryNo);
+        if (!address) {
+            throw new Error("Member Address not found");
+        }
+        return address;
+    } catch (error) {
+        throw new Error(error);
     }
 };
 
@@ -27,44 +35,21 @@ exports.getAllMemberAddresses = async (req, res, next) => {
     }
 };
 
-exports.getMemberAddressById = async (req, res, next) => {
+exports.updateMemberAddress = async (EntryNo, address, transaction) => {
     try {
-        const { EntryNo } = req.params;
-        const address = await memberAddressService.getById(EntryNo);
-        if (!address) {
-            return next({ status: 404, message: "Member Address not found" });
-        }
-        return res.status(200).json({ success: true, message: "Fetched successfully", result: address });
+        const updatedAddress = await memberAddressService.update(EntryNo, address, transaction);
+        return updatedAddress;
     } catch (error) {
-        next(error);
+        throw new Error(error);
     }
 };
 
-exports.updateMemberAddress = async (req, res, next) => {
-    let transaction;
-    try {
-        transaction = await sequelize.transaction();
-        const { EntryNo } = req.params;
-        const data = req.body;
-        const updatedAddress = await memberAddressService.update(EntryNo, data, transaction);
-        await transaction.commit();
-        return res.status(200).json({ success: true, message: "Member Address updated successfully", result: updatedAddress });
-    } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
-    }
-};
 
-exports.deleteMemberAddress = async (req, res, next) => {
-    let transaction;
+exports.deleteMemberAddress = async (EntryNo, transaction) => {
     try {
-        transaction = await sequelize.transaction();
-        const { EntryNo } = req.params;
-        await memberAddressService.delete(EntryNo, transaction);
-        await transaction.commit();
-        return res.status(200).json({ success: true, message: "Member Address deleted successfully" });
+        const deleted = await memberAddressService.delete(EntryNo, transaction);
+        return deleted;
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        next(error);
+        throw new Error(`Failed to delete address: ${error.message}`);
     }
 };
