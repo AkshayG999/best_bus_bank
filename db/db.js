@@ -24,6 +24,15 @@ const memberStatus = require("../memberRegistration/models/memberStatusModel");
 const memberRelation = require("../memberRegistration/models/relationModel");
 const gender = require("../memberRegistration/models/genderModel");
 
+//Account Services Database Registrations
+
+const autoNoForAll = require("../accountServices/models/autoNoForAllModel");
+const accountRunningNo = require("../accountServices/models/accountRunningNoModel");
+const accountBreakup = require("../accountServices/models/accountBreakupModel");
+const vmain = require("../accountServices/models/vmainModel");
+const vmainRel = require("../accountServices/models/vmainRelModel");
+
+
 
 
 
@@ -89,6 +98,13 @@ const memberStatusModel = memberStatus(sequelize);
 const memberRelationModel = memberRelation(sequelize);
 const genderModel = gender(sequelize);
 
+//Account Services
+const autoNoForAllModel = autoNoForAll(sequelize);
+const accountRunningNoModel = accountRunningNo(sequelize);
+const accountBreakupModel = accountBreakup(sequelize);
+const vmainModel = vmain(sequelize);
+const vmainRelModel = vmainRel(sequelize);
+
 
 // Associations between models here
 userModel.belongsTo(rolePermissions, { foreignKey: 'roleId', as: 'role_permissions' });
@@ -104,6 +120,15 @@ bankBranchModel.belongsTo(bankModel, { foreignKey: 'ParentBank', targetKey: 'TrN
 branchModel.belongsTo(zoneModel, { foreignKey: 'Branch_Zone', as: 'zone' });
 
 departmentModel.belongsTo(depoModel, { foreignKey: 'Depo_SrNo', as: 'depo' });
+
+accountRunningNoModel.belongsTo(branchModel, { foreignKey: 'Branch_No', as: 'branch' });
+
+vmainRelModel.belongsTo(vmainModel, { foreignKey: 'EntryNo', as: 'vmain' });
+vmainModel.hasMany(vmainRelModel, { foreignKey: 'TransNo' });
+
+accountBreakupModel.belongsTo(vmainModel, { foreignKey: 'TransNo', as: 'vmain' });
+vmainModel.hasMany(accountBreakupModel, { foreignKey: 'TransNo' });
+
 // departmentModel.belongsTo(userModel, { foreignKey: 'createdBy', as: 'user' });
 // departmentModel.belongsTo(branchModel, { foreignKey: 'branchCode', as: 'branch' });
 
@@ -125,5 +150,5 @@ module.exports = {
     db, sequelize, Sequelize, userModel, bankModel, groupModel, parentGroupModel, individualAccountModel,
     bankBranchModel, branchModel, departmentModel, features, rolePermissions, zoneModel, depoModel, auditLogModel,
     memberInformationModel, memberAddressModel, memberBankInfoModel, memberDocumentModel, memberNomineeModel, memberInstallmentModel,
-    memberShipTypeModel, memberStatusModel, memberRelationModel, genderModel
+    memberShipTypeModel, memberStatusModel, autoNoForAllModel, accountRunningNoModel, accountBreakupModel, vmainModel, vmainRelModel, memberRelationModel, genderModel
 };
