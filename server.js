@@ -40,13 +40,13 @@ app.get('/test', (req, res) => {
     res.send("Server is running..");
 });
 
-// sequelize.sync({ alter: true })
-//     .then(() => {
-//         console.log('Database synchronized successfully.');
-//     })
-//     .catch(err => {
-//         console.error('Error synchronizing database:', err);
-//     });
+sequelize.sync({ alter: true })
+    .then(() => {
+        console.log('Database synchronized successfully.');
+    })
+    .catch(err => {
+        console.error('Error synchronizing database:', err);
+    });
 
 // Start server
 const PORT = process.env.PORT || 4000;
