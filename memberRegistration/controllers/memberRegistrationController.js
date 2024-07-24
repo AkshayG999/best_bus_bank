@@ -40,11 +40,11 @@ exports.createMember = async (req, res, next) => {
         if (!newBankInfo) throw new Error("Failed to create bank details.");
 
         // Create document
-        const newDocument = await createDocument(EntryNo, document, transaction);
+        const newDocument = await createDocument({ EntryNo, ...document }, transaction);
         if (!newDocument) throw new Error("Failed to create document.");
 
         // Create nominee
-        const newNominee = await createNominee(EntryNo, nominee, transaction);
+        const newNominee = await createNominee({ "Mem_EntryNo": EntryNo, "mno": MNO, ...nominee }, transaction);
         if (!newNominee) throw new Error("Failed to create nominee.");
 
         // Create installment

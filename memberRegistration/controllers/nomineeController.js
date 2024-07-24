@@ -5,7 +5,7 @@ const procedureStoreController = require("../../procedureStoreServices/controlle
 
 
 
-exports.createNominee = async (Mem_EntryNo, data, transaction) => {
+exports.createNominee = async (data, transaction) => {
     try {
         const EntryNo = await procedureStoreController.generateGroupUniqueCode(
             "member_nominee_EntryNo",
@@ -13,7 +13,7 @@ exports.createNominee = async (Mem_EntryNo, data, transaction) => {
             transaction
         );
         console.log(EntryNo);
-        const newNominee = await memberNomineeService.create({ ...data, EntryNo, Mem_EntryNo }, transaction);
+        const newNominee = await memberNomineeService.create({ ...data, EntryNo, }, transaction);
 
         return newNominee;
     } catch (error) {
