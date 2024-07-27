@@ -15,7 +15,7 @@ exports.getBankInfo = async (EntryNo) => {
     try {
         const bankInfo = await memberBankInfoService.getByEntryNo(EntryNo);
         if (!bankInfo) {
-            throw new Error("Bank Info not found");
+            return {};
         }
         return bankInfo;
     } catch (error) {

@@ -46,7 +46,7 @@ exports.getDocumentByEntryNo = async (EntryNo) => {
     try {
         const document = await memberDocumentService.getByEntryNo(EntryNo);
         if (!document) {
-            throw new Error("Member document not found");
+            return {};
         }
         return document;
     } catch (error) {

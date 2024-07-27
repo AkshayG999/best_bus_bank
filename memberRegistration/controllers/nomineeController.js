@@ -25,6 +25,7 @@ exports.createNominee = async (data, transaction) => {
 exports.getNomineeByMem_EntryNo = async (Mem_EntryNo) => {
     try {
         const nominee = await memberNomineeService.getByMem_EntryNo(Mem_EntryNo);
+        if (!nominee) return {}
         return nominee;
     } catch (error) {
         throw new Error(error);

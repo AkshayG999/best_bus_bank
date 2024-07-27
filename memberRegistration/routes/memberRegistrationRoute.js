@@ -5,7 +5,7 @@ const memberRegistrationController = require('../controllers/memberRegistrationC
 
 
 router.post('/create', memberRegistrationController.createMember);
-router.get('/:EntryNo', memberRegistrationController.getMemberInformations);
+router.get('/', memberRegistrationController.getMemberInformations);
 router.put('/:EntryNo/:mem_SrNo', memberRegistrationController.updateMember);
 router.delete("/:EntryNo/:mem_SrNo", memberRegistrationController.deleteMember);
 

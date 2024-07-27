@@ -1,7 +1,5 @@
 const memberInformationService = require('../services/informationService');
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
-const { sequelize } = require("../../db/db");
-const { Sequelize } = require("sequelize");
 
 
 exports.basicDetailsCreate = async (memberData, transaction) => {
@@ -23,6 +21,18 @@ exports.basicDetailsGet = async (EntryNo) => {
     try {
 
         const member = await memberInformationService.basicDetailsGet(EntryNo);
+        if (!member) {
+            throw new Error('Member not found');
+        }
+        return member;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+exports.getMember = async (filter) => {
+    try {
+
+        const member = await memberInformationService.getMember(filter);
         if (!member) {
             throw new Error('Member not found');
         }
