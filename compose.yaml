@@ -1,4 +1,3 @@
-
 version: '3.8'
 services:
   server:
@@ -6,6 +5,5 @@ services:
     env_file:
       - .env
     ports:
-      - "4000:4000"
-    command: npm start
-
+      - "8080:4000"
+    command: ["pm2-runtime", "start", "server.js"]
