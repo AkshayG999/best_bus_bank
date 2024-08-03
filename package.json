@@ -6,8 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx nodemon server.js",
-    "migrate:db": "node ./db/migration.js",
-    "csv:import": "node ./dataBaseCSVRestore/index"
+    "csv:import": "node ./dataBaseCSVRestore/index",
+    "migrate:all": "node ./db/migration.js all",
+    "migrate:specific": "node ./db/migration.js specific"
   },
   "author": "",
   "license": "ISC",
