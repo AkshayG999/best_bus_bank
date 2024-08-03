@@ -32,7 +32,7 @@ app.use(limiter);
 app.use('/', routes);
 app.use(errorHandler);
 
-app.get('/test', (req, res) => {
+app.get('/test-1', (req, res) => {
     res.send("Server is running..");
 });
 
