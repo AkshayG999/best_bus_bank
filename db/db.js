@@ -121,8 +121,6 @@ branchModel.belongsTo(zoneModel, { foreignKey: 'Branch_Zone', as: 'zone' });
 
 departmentModel.belongsTo(depoModel, { foreignKey: 'Depo_SrNo', as: 'depo' });
 
-accountRunningNoModel.belongsTo(branchModel, { foreignKey: 'Branch_No', as: 'branch' });
-
 vmainRelModel.belongsTo(vmainModel, { foreignKey: 'EntryNo', as: 'vmain' });
 vmainModel.hasMany(vmainRelModel, { foreignKey: 'TransNo' });
 

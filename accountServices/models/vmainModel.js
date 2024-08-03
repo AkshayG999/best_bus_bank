@@ -45,7 +45,7 @@ module.exports = function (sequelize) {
             allowNull: true,
         },
         Narrionation: {
-            type: DataTypes.STRING(500),
+            type: DataTypes.STRING(1250),
             allowNull: true,
         },
         V_NAR1: {
@@ -230,11 +230,11 @@ module.exports = function (sequelize) {
         },
         SendToNeft_User_DATE_Bank: {
             type: DataTypes.DATE,
-            allowNull: false,
+            allowNull: true,
         }
     }, {
         tableName: 'vmain',
-        timestamps: true
+        timestamps: false
     });
 
 }

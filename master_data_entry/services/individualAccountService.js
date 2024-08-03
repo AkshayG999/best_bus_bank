@@ -23,6 +23,18 @@ exports.findByTrNo = async (AccSrNo, populate = false) => {
     }
 }
 
+exports.findByFilter = async (filter, populate = false) => {
+    try {
+        const individualAccount = await individualAccountModel.findOne({
+            where: filter,
+            include: populate ? [{ model: groupModel, attributes: ['sr_no', 'tr_no', 'groupName'] }] : []
+        });
+        return individualAccount;
+    } catch (error) {
+        throw error;
+    }
+}
+
 exports.getAll = async (filter, populate = false) => {
     try {
         return await individualAccountModel.findAll({

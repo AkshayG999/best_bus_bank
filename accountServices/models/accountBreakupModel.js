@@ -53,11 +53,19 @@ module.exports = function (sequelize) {
         },
         EntryNo: {
             type: DataTypes.STRING(20),
+            allowNull: true,
+        },
+        RecoRemark: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        Reco_InsNo: {
+            type: DataTypes.DECIMAL(18,0),
             allowNull: false,
-        }
+        },
     }, {
         tableName: 'account_breakup',
-        timestamps: true
+        timestamps: false
     });
 
 }

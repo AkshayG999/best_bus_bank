@@ -15,8 +15,8 @@ const { importCSVData } = require('./dataImport');
 // const csvFilePath = path.join(__dirname, './member/Mast_MemberInformation_AttachDocument.csv');
 // const model = require('../memberRegistration/models/documentModel')(sequelize);
 
-const csvFilePath = path.join(__dirname, './member/autoNoForAll.csv');
-const model = require('../accountServices/models/autoNoForAllModel')(sequelize);
+const csvFilePath = path.join(__dirname, './member/vmain.csv');
+const model = require('../accountServices/models/vmainModel')(sequelize);
 
 // const csvFilePath = path.join(__dirname, './member/instmast.csv');
 // const model = require('../memberRegistration/models/memberInstallmentModel')(sequelize);
