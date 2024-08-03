@@ -28,7 +28,7 @@ COPY . .
 COPY .env ./
 
 # Expose the port that the application listens on.
-EXPOSE 4000
+EXPOSE 8080
 
 # Run the application using pm2
 CMD ["pm2-runtime", "start", "server.js"]
