@@ -210,6 +210,31 @@ exports.getByTrNo = async (req, res, next) => {
     }
 };
 
+exports.getByFilter = async (req, res, next) => {
+    try {
+        
+        const individualAccounts = await individualAccountService.findByFilter(req.query);
+
+        if (!individualAccounts) {
+            return errorMid(
+                400,
+                `IndividualAccount with ${req.params} not found`,
+                req,
+                res
+            );
+        }
+
+        res.status(200).send({
+            success: true,
+            message: "Fetched successfully",
+            result: individualAccounts,
+        });
+    } catch (error) {
+        console.error("Error fetching IndividualAccounts:", error);
+        return next(error, req, res);
+    }
+};
+
 exports.getAll = async (req, res, next) => {
     try {
         const { AccSrNo, TrNo, AccountName, GroupName } = req.query;

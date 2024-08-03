@@ -55,7 +55,7 @@ module.exports = function (sequelize) {
         }
     }, {
         tableName: 'vmain_rel',
-        timestamps: true
+        timestamps: false
     });
 
 }

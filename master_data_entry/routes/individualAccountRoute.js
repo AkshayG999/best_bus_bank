@@ -12,6 +12,7 @@ const { checkPermissionsMiddleware } = require("../../middlewareServices/permiss
 
 router.post('/', individualAccountController.create)
 router.get('/:AccSrNo', individualAccountController.getByTrNo)
+router.get('/accounts', individualAccountController.getByFilter)
 router.get('/', individualAccountController.getAll)
 router.put('/:AccSrNo', individualAccountController.update)
 router.delete('/:AccSrNo', individualAccountController.delete)
