@@ -1,6 +1,6 @@
 const { sequelize } = require("../../db/db");
 const { Sequelize } = require("sequelize");
-const { basicDetailsCreate, basicDetailsGet, personalInfoGet, updateMember, deleteMember } = require("./informationController");
+const { basicDetailsCreate, basicDetailsGet, personalInfoGet, updateMember, deleteMember, getMember } = require("./informationController");
 const { createMemberAddress, getMemberAddressById, updateMemberAddress, deleteMemberAddress } = require("./addressController");
 const { createBankInfo, getBankInfo, updateBankInfo, deleteBankInfo } = require("./bankInfoController");
 const { createDocument, getDocumentByEntryNo, updateDocument, deleteDocument } = require("./documentController");
@@ -40,11 +40,11 @@ exports.createMember = async (req, res, next) => {
         if (!newBankInfo) throw new Error("Failed to create bank details.");
 
         // Create document
-        const newDocument = await createDocument(EntryNo, document, transaction);
+        const newDocument = await createDocument({ EntryNo, ...document }, transaction);
         if (!newDocument) throw new Error("Failed to create document.");
 
         // Create nominee
-        const newNominee = await createNominee(EntryNo, nominee, transaction);
+        const newNominee = await createNominee({ "Mem_EntryNo": EntryNo, "mno": MNO, ...nominee }, transaction);
         if (!newNominee) throw new Error("Failed to create nominee.");
 
         // Create installment
@@ -80,34 +80,73 @@ exports.createMember = async (req, res, next) => {
 
 exports.getMemberInformations = async (req, res, next) => {
     try {
-        const { EntryNo } = req.params;
+        const { EntryNo, mem_SrNo, MemCode } = req.query;
 
-        const basicDetails = await basicDetailsGet(EntryNo);
-        const MNO = basicDetails.dataValues.mem_SrNo;
+        if (EntryNo) {
 
-        const personalInfo = await personalInfoGet(EntryNo);
+            const basicDetails = await basicDetailsGet(EntryNo);
+            const MNO = basicDetails.dataValues.mem_SrNo;
 
-        const address = await getMemberAddressById(EntryNo);
+            const personalInfo = await personalInfoGet(EntryNo);
 
-        const bankDetails = await getBankInfo(EntryNo);
+            const address = await getMemberAddressById(EntryNo);
 
-        const document = await getDocumentByEntryNo(EntryNo);
+            const bankDetails = await getBankInfo(EntryNo);
 
-        const nominee = await getNomineeByMem_EntryNo(EntryNo);
+            const document = await getDocumentByEntryNo(EntryNo);
 
-        const installment = await getInstallment(MNO);
+            const nominee = await getNomineeByMem_EntryNo(EntryNo);
 
-        res.status(201).json({
-            success: true,
-            message: "Member fetch successfully",
-            basicDetails,
-            personalInfo,
-            address,
-            bankDetails,
-            document,
-            nominee,
-            installment
-        });
+            const installment = await getInstallment(MNO);
+
+            return res.status(201).json({
+                success: true,
+                message: "Member fetch successfully",
+                basicDetails,
+                personalInfo,
+                address,
+                bankDetails,
+                document,
+                nominee,
+                installment
+            });
+        }
+        else {
+            let filter = {};
+
+            if (mem_SrNo) filter.mem_SrNo = mem_SrNo;
+            if (MemCode) filter.MemCode = MemCode;
+
+            const basicDetails = await getMember(filter);
+            const membersData = await Promise.all(basicDetails.map(async (member) => {
+                const EntryNo = member.dataValues.EntryNo;
+                const MNO = member.dataValues.mem_SrNo;
+
+                const personalInfo = await personalInfoGet(EntryNo);
+                const address = await getMemberAddressById(EntryNo);
+                const bankDetails = await getBankInfo(EntryNo);
+                const document = await getDocumentByEntryNo(EntryNo);
+                const nominee = await getNomineeByMem_EntryNo(EntryNo);
+                const installment = await getInstallment(MNO);
+
+                return {
+                    member,
+                    personalInfo,
+                    address,
+                    bankDetails,
+                    document,
+                    nominee,
+                    installment
+                };
+            }));
+
+            return res.status(201).json({
+                success: true,
+                message: "Member fetched successfully",
+                membersData
+            });
+        }
+
     } catch (error) {
         console.log(error);
         next(error);

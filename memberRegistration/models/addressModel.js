@@ -72,51 +72,51 @@ module.exports = function (sequelize) {
             allowNull: true
         },
         Resi_Add_Area_Mar: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(500),
             allowNull: true
         },
         Resi_Add_City_Mar: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(500),
             allowNull: true
         },
         Resi_Add_State_Mar: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(500),
             allowNull: true
         },
         Resi_Add_Pincode_Mar: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(500),
             allowNull: true
         },
         Resi_Add_TelNo_Mar: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(500),
             allowNull: true
         },
         Perm_Add_01_Mar: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(500),
             allowNull: true
         },
         Perm_Add_02_Mar: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(500),
             allowNull: true
         },
         Perm_Add_Area_Mar: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(500),
             allowNull: true
         },
         Perm_Add_City_Mar: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(500),
             allowNull: true
         },
         Perm_Add_State_Mar: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(500),
             allowNull: true
         },
         Perm_Add_Pincode_Mar: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(500),
             allowNull: true
         },
         Perm_Add_TelNo_Mar: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(500),
             allowNull: true
         }
     }, {

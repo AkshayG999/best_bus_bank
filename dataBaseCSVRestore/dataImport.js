@@ -1,111 +1,16 @@
-// const fs = require('fs');
-// const csv = require('csv-parser');
-// const moment = require('moment');
-// const { Sequelize, DataTypes } = require('sequelize');
-
-// async function importCSVData(csvFilePath, model, batchSize = 500) {
-//     const sanitizeInput = (value, typeParser) => {
-//         if (value === '' || value === 'NULL') return null; // Handle 'NULL' string
-//         const parsedValue = typeParser(value);
-//         return isNaN(parsedValue) ? null : parsedValue;
-//     };
-
-//     const typeParsers = {
-//         'INTEGER': parseInt,
-//         'BIGINT': parseInt,
-//         'FLOAT': parseFloat,
-//         'DOUBLE': parseFloat,
-//         'DECIMAL': (value) => sanitizeInput(value, parseFloat),
-//         'BOOLEAN': (value) => value === 'true' ? true : (value === 'false' ? false : null),
-//         'STRING': (value) => value === '' ? null : value,
-//         'TEXT': (value) => value === '' ? null : value,
-//         'DATE': (value) => value === '' ? null : validateDate(value),
-//         'DATEONLY': (value) => value === '' ? null : validateDate(value),
-//         'TIME': (value) => value === '' ? null : value,
-//         'TIMESTAMP': (value) => value === '' ? null : validateDate(value),
-//     };
-
-//     // const typeParsers = {
-//     //     'INTEGER': (value) => (value === '' || value === 'NULL') ? null : parseInt(value, 10),
-//     //     'BIGINT': (value) => (value === '' || value === 'NULL') ? null : parseInt(value, 10),
-//     //     'FLOAT': (value) => (value === '' || value === 'NULL') ? null : parseFloat(value),
-//     //     'DOUBLE': (value) => (value === '' || value === 'NULL') ? null : parseFloat(value),
-//     //     'BOOLEAN': (value) => value === 'true' ? true : (value === 'false' ? false : null),
-//     //     'STRING': (value) => value === '' ? null : value,
-//     //     'TEXT': (value) => value === '' ? null : value,
-//     //     'DATE': (value) => value === '' ? null : validateDate(value),
-//     //     'DATEONLY': (value) => value === '' ? null : validateDate(value),
-//     //     'TIME': (value) => value === '' ? null : value,
-//     //     'TIMESTAMP': (value) => value === '' ? null : validateDate(value),
-//     // };
-
-
-//     // Function to validate and format dates
-   
-//     function validateDate(dateString) {
-//         if (!dateString) return null;
-//         const date = moment(dateString, moment.ISO_8601, true);
-//         return date.isValid() ? date.toISOString() : null;
-//     }
-
-//     return new Promise((resolve, reject) => {
-//         const results = [];
-
-//         fs.createReadStream(csvFilePath)
-//             .pipe(csv())
-//             .on('data', (row) => {
-//                 console.log('Raw Row Data:', row);
-//                 const cleanedRow = {};
-//                 // console.log(model);
-//                 for (let columnName in model.rawAttributes) {
-//                     if (!model.rawAttributes.hasOwnProperty(columnName)) continue;
-
-//                     const attribute = model.rawAttributes[columnName];
-//                     const dataType = attribute.type.key;
-
-//                     if (row[columnName] === '') {
-//                         cleanedRow[columnName] = null;
-//                     } else if (typeParsers[dataType]) {
-//                         cleanedRow[columnName] = typeParsers[dataType](row[columnName]);
-//                         if (isNaN(cleanedRow[columnName]) && typeParsers[dataType] === parseInt) {
-//                             cleanedRow[columnName] = null;
-//                         }
-//                     } else {
-//                         cleanedRow[columnName] = row[columnName];
-//                     }
-//                 }
-//                 // console.log('Processed Row:', cleanedRow);
-//                 results.push(cleanedRow);
-//             })
-//             .on('end', async () => {
-//                 console.log('CSV file successfully processed. Inserting data into the database...');
-
-//                 try {
-//                     for (let i = 0; i < results.length; i += batchSize) {
-//                         const batch = results.slice(i, i + batchSize);
-//                         await model.bulkCreate(batch, { validate: true });
-//                         console.log(`Inserted batch ${Math.ceil(i / batchSize) + 1}`);
-//                     }
-//                     resolve();
-//                 } catch (error) {
-//                     reject(error);
-//                 }
-//             })
-//             .on('error', (error) => {
-//                 reject(error);
-//             });
-//     });
-// }
-
-// module.exports = { importCSVData };
-
-
 const fs = require('fs');
 const csv = require('csv-parser');
 const moment = require('moment');
 const { Sequelize, DataTypes } = require('sequelize');
-
-async function importCSVData(csvFilePath, model, batchSize = 500) {
+/**
+ * Imports data from a CSV file into a specified database model.
+ *
+ * @param {string} csvFilePath - The path to the CSV file to import.
+ * @param {Object} model - The Sequelize model to import the data into.
+ * @param {number} [batchSize=5000] - The number of records to insert in each batch.
+ * @return {Promise<void>} A promise that resolves when the import is complete.
+ */
+async function importCSVData(csvFilePath, model, batchSize = 5000) {
     const sanitizeInput = (value, typeParser) => {
         if (value === '' || value === 'NULL') return null;
         const parsedValue = typeParser(value);
@@ -119,7 +24,7 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
         'DOUBLE': parseFloat,
         'DECIMAL': (value) => sanitizeInput(value, parseFloat),
         'BOOLEAN': (value) => value === 'true' ? true : (value === 'false' ? false : null),
-        'STRING': (value) => value.trim() === '' ? null : value.trim(),
+        'STRING': (value) => value.trim() === '' ? null : validateNull(value),
         'TEXT': (value) => value === '' ? null : value,
         'DATE': (value) => value === '' ? null : validateDate(value),
         'DATEONLY': (value) => value === '' ? null : validateDate(value),
@@ -128,6 +33,11 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
         'SMALLINT': (value) => sanitizeInput1(value, parseInt),
     };
 
+    function validateNull(string) {
+        if (!string) return null;
+        if (string == 'NULL') return null;
+        if (string) return string.trim();
+    }
     function validateDate(dateString) {
         if (!dateString) return null;
         const date = moment(dateString, moment.ISO_8601, true);
@@ -138,8 +48,8 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
         const normalizedRow = {};
         for (let key in row) {
             if (row.hasOwnProperty(key)) {
-                const normalizedKey = key.replace(/^['"]|['"]$/g, '');  
-                normalizedRow[normalizedKey.trim()] = row[key];  
+                const normalizedKey = key.replace(/^['"]|['"]$/g, '');
+                normalizedRow[normalizedKey.trim()] = row[key];
             }
         }
         return normalizedRow;
@@ -149,10 +59,9 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
         const parsedValue = typeParser ? typeParser(value) : value;
         return isNaN(parsedValue) && typeParser ? null : parsedValue;
     };
-    
+
     return new Promise((resolve, reject) => {
         const results = [];
-
         fs.createReadStream(csvFilePath)
             .pipe(csv())
             .on('data', (row) => {
@@ -169,9 +78,9 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
 
                     let rowValue = normalizedRow[columnName];
 
-                    if (columnName === 'EntryNo') {
-                        rowValue = rowValue.toString(); // Convert EntryNo to string
-                    }
+                    // if (columnName === 'EntryNo') {
+                    //     rowValue = rowValue.toString(); // Convert EntryNo to string
+                    // }
 
                     // console.log(`Processing ${columnName}: ${rowValue}`); // Debug each column
 
@@ -190,17 +99,25 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
                 results.push(cleanedRow);
             })
             .on('end', async () => {
+                console.log(`CSV file successfully processed. Total rows: ${results.length}`);
                 console.log('CSV file successfully processed. Inserting data into the database...');
-                try {
-                    for (let i = 0; i < results.length; i += batchSize) {
-                        const batch = results.slice(i, i + batchSize);
+
+                let insertedCount = 0;
+                for (let i = 0; i < results.length; i += batchSize) {
+                    const batch = results.slice(i, i + batchSize);
+                    try {
                         await model.bulkCreate(batch, { validate: true });
-                        console.log(`Inserted batch ${Math.ceil(i / batchSize) + 1}`);
+                        insertedCount += batch.length;
+                        console.log(`Inserted batch ${Math.ceil(i / batchSize) + 1}. Total inserted: ${insertedCount}`);
+                    } catch (batchError) {
+                        console.error(`Error in batch ${Math.ceil(i / batchSize) + 1}:`, batchError);
+                        // Log the problematic records
+                        batch.forEach((record, index) => {
+                            console.error(`Problem record ${i + index}:`, record);
+                        });
                     }
-                    resolve();
-                } catch (error) {
-                    reject(error);
                 }
+                console.log(`Data import complete. Total rows inserted: ${insertedCount}`);
             })
             .on('error', (error) => {
                 reject(error);
@@ -210,3 +127,4 @@ async function importCSVData(csvFilePath, model, batchSize = 500) {
 
 
 module.exports = { importCSVData };
+

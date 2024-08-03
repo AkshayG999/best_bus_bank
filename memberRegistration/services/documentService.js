@@ -22,7 +22,7 @@ exports.getAll = async (filter = {}) => {
 exports.getByEntryNo = async (EntryNo) => {
     try {
         const document = await memberDocumentModel.findOne({ where: { EntryNo } });
-        if (!document) throw new Error(`Document with EntryNo ${EntryNo} not found`);
+        // if (!document) throw new Error(`Document with EntryNo ${EntryNo} not found`);
         return document;
     } catch (error) {
         throw new Error(`Failed to fetch member document: ${error.message}`);

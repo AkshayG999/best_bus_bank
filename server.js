@@ -39,7 +39,8 @@ app.get('/test', (req, res) => {
 // sequelize.sync({ alter: true })
 //     .then(() => {
 //         console.log('Database synchronized successfully.');
-//     })2
+//         // require('./dataBaseCSVRestore/index');
+//     })
 //     .catch(err => {
 //         console.error('Error synchronizing database:', err);
 //     });

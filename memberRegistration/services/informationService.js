@@ -1,3 +1,4 @@
+const { where } = require('sequelize');
 const { branchModel, memberInformationModel, memberShipTypeModel, departmentModel, depoModel, memberStatusModel, genderModel } = require('../../db/db');
 
 
@@ -36,6 +37,15 @@ exports.personalInfoGet = async (id) => {
 exports.getMemberById = async (id) => {
     try {
         const member = await memberInformationModel.findByPk(id);
+        return member;
+    } catch (error) {
+        throw error;
+    }
+};
+
+exports.getMember = async (filter = {}) => {
+    try {
+        const member = await memberInformationModel.findAll({ where: filter });
         return member;
     } catch (error) {
         throw error;

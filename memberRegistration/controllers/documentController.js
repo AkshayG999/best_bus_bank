@@ -4,9 +4,9 @@ const { Sequelize, Op } = require("sequelize");
 const AuditLogRepository = require('../../auditServices/auditLogService');
 
 
-exports.createDocument = async (EntryNo, data, transaction) => {
+exports.createDocument = async (data, transaction) => {
     try {
-        const newDocument = await memberDocumentService.create({ EntryNo, ...data }, transaction);
+        const newDocument = await memberDocumentService.create(data, transaction);
 
         // await AuditLogRepository.log({
         //     SystemID: req.systemID,
@@ -46,7 +46,7 @@ exports.getDocumentByEntryNo = async (EntryNo) => {
     try {
         const document = await memberDocumentService.getByEntryNo(EntryNo);
         if (!document) {
-            throw new Error("Member document not found");
+            return {};
         }
         return document;
     } catch (error) {

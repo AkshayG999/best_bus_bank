@@ -22,7 +22,7 @@ exports.getAll = async (filter = {}) => {
 exports.get = async (MNO) => {
     try {
         const installment = await memberInstallmentModel.findOne({ where: { MNO } });
-        if (!installment) throw new Error(`Installment with MNO ${MNO} not found`);
+        // if (!installment) throw new Error(`Installment with MNO ${MNO} not found`);
         return installment;
     } catch (error) {
         throw new Error(`Failed to fetch member installment: ${error.message}`);
