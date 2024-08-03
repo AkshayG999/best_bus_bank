@@ -40,4 +40,4 @@ jobs:
             docker pull akshaygaikwad009/best_bus_backend:latest
             docker stop $(docker ps -a -q) || true
             docker rm $(docker ps -a -q) || true
-            docker run -d -p 80:4000 akshaygaikwad009/best_bus_backend:latest
+            docker run -d -p 8080:4000 akshaygaikwad009/best_bus_backend:latest
