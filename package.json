@@ -2,7 +2,7 @@
   "name": "best-bus-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx nodemon server.js",
@@ -10,7 +10,7 @@
     "migrate:all": "node ./db/migration.js all",
     "migrate:specific": "node ./db/migration.js specific"
   },
-  "author": "",
+  "author": "INKWELL",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
