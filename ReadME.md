@@ -4,10 +4,14 @@ tree -I > project.txt 'node_modules'
 
 ## Script for Automation
 
+```
+chmod +x update_main.sh
+```
+
 Then you can run the script with:
 
 ```
-npm run update-main
+./update_main.sh
 ```
 
 This script will perform all the necessary steps to update your main branch with changes from feature-2 and push them to the remote repository.
