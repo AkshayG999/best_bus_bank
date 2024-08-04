@@ -4,35 +4,6 @@ tree -I > project.txt 'node_modules'
 
 ## Script for Automation
 
-If you want to automate this process further, you can create a simple shell script. Save the following script as deploy.sh and run it every time you need to merge and push:
-
-#!/bin/bash
-
-1. Checkout to the main branch
-    ```
-    git checkout main
-    ```
-
-2. Pull the latest changes from the remote main branch
-
-    ```
-    git pull origin main
-    ```
-
-3. Merge the feature-2 branch into main
-
-    ```
-    git merge feature-2
-    ```
-
-4. Push the updated main branch to the remote repository
-
-    ```
-    git push origin main
-    ```
-
-## Make the script executable:
-
 ```
 chmod +x update_main.sh
 ```
