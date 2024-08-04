@@ -11,3 +11,6 @@ git merge feature-2
 
 # Push the updated main branch to the remote repository
 git push origin main
+
+# Checkout to the feature-2 branch
+git checkout feature-2

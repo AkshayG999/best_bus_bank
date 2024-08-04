@@ -9,7 +9,8 @@
     "start": "node server.js",
     "csv:import": "node ./dataBaseCSVRestore/index",
     "migrate:all": "node ./db/migration.js all",
-    "migrate:specific": "node ./db/migration.js specific"
+    "migrate:specific": "node ./db/migration.js specific",
+    "update-main": "./update_main.sh"
   },
   "author": "INKWELL",
   "license": "ISC",
