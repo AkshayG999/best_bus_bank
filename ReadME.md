@@ -34,13 +34,13 @@ If you want to automate this process further, you can create a simple shell scri
 ## Make the script executable:
 
 ```
-chmod +x deploy.sh
+chmod +x update_main.sh
 ```
 
 Then you can run the script with:
 
 ```
-./deploy.sh
+./update_main.sh
 ```
 
 This script will perform all the necessary steps to update your main branch with changes from feature-2 and push them to the remote repository.
