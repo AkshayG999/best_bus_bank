@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - feature-2
+      - main
 
 jobs:
   build:
