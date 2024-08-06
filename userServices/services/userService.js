@@ -56,16 +56,20 @@ exports.updatePersonPassword = async (systemID, password) => {
 }
 
 
-exports.updateUser = async (systemID, dataForUpdate) => {
-  await userModel.update(
-    dataForUpdate,
-    {
-      where: {
-        systemID: systemID,
-      },
+exports.updateUser = async (systemID, dataForUpdate, transaction) => {
+  try {
+    const result = await userModel.update(dataForUpdate, {
+      where: { systemID },
+      returning: true,
+    }, { transaction });
+
+    if (result[0] === 0) {
+      throw new Error(`No record found with systemID ${systemID}.`);
     }
-  );
-  return { Id, Name, Email };
+    return result[1][0];
+  } catch (error) {
+    throw error;
+  }
 };
 
 exports.updatePersonRole = async (systemID, dataForUpdate, transaction) => {
