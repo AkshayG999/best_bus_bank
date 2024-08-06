@@ -38,7 +38,12 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
+            # Pull the latest Docker image
             docker pull ${{ secrets.DOCKER_USERNAME }}/best_bus_backend:latest
-            docker stop $(docker ps -a -q) || true
-            docker rm $(docker ps -a -q) || true
+
+            # Stop and remove old containers running the image
+            docker ps -q --filter "ancestor=${{ secrets.DOCKER_USERNAME }}/best_bus_backend:latest" | xargs -r docker stop
+            docker ps -a -q --filter "ancestor=${{ secrets.DOCKER_USERNAME }}/best_bus_backend:latest" | xargs -r docker rm
+
+            # Run a new container from the latest image
             docker run -d -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/best_bus_backend:latest
