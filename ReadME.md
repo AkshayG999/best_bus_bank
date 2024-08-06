@@ -15,3 +15,4 @@ Then you can run the script with:
 ```
 
 This script will perform all the necessary steps to update your main branch with changes from feature-2 and push them to the remote repository.
+.
