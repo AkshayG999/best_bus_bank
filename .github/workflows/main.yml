@@ -38,12 +38,18 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
-            # Pull the latest Docker image
-            docker pull ${{ secrets.DOCKER_USERNAME }}/best_bus_backend:latest
+            # Ensure no space issues
+            df -h
 
-            # Stop and remove old containers running the image
+            # Remove old containers to free up space
             docker ps -q --filter "ancestor=${{ secrets.DOCKER_USERNAME }}/best_bus_backend:latest" | xargs -r docker stop
             docker ps -a -q --filter "ancestor=${{ secrets.DOCKER_USERNAME }}/best_bus_backend:latest" | xargs -r docker rm
+
+            # Remove unused Docker images to free up space
+            docker image prune -a --force
+
+            # Pull the latest Docker image
+            docker pull ${{ secrets.DOCKER_USERNAME }}/best_bus_backend:latest
 
             # Run a new container from the latest image
             docker run -d -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/best_bus_backend:latest
