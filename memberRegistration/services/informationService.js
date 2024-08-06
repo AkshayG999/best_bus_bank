@@ -149,7 +149,7 @@ exports.getAllMembers = async (page = 1, limit = 10) => {
             include: [
                 {
                     model: branchModel, as: 'branch',
-                    // attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
+                    attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
                 },
                 {
                     model: departmentModel, as: 'department',
