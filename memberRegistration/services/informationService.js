@@ -14,8 +14,29 @@ exports.createMember = async (data, transaction) => {
 exports.basicDetailsGet = async (id) => {
     try {
         const member = await memberInformationModel.findByPk(id, {
-            attributes: ['EntryNo', 'mem_SrNo', 'EntryDT', 'Mem_Branch', 'MemCode', 'SHFOLIO', 'Mem_Name', 'MPayNo', 'SPayNo', 'MemberShipType', 'MemberShipStatus', 'DeptSrNo', 'Depo_No', 'REMARK', 'STAT']
-        });
+            attributes: ['EntryNo', 'mem_SrNo', 'EntryDT', 'Mem_Branch', 'MemCode', 'SHFOLIO', 'Mem_Name', 'MPayNo', 'SPayNo', 'MemberShipType', 'MemberShipStatus', 'DeptSrNo', 'Depo_No', 'REMARK', 'STAT'],
+            include: [
+                {
+                    model: branchModel, as: 'branch',
+                    // attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
+                },
+                {
+                    model: departmentModel, as: 'department',
+                },
+                {
+                    model: depoModel, as: 'depo',
+                },
+                {
+                    model: memberShipTypeModel, as: 'member_ship_type',
+                },
+                {
+                    model: memberStatusModel, as: 'member_status',
+                },
+                {
+                    model: genderModel, as: 'gender',
+                },
+            ]
+        },);
         return member;
     } catch (error) {
         throw new Error(error);
@@ -25,7 +46,28 @@ exports.basicDetailsGet = async (id) => {
 exports.personalInfoGet = async (id) => {
     try {
         const member = await memberInformationModel.findByPk(id, {
-            attributes: ['EntryNo', 'mem_SrNo', 'Mem_Name', 'DOB', 'DOJBest', 'DojSoc', 'DOR', 'Mem_Gender', 'Mem_Married', 'Mem_MobileNo', 'Mem_EMailId', 'TelPhNo']
+            attributes: ['EntryNo', 'mem_SrNo', 'Mem_Name', 'DOB', 'DOJBest', 'DojSoc', 'DOR', 'Mem_Gender', 'Mem_Married', 'Mem_MobileNo', 'Mem_EMailId', 'TelPhNo'],
+            include: [
+                {
+                    model: branchModel, as: 'branch',
+                    // attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
+                },
+                {
+                    model: departmentModel, as: 'department',
+                },
+                {
+                    model: depoModel, as: 'depo',
+                },
+                {
+                    model: memberShipTypeModel, as: 'member_ship_type',
+                },
+                {
+                    model: memberStatusModel, as: 'member_status',
+                },
+                {
+                    model: genderModel, as: 'gender',
+                },
+            ]
         });
         return member;
     } catch (error) {
@@ -36,7 +78,29 @@ exports.personalInfoGet = async (id) => {
 
 exports.getMemberById = async (id) => {
     try {
-        const member = await memberInformationModel.findByPk(id);
+        const member = await memberInformationModel.findByPk(id, {
+            include: [
+                {
+                    model: branchModel, as: 'branch',
+                    // attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
+                },
+                {
+                    model: departmentModel, as: 'department',
+                },
+                {
+                    model: depoModel, as: 'depo',
+                },
+                {
+                    model: memberShipTypeModel, as: 'member_ship_type',
+                },
+                {
+                    model: memberStatusModel, as: 'member_status',
+                },
+                {
+                    model: genderModel, as: 'gender',
+                },
+            ]
+        });
         return member;
     } catch (error) {
         throw error;
@@ -45,7 +109,30 @@ exports.getMemberById = async (id) => {
 
 exports.getMember = async (filter = {}) => {
     try {
-        const member = await memberInformationModel.findAll({ where: filter });
+        const member = await memberInformationModel.findAll({
+            where: filter,
+            include: [
+                {
+                    model: branchModel, as: 'branch',
+                    // attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
+                },
+                {
+                    model: departmentModel, as: 'department',
+                },
+                {
+                    model: depoModel, as: 'depo',
+                },
+                {
+                    model: memberShipTypeModel, as: 'member_ship_type',
+                },
+                {
+                    model: memberStatusModel, as: 'member_status',
+                },
+                {
+                    model: genderModel, as: 'gender',
+                },
+            ]
+        });
         return member;
     } catch (error) {
         throw error;
@@ -60,22 +147,22 @@ exports.getAllMembers = async (page = 1, limit = 10) => {
             offset: offset,
             limit: limit,
             include: [
-                // {
-                //     model: branchModel, as: 'branch',
-                //     // attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
-                // },
-                // {
-                //     model: departmentModel, as: 'department',
-                // },
-                // {
-                //     model: depoModel, as: 'depo',
-                // },
-                // {
-                //     model: memberShipTypeModel, as: 'member_ship_type',
-                // },
-                // {
-                //     model: memberStatusModel, as: 'member_status',
-                // },
+                {
+                    model: branchModel, as: 'branch',
+                    // attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
+                },
+                {
+                    model: departmentModel, as: 'department',
+                },
+                {
+                    model: depoModel, as: 'depo',
+                },
+                {
+                    model: memberShipTypeModel, as: 'member_ship_type',
+                },
+                {
+                    model: memberStatusModel, as: 'member_status',
+                },
                 {
                     model: genderModel, as: 'gender',
                 },
