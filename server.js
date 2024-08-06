@@ -21,13 +21,13 @@ app.use(cors());
 
 app.use(express.json());
 
-// Rate limiting to prevent DDOS attacks
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100
-});
+// // Rate limiting to prevent DDOS attacks
+// const limiter = rateLimit({
+//     windowMs: 15 * 60 * 1000, // 15 minutes
+//     max: 100
+// });
 
-app.use(limiter);
+// app.use(limiter);
 
 app.use('/', routes);
 app.use(errorHandler);
