@@ -141,16 +141,21 @@ module.exports = {
         try {
             const { Branch_Tr, Branch_Name, Branch_City } = req.query;
             let filter = {};
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
 
             if (Branch_Tr) filter.Branch_Tr = Branch_Tr;
             if (Branch_Name) filter.Branch_Name = { [Op.iLike]: `%${Branch_Name}%` };
             if (Branch_City) filter.Branch_City = { [Op.iLike]: `%${Branch_City}%` };
 
-            const branches = await branchService.getAllBranches(filter);
+            const branches = await branchService.getAllBranches(filter, page, limit);
             return res.status(200).send({
                 success: true,
                 message: "Fetched successfully",
-                result: branches,
+                currentPage: page,
+                totalItems: branches.count,
+                totalPages: Math.ceil(branches.count / limit),
+                result: branches.rows,
             });
         } catch (error) {
             next(error);
