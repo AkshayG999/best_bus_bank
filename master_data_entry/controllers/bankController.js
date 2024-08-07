@@ -37,7 +37,7 @@ exports.createBank = async (req, res, next) => {
         const log = await AuditLogRepository.log({
             SystemID: req.systemID,
             entityName: "bank",
-            entityId: newBank.dataValues.TrNo,
+            entityId: newBank.TrNo,
             action: "CREATE",
             beforeAction: null,
             afterAction: newBank,
