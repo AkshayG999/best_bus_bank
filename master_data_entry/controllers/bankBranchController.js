@@ -48,7 +48,7 @@ exports.createBranch = async (req, res, next) => {
         const log = await AuditLogRepository.log({
             SystemID: req.systemID,
             entityName: "bank-branch",
-            entityId: newBranch.TrNo,
+            entityId: newBranch.dataValues.TrNo,
             action: "CREATE",
             beforeAction: null,
             afterAction: newBranch,

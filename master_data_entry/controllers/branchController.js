@@ -115,7 +115,7 @@ module.exports = {
             const log = await AuditLogRepository.log({
                 SystemID: req.systemID,
                 entityName: "branch",
-                entityId: newBranch.Branch_Tr,
+                entityId: newBranch.dataValues.Branch_Tr,
                 action: "CREATE",
                 beforeAction: null,
                 afterAction: newBranch,

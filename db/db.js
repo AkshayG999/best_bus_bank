@@ -108,6 +108,8 @@ const vmainRelModel = vmainRel(sequelize);
 
 // Associations between models here
 userModel.belongsTo(rolePermissions, { foreignKey: 'roleId', as: 'role_permissions' });
+userModel.belongsTo(branchModel, { foreignKey: 'branchId', as: 'branch' });
+userModel.belongsTo(departmentModel, { foreignKey: 'departmentId', as: 'department' });
 
 groupModel.belongsTo(parentGroupModel, { foreignKey: "GroupUnder", as: "parent_group" });
 parentGroupModel.hasMany(groupModel, { foreignKey: 'GroupUnder' });

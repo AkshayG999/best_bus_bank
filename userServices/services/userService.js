@@ -21,8 +21,8 @@ exports.getAll = async (filter) => {
     where: filter,
     include: [
       { model: rolePermissions, as: 'role_permissions', attributes: ['id', 'name'] },
-      //   { model: branchModel, as: "branch" },
-      //   { model: departmentModel, as: "department" },
+      { model: branchModel, as: "branch", },
+      { model: departmentModel, as: "department" },
     ],
   });
 };
@@ -32,6 +32,10 @@ exports.findPersonBySystemID = async (systemID) => {
     where: {
       systemID: systemID,
     },
+    include: [
+      { model: branchModel, as: "branch" },
+      { model: departmentModel, as: "department" },
+    ],
   });
 };
 
@@ -40,6 +44,10 @@ exports.findPersonByEmail = async (email) => {
     where: {
       email: email,
     },
+    include: [
+      { model: branchModel, as: "branch" },
+      { model: departmentModel, as: "department" },
+    ],
   });
 };
 
