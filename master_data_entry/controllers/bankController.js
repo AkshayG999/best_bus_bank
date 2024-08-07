@@ -54,6 +54,7 @@ exports.createBank = async (req, res, next) => {
         if (transaction) {
             await transaction.rollback();
         }
+        console.log(error);
         next(error);
     }
 }
