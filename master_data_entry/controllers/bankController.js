@@ -33,7 +33,7 @@ exports.createBank = async (req, res, next) => {
         // console.log(data);
 
         const newBank = await bankService.createBank(data, transaction);
-
+        console.log(newBank);
         const log = await AuditLogRepository.log({
             SystemID: req.systemID,
             entityName: "bank",
