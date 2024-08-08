@@ -12,22 +12,16 @@ exports.createDepartment = async (req, res, next) => {
     });
     try {
         const {
-            EntryNo,
             EntryDT,
-            DeptNo,
             MPayNo,
             SPayNo,
+            Branch_SrNo,
             DeptName,
             DeptName_Mar,
-            Add_01,
-            Add_02,
-            Add_03,
             Dept_EmailID,
             Dept_ContactNo,
-            Dept_ContactPerson,
+            Depo_SrNo,
             IsMainDept,
-            Branch_SrNo,
-            Depo_SrNo
 
         } = req.body;
 
@@ -46,7 +40,10 @@ exports.createDepartment = async (req, res, next) => {
             data.DeptName_Mar = DeptName_Mar;
         }
 
-        if (!Depo_SrNo) return next({ status: 400, message: "Depo_SrNo is Required" });
+        data.EntryDT = EntryDT;
+        data.Branch_SrNo = Branch_SrNo;
+        data.Dept_ContactNo = Dept_ContactNo;
+        data.Dept_EmailID = Dept_EmailID;
         data.Depo_SrNo = Depo_SrNo;
 
         const DeptSrNo = await procedureStoreController.createRecordWithSrNo("Department_DeptSrNo", transaction);
