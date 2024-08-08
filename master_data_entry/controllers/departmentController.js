@@ -81,14 +81,22 @@ exports.getAllDepartments = async (req, res, next) => {
     try {
         const { SPayNo, MPayNo, DeptName, Depo_SrNo } = req.query;
         let filter = {};
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
 
         if (SPayNo) filter.SPayNo = SPayNo;
         if (MPayNo) filter.MPayNo = MPayNo;
         if (DeptName) filter.DeptName = { [Op.iLike]: `%${DeptName}%` };
         if (Depo_SrNo) filter.Depo_SrNo = Depo_SrNo;
 
-        const filteredDepartments = await departmentService.getAll(filter);
-        return res.status(200).send({ success: true, message: "Departments fetched successfully", result: filteredDepartments });
+        const filteredDepartments = await departmentService.getAll(filter, page, limit);
+        return res.status(200).send({
+            success: true, message: "Departments fetched successfully",
+            currentPage: page,
+            totalItems: filteredDepartments.count,
+            totalPages: Math.ceil(filteredDepartments.count / limit),
+            result: filteredDepartments.rows
+        });
     } catch (error) {
         next(error);
     }

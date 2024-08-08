@@ -10,9 +10,14 @@ module.exports = {
         }
     },
 
-    async getAll(filters) {
+    async getAll(filters, page = 1, limit = 10) {
         try {
-            return await departmentModel.findAll({ where: filters });
+            const offset = (page - 1) * limit;
+            return await departmentModel.findAndCountAll({
+                where: filters,
+                offset: offset,
+                limit: limit,
+            });
         } catch (error) {
             throw error;
         }
