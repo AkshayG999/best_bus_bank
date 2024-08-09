@@ -1,6 +1,6 @@
 const { sequelize } = require("../../db/db");
 const { Sequelize } = require("sequelize");
-const { basicDetailsCreate, basicDetailsGet, personalInfoGet, updateMember, deleteMember, getMember } = require("./informationController");
+const { basicDetailsCreate, basicDetailsGet, personalInfoGet,getMemberWithStat, updateMember, deleteMember, getMember } = require("./informationController");
 const { createMemberAddress, getMemberAddressById, updateMemberAddress, deleteMemberAddress } = require("./addressController");
 const { createBankInfo, getBankInfo, updateBankInfo, deleteBankInfo } = require("./bankInfoController");
 const { createDocument, getDocumentByEntryNo, updateDocument, deleteDocument } = require("./documentController");
@@ -102,13 +102,15 @@ exports.getMemberInformations = async (req, res, next) => {
             return res.status(201).json({
                 success: true,
                 message: "Member fetch successfully",
-                basicDetails,
-                personalInfo,
-                address,
-                bankDetails,
-                document,
-                nominee,
-                installment
+                membersData: [{
+                    member: basicDetails,
+                    personalInfo,
+                    address,
+                    bankDetails,
+                    document,
+                    nominee,
+                    installment
+                }]
             });
         }
         else {
@@ -117,7 +119,7 @@ exports.getMemberInformations = async (req, res, next) => {
             if (mem_SrNo) filter.mem_SrNo = mem_SrNo;
             if (MemCode) filter.MemCode = MemCode;
 
-            const basicDetails = await getMember(filter);
+            const basicDetails = await getMemberWithStat(filter);
             const membersData = await Promise.all(basicDetails.map(async (member) => {
                 const EntryNo = member.dataValues.EntryNo;
                 const MNO = member.dataValues.mem_SrNo;

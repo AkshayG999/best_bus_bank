@@ -42,6 +42,37 @@ exports.getMember = async (filter) => {
     }
 };
 
+exports.getMemberWithStat = async (filter) => {
+    try {
+        // First, try to get members with STAT as 'R'
+        const membersWithR = await memberInformationService.getMember({
+            ...filter,
+            STAT: 'R'
+        });
+
+        // If no members with STAT 'R', get the latest member with STAT 'O'
+        let member;
+        if (membersWithR && membersWithR.length > 0) {
+            member = membersWithR;
+        } else {
+            member = await memberInformationService.getMember({
+                ...filter,
+                STAT: 'O'
+            }, {
+                order: [['EntryDT', 'DESC']], // Ordering by Entry Date to get the latest one
+                limit: 1 // Ensuring only the latest one is retrieved
+            });
+        }
+
+        if (!member) {
+            throw new Error('Member not found');
+        }
+
+        return member;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
 exports.updateMember = async (EntryNo, memberData, transaction) => {
     try {
         const updatedMember = await memberInformationService.updateMember(EntryNo, memberData, transaction);
