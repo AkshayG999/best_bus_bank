@@ -13,16 +13,14 @@ exports.basicDetailsCreate = async (memberData, transaction) => {
 
         const branch = await branchService.getBranchById(memberData.Mem_Branch);
         if (!branch) {
-            throw new Error('Branch not found');
+            return { error: 'Branch not found! Provide valid Branch' };
         }
-
+        console.log(memberData.Mem_Gender);
         if (!['1', '2', '3'].includes(memberData.Mem_Gender)) {
-            throw new Error('Invalid gender. Please select from 1, 2, or 3');
+            return ({ error: 'Invalid gender. Please select from 1, 2, or 3' });
         }
 
-
-
-
+        
         const newMember = await memberInformationService.createMember({ EntryNo, mem_SrNo, ...memberData }, transaction);
         return newMember;
     } catch (error) {
@@ -75,7 +73,7 @@ exports.getMemberWithStat = async (filter) => {
                 limit: 1 // Ensuring only the latest one is retrieved
             });
         }
-        
+
         return members;
     } catch (error) {
         throw new Error(error.message);

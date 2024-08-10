@@ -21,12 +21,14 @@ exports.createMember = async (req, res, next) => {
         let { basicDetails, personalInfo, address, bankDetails, document, nominee, installment } = req.body;
 
         if (!basicDetails || !personalInfo || !address || !bankDetails || !document || !nominee || !installment) {
-            next("All member details must be provided.");
+            next({ status: 400, message: "All member details must be provided." });
         }
 
         // Create basic details
         const newMember = await basicDetailsCreate({ ...basicDetails, ...personalInfo }, transaction);
-
+        if (newMember && newMember.error) {
+            return next({ status: 400, message: newMember.error });
+        }
 
         if (!newMember) throw new Error("Failed to create basic details.");
         const EntryNo = newMember.dataValues.EntryNo;
@@ -111,7 +113,7 @@ exports.getMemberInformations = async (req, res, next) => {
                 success: true,
                 message: "Member fetch successfully",
                 membersData: [{
-                    basicDetails,
+                    member: basicDetails,
                     personalInfo: basicDetails,
                     address,
                     bankDetails,
@@ -146,7 +148,7 @@ exports.getMemberInformations = async (req, res, next) => {
                 const installment = await getInstallment(MNO);
 
                 return {
-                    basicDetails: member,
+                    member,
                     personalInfo,
                     address,
                     bankDetails,
