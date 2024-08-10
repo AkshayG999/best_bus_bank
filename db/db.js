@@ -143,6 +143,7 @@ memberInformationModel.belongsTo(memberStatusModel, { foreignKey: 'MemberShipSta
 memberInformationModel.belongsTo(genderModel, { foreignKey: 'Mem_Gender', as: 'gender' });
 
 memberNomineeModel.belongsTo(memberRelationModel, { foreignKey: 'Nom_Rel', as: 'member_relation' });
+memberNomineeModel.belongsTo(genderModel, { foreignKey: 'Nom_Gender', as: 'gender' });
 
 
 

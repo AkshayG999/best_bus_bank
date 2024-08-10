@@ -64,8 +64,8 @@ exports.delete = async (MNO, transaction) => {
             ...options
         });
 
-        if (deleted === 0) //throw new Error(`No installment found with MNO ${MNO}`);
-            return deleted;
+        if (deleted === 0) return null;//throw new Error(`No installment found with MNO ${MNO}`);
+        return deleted;
     } catch (error) {
         throw new Error(`Failed to delete member installment: ${error.message}`);
     }
