@@ -37,7 +37,7 @@ exports.basicDetailsCreate = async (memberData, transaction) => {
             return { error: 'Depo_No not found! Provide valid Depo_No' };
         }
         if (!['1', '2', '3'].includes(memberData.Mem_Gender)) {
-            return ({ error: 'Invalid gender. Please select from 1, 2, or 3' });
+            return ({ error: 'Invalid gender in personalInfo. Please select from 1, 2, or 3' });
         }
 
         const newMember = await memberInformationService.createMember({ EntryNo, mem_SrNo, ...memberData }, transaction);
@@ -123,7 +123,7 @@ exports.updateMember = async (EntryNo, memberData, transaction) => {
             return { error: 'Depo_No not found! Provide valid Depo_No' };
         }
         if (!['1', '2', '3'].includes(memberData.Mem_Gender)) {
-            return ({ error: 'Invalid gender. Please select from 1, 2, or 3' });
+            return ({ error: 'Invalid gender in personalInfo. Please select from 1, 2, or 3' });
         }
 
 

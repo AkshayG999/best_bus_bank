@@ -19,8 +19,8 @@ exports.createNominee = async (data, transaction) => {
         if (!relation) {
             return { error: 'Nominee Relation not found! Provide valid Nominee Relation' };
         }
-        if (!['1', '2', '3'].includes(memberData.Mem_Gender)) {
-            return ({ error: 'Invalid gender. Please select from 1, 2, or 3' });
+        if (!['1', '2', '3'].includes(data.Nom_Gender)) {
+            return ({ error: 'Invalid gender in Nominee. Please select from 1, 2, or 3' });
         }
         
 
@@ -72,8 +72,8 @@ exports.updateNominee = async (Mem_EntryNo, MNO, nominee, transaction) => {
         if (!relation) {
             return { error: 'Nominee Relation not found! Provide valid Nominee Relation' };
         }
-        if (!['1', '2', '3'].includes(memberData.Mem_Gender)) {
-            return ({ error: 'Invalid gender. Please select from 1, 2, or 3' });
+        if (!['1', '2', '3'].includes(nominee.Nom_Gender)) {
+            return ({ error: 'Invalid gender in Nominee. Please select from 1, 2, or 3' });
         }
         
         const updatedNominee = await memberNomineeService.update(Mem_EntryNo, nominee, transaction);

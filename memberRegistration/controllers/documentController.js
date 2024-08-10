@@ -75,7 +75,6 @@ exports.updateDocument = async (EntryNo, document, transaction) => {
             return newDocument;
         }
         
-
         const updatedDocument = await memberDocumentService.update(EntryNo, document, transaction);
 
         // await AuditLogRepository.log({
