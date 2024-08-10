@@ -29,7 +29,7 @@ exports.createInstallment = async (data, transaction) => {
 exports.getInstallment = async (MNO) => {
     try {
         const installment = await memberInstallmentService.get(MNO);
-        if (!installment) return {};
+        if (!installment) return null;
         return installment;
     } catch (error) {
         throw new Error(error);

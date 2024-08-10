@@ -46,7 +46,7 @@ exports.getDocumentByEntryNo = async (EntryNo) => {
     try {
         const document = await memberDocumentService.getByEntryNo(EntryNo);
         if (!document) {
-            return {};
+            return null;
         }
         return document;
     } catch (error) {

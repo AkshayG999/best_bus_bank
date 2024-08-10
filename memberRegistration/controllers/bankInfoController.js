@@ -15,7 +15,7 @@ exports.getBankInfo = async (EntryNo) => {
     try {
         const bankInfo = await memberBankInfoService.getByEntryNo(EntryNo);
         if (!bankInfo) {
-            return {};
+            return null;
         }
         return bankInfo;
     } catch (error) {

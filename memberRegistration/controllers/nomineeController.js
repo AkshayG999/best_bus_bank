@@ -25,7 +25,7 @@ exports.createNominee = async (data, transaction) => {
 exports.getNomineeByMem_EntryNo = async (Mem_EntryNo) => {
     try {
         const nominee = await memberNomineeService.getByMem_EntryNo(Mem_EntryNo);
-        if (!nominee) return {}
+        if (!nominee) return null
         return nominee;
     } catch (error) {
         throw new Error(error);
@@ -52,8 +52,9 @@ exports.getAllNominees = async (req, res, next) => {
 exports.updateNominee = async (Mem_EntryNo, MNO, nominee, transaction) => {
     try {
         const findNominee = await memberNomineeService.getByMem_EntryNo(Mem_EntryNo);
-
+        console.log('findNominee', findNominee);
         if (!findNominee) {
+            console.log('nominee', nominee);
             const newNominee = await this.createNominee({ "Mem_EntryNo": Mem_EntryNo, "mno": MNO, ...nominee }, transaction);
             return newNominee;
         }

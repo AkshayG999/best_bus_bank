@@ -17,7 +17,7 @@ exports.getMemberAddressById = async (EntryNo) => {
     try {
         const address = await memberAddressService.getByEntryNo(EntryNo);
         if (!address) {
-            return {};
+            return null;
         }
         return address;
     } catch (error) {
