@@ -63,9 +63,9 @@ exports.createMember = async (req, res, next) => {
 
         // Create nominee
         const newNominee = await createNominee({ "Mem_EntryNo": EntryNo, "mno": MNO, ...nominee }, transaction);
-        if (!newNominee) {
+        if (newNominee.error) {
             await transaction.rollback();
-            return next({ status: 400, message: "Failed to create nominee." });
+            return next({ status: 400, message: newNominee.error });
         }
 
         // Create installment
@@ -238,9 +238,9 @@ exports.updateMember = async (req, res, next) => {
 
         // Update nominee
         const updatedNominee = await updateNominee(EntryNo, MNO, nominee, transaction);
-        if (!updatedNominee) {
+        if (updatedNominee.error) {
             await transaction.rollback();
-            return next({ status: 400, message: "Failed to update nominee." });
+            return next({ status: 400, message: updatedNominee.error });
         }
 
         // Update installment

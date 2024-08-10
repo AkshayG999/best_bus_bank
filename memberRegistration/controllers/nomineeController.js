@@ -2,6 +2,7 @@ const memberNomineeService = require('../services/nomineeService');
 const { sequelize, Sequelize } = require('../../db/db');
 const AuditLogRepository = require('../../auditServices/auditLogService');
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
+const memberRelationService = require('../services/memberRelationService');
 
 
 
@@ -41,6 +42,7 @@ exports.getNomineeByMem_EntryNo = async (Mem_EntryNo) => {
         throw new Error(error);
     }
 };
+
 exports.getNomineeById = async (req, res, next) => {
     try {
         const nominee = await memberNomineeService.getById(req.params.EntryNo);
@@ -62,13 +64,18 @@ exports.getAllNominees = async (req, res, next) => {
 exports.updateNominee = async (Mem_EntryNo, MNO, nominee, transaction) => {
     try {
         const findNominee = await memberNomineeService.getByMem_EntryNo(Mem_EntryNo);
-        console.log('findNominee', findNominee);
         if (!findNominee) {
-            console.log('nominee', nominee);
             const newNominee = await this.createNominee({ "Mem_EntryNo": Mem_EntryNo, "mno": MNO, ...nominee }, transaction);
             return newNominee;
         }
-
+        const relation = await memberRelationService.getById(nominee.Nom_Rel);
+        if (!relation) {
+            return { error: 'Nominee Relation not found! Provide valid Nominee Relation' };
+        }
+        if (!['1', '2', '3'].includes(memberData.Mem_Gender)) {
+            return ({ error: 'Invalid gender. Please select from 1, 2, or 3' });
+        }
+        
         const updatedNominee = await memberNomineeService.update(Mem_EntryNo, nominee, transaction);
 
         // await AuditLogRepository.log({
