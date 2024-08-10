@@ -95,11 +95,11 @@ exports.getMemberInformations = async (req, res, next) => {
 
             const document = await getDocumentByEntryNo(EntryNo);
 
-            const nominee = await getNomineeByMem_EntryNo(EntryNo);
+            const nominee = await getNomineeByMem_EntryNo('1888234');
 
             const installment = await getInstallment(MNO);
 
-            return res.status(201).json({
+            return res.status(200).json({
                 success: true,
                 message: "Member fetch successfully",
                 membersData: [{
@@ -128,7 +128,7 @@ exports.getMemberInformations = async (req, res, next) => {
                 const address = await getMemberAddressById(EntryNo);
                 const bankDetails = await getBankInfo(EntryNo);
                 const document = await getDocumentByEntryNo(EntryNo);
-                const nominee = await getNomineeByMem_EntryNo(EntryNo);
+                const nominee = await getNomineeByMem_EntryNo('1234');
                 const installment = await getInstallment(MNO);
 
                 return {
@@ -142,7 +142,7 @@ exports.getMemberInformations = async (req, res, next) => {
                 };
             }));
 
-            return res.status(201).json({
+            return res.status(200).json({
                 success: true,
                 message: "Member fetched successfully",
                 membersData

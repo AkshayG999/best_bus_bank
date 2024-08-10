@@ -21,7 +21,7 @@ exports.getAll = async (filter = {}) => {
 exports.getByMem_EntryNo = async (Mem_EntryNo) => {
     try {
         const nominee = await memberNomineeModel.findOne({ where: { Mem_EntryNo }, include: [{ model: memberRelationModel, as: "member_relation" }] });
-        if (!nominee) throw new Error(`Nominee with EntryNo ${Mem_EntryNo} not found`);
+        if (!nominee) return {};// throw new Error(`Nominee with EntryNo ${Mem_EntryNo} not found`);
         return nominee;
     } catch (error) {
         throw new Error(`Failed to fetch member nominee: ${error.message}`);
