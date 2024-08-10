@@ -1,6 +1,7 @@
 const memberInformationService = require('../services/informationService');
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
 const { Op } = require('sequelize');
+const branchService = require('../../master_data_entry/services/branchService');
 
 
 exports.basicDetailsCreate = async (memberData, transaction) => {
@@ -9,6 +10,18 @@ exports.basicDetailsCreate = async (memberData, transaction) => {
         const mem_SrNo = await procedureStoreController.createRecordWithSrNo("member_information_mem_SrNo", transaction);
         console.log(EntryNo);
         console.log(mem_SrNo);
+
+        const branch = await branchService.getBranchById(memberData.Mem_Branch);
+        if (!branch) {
+            throw new Error('Branch not found');
+        }
+
+        if (!['1', '2', '3'].includes(memberData.Mem_Gender)) {
+            throw new Error('Invalid gender. Please select from 1, 2, or 3');
+        }
+
+
+
 
         const newMember = await memberInformationService.createMember({ EntryNo, mem_SrNo, ...memberData }, transaction);
         return newMember;
@@ -20,17 +33,13 @@ exports.basicDetailsCreate = async (memberData, transaction) => {
 
 exports.basicDetailsGet = async (EntryNo) => {
     try {
-
         const member = await memberInformationService.basicDetailsGet(EntryNo);
-        if (!member) {
-            throw new Error('Member not found');
-        }
         return member;
     } catch (error) {
         throw new Error(error);
     }
 };
-exports.getMember = async (filter={}) => {
+exports.getMember = async (filter = {}) => {
     try {
 
         const member = await memberInformationService.getMember(filter);
@@ -66,11 +75,7 @@ exports.getMemberWithStat = async (filter) => {
                 limit: 1 // Ensuring only the latest one is retrieved
             });
         }
-
-        if (!members || members.length === 0) {
-            throw new Error('Member not found');
-        }
-
+        
         return members;
     } catch (error) {
         throw new Error(error.message);

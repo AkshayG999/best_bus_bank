@@ -26,6 +26,8 @@ exports.createMember = async (req, res, next) => {
 
         // Create basic details
         const newMember = await basicDetailsCreate({ ...basicDetails, ...personalInfo }, transaction);
+
+
         if (!newMember) throw new Error("Failed to create basic details.");
         const EntryNo = newMember.dataValues.EntryNo;
         const MNO = newMember.dataValues.mem_SrNo;
@@ -85,9 +87,15 @@ exports.getMemberInformations = async (req, res, next) => {
         if (EntryNo) {
 
             const basicDetails = await basicDetailsGet(EntryNo);
+            if (!basicDetails) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Member not found",
+                });
+            }
             const MNO = basicDetails.dataValues.mem_SrNo;
 
-            const personalInfo = await personalInfoGet(EntryNo);
+            // const personalInfo = await personalInfoGet(EntryNo);
 
             const address = await getMemberAddressById(EntryNo);
 
@@ -103,8 +111,8 @@ exports.getMemberInformations = async (req, res, next) => {
                 success: true,
                 message: "Member fetch successfully",
                 membersData: [{
-                    member: basicDetails,
-                    personalInfo,
+                    basicDetails,
+                    personalInfo: basicDetails,
                     address,
                     bankDetails,
                     document,
@@ -120,6 +128,12 @@ exports.getMemberInformations = async (req, res, next) => {
             if (MemCode) filter.MemCode = MemCode;
 
             const basicDetails = await getMemberWithStat(filter);
+            if (basicDetails.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Member not found",
+                });
+            }
             const membersData = await Promise.all(basicDetails.map(async (member) => {
                 const EntryNo = member.dataValues.EntryNo;
                 const MNO = member.dataValues.mem_SrNo;
@@ -132,7 +146,7 @@ exports.getMemberInformations = async (req, res, next) => {
                 const installment = await getInstallment(MNO);
 
                 return {
-                    member,
+                    basicDetails: member,
                     personalInfo,
                     address,
                     bankDetails,
