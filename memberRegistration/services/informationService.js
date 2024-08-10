@@ -107,35 +107,24 @@ exports.getMemberById = async (id) => {
     }
 };
 
+
 exports.getMember = async (filter = {}, options = {}) => {
     try {
-        const member = await memberInformationModel.findAll({
-            where: filter, options,
+        const members = await memberInformationModel.findAll({
+            where: filter,
+            ...options,
             include: [
-                {
-                    model: branchModel, as: 'branch',
-                    // attributes: ["Branch_Tr", "Branch_TrDt", "Branch_Code", "Branch_Name", "PettyCash_SrNo",]
-                },
-                {
-                    model: departmentModel, as: 'department',
-                },
-                {
-                    model: depoModel, as: 'depo',
-                },
-                {
-                    model: memberShipTypeModel, as: 'member_ship_type',
-                },
-                {
-                    model: memberStatusModel, as: 'member_status',
-                },
-                {
-                    model: genderModel, as: 'gender',
-                },
+                { model: branchModel, as: 'branch' },
+                { model: departmentModel, as: 'department' },
+                { model: depoModel, as: 'depo' },
+                { model: memberShipTypeModel, as: 'member_ship_type' },
+                { model: memberStatusModel, as: 'member_status' },
+                { model: genderModel, as: 'gender' },
             ]
         });
-        return member;
+        return members;
     } catch (error) {
-        throw error;
+        throw new Error(error.message);
     }
 };
 

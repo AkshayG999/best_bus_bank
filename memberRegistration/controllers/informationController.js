@@ -1,5 +1,6 @@
 const memberInformationService = require('../services/informationService');
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
+const { Op } = require('sequelize');
 
 
 exports.basicDetailsCreate = async (memberData, transaction) => {
@@ -29,7 +30,7 @@ exports.basicDetailsGet = async (EntryNo) => {
         throw new Error(error);
     }
 };
-exports.getMember = async (filter) => {
+exports.getMember = async (filter={}) => {
     try {
 
         const member = await memberInformationService.getMember(filter);
@@ -51,28 +52,31 @@ exports.getMemberWithStat = async (filter) => {
         });
 
         // If no members with STAT 'R', get the latest member with STAT 'O'
-        let member;
+        let members;
         if (membersWithR && membersWithR.length > 0) {
-            member = membersWithR;
+            members = membersWithR;
         } else {
-            member = await memberInformationService.getMember({
+            members = await memberInformationService.getMember({
                 ...filter,
-                STAT: 'O'
+                STAT: {
+                    [Op.or]: ['O', null, ''] // Checking for 'O', null, or empty string
+                }
             }, {
                 order: [['EntryDT', 'DESC']], // Ordering by Entry Date to get the latest one
                 limit: 1 // Ensuring only the latest one is retrieved
             });
         }
 
-        if (!member) {
+        if (!members || members.length === 0) {
             throw new Error('Member not found');
         }
 
-        return member;
+        return members;
     } catch (error) {
-        throw new Error(error);
+        throw new Error(error.message);
     }
 };
+
 exports.updateMember = async (EntryNo, memberData, transaction) => {
     try {
         const updatedMember = await memberInformationService.updateMember(EntryNo, memberData, transaction);

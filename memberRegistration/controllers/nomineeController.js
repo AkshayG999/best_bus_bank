@@ -49,8 +49,15 @@ exports.getAllNominees = async (req, res, next) => {
     }
 };
 
-exports.updateNominee = async (Mem_EntryNo, nominee, transaction) => {
+exports.updateNominee = async (Mem_EntryNo, MNO, nominee, transaction) => {
     try {
+        const findNominee = await memberNomineeService.getByMem_EntryNo(Mem_EntryNo);
+
+        if (!findNominee) {
+            const newNominee = await this.createNominee({ "Mem_EntryNo": Mem_EntryNo, "mno": MNO, ...nominee }, transaction);
+            return newNominee;
+        }
+
         const updatedNominee = await memberNomineeService.update(Mem_EntryNo, nominee, transaction);
 
         // await AuditLogRepository.log({

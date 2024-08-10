@@ -45,6 +45,12 @@ exports.getAllBankInfo = async (req, res, next) => {
 
 exports.updateBankInfo = async (EntryNo, bankDetails, transaction) => {
     try {
+        const bankInfo = await memberBankInfoService.getByEntryNo(EntryNo);
+        if (!bankInfo) {
+            const newBankInfo = await this.createBankInfo({ EntryNo, ...bankDetails }, transaction);
+            return newBankInfo
+        }
+
         const updatedBankInfo = await memberBankInfoService.update(EntryNo, bankDetails, transaction);
         return updatedBankInfo
     } catch (error) {

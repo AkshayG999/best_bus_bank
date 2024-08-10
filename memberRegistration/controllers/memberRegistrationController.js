@@ -1,6 +1,6 @@
 const { sequelize } = require("../../db/db");
 const { Sequelize } = require("sequelize");
-const { basicDetailsCreate, basicDetailsGet, personalInfoGet,getMemberWithStat, updateMember, deleteMember, getMember } = require("./informationController");
+const { basicDetailsCreate, basicDetailsGet, personalInfoGet, getMemberWithStat, updateMember, deleteMember, getMember } = require("./informationController");
 const { createMemberAddress, getMemberAddressById, updateMemberAddress, deleteMemberAddress } = require("./addressController");
 const { createBankInfo, getBankInfo, updateBankInfo, deleteBankInfo } = require("./bankInfoController");
 const { createDocument, getDocumentByEntryNo, updateDocument, deleteDocument } = require("./documentController");
@@ -157,7 +157,7 @@ exports.getMemberInformations = async (req, res, next) => {
 
 exports.updateMember = async (req, res, next) => {
     let transaction;
-    const { EntryNo } = req.params;
+    const { EntryNo, mem_SrNo } = req.params;
     let { basicDetails, personalInfo, address, bankDetails, document, nominee, installment } = req.body;
 
     try {
@@ -173,6 +173,7 @@ exports.updateMember = async (req, res, next) => {
         const updatedBasicDetails = await updateMember(EntryNo, { ...basicDetails, ...personalInfo }, transaction);
         if (!updatedBasicDetails) throw new Error("Failed to update basic details.");
         const MNO = updatedBasicDetails.dataValues.mem_SrNo;
+        const MemCode = updatedBasicDetails.dataValues.MemCode;
 
         // Update address
         const updatedAddress = await updateMemberAddress(EntryNo, address, transaction);
@@ -187,11 +188,11 @@ exports.updateMember = async (req, res, next) => {
         if (!updatedDocument) throw new Error("Failed to update document.");
 
         // Update nominee
-        const updatedNominee = await updateNominee(EntryNo, nominee, transaction);
+        const updatedNominee = await updateNominee(EntryNo, MNO, nominee, transaction);
         if (!updatedNominee) throw new Error("Failed to update nominee.");
 
         // Update installment
-        const updatedInstallment = await updateInstallment(MNO, installment, transaction);
+        const updatedInstallment = await updateInstallment(MNO, MemCode, installment, transaction);
         if (!updatedInstallment) throw new Error("Failed to update installment.");
 
         // Commit transaction
