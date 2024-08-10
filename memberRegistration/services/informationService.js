@@ -107,10 +107,10 @@ exports.getMemberById = async (id) => {
     }
 };
 
-exports.getMember = async (filter = {}) => {
+exports.getMember = async (filter = {}, options = {}) => {
     try {
         const member = await memberInformationModel.findAll({
-            where: filter,
+            where: filter, options,
             include: [
                 {
                     model: branchModel, as: 'branch',

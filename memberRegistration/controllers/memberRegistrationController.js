@@ -95,7 +95,7 @@ exports.getMemberInformations = async (req, res, next) => {
 
             const document = await getDocumentByEntryNo(EntryNo);
 
-            const nominee = await getNomineeByMem_EntryNo('1888234');
+            const nominee = await getNomineeByMem_EntryNo(EntryNo);
 
             const installment = await getInstallment(MNO);
 
@@ -128,7 +128,7 @@ exports.getMemberInformations = async (req, res, next) => {
                 const address = await getMemberAddressById(EntryNo);
                 const bankDetails = await getBankInfo(EntryNo);
                 const document = await getDocumentByEntryNo(EntryNo);
-                const nominee = await getNomineeByMem_EntryNo('1234');
+                const nominee = await getNomineeByMem_EntryNo(EntryNo);
                 const installment = await getInstallment(MNO);
 
                 return {
