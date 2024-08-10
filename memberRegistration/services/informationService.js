@@ -171,7 +171,7 @@ exports.updateMember = async (EntryNo, newData, transaction) => {
             returning: true
         }, { transaction });
         if (updatedCount === 0) {
-            throw new Error(`No member found with EntryNo ${EntryNo}.`);
+            return null;
         }
         return updatedMembers[0];
     } catch (error) {

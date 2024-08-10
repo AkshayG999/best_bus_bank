@@ -2,6 +2,10 @@ const memberInformationService = require('../services/informationService');
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
 const { Op } = require('sequelize');
 const branchService = require('../../master_data_entry/services/branchService');
+const memberShipTypeService = require('../services/memberShipTypeService');
+const memberStatusService = require('../services/memberStatusService');
+const departmentService = require('../../master_data_entry/services/departmentService');
+const depoService = require('../../master_data_entry/services/depoService');
 
 
 exports.basicDetailsCreate = async (memberData, transaction) => {
@@ -15,12 +19,27 @@ exports.basicDetailsCreate = async (memberData, transaction) => {
         if (!branch) {
             return { error: 'Branch not found! Provide valid Branch' };
         }
-        console.log(memberData.Mem_Gender);
+        const memberShipType = await memberShipTypeService.getMembershipTypeById(memberData.MemberShipType);
+        if (!memberShipType) {
+            return { error: 'memberShipType not found! Provide valid memberShipType' };
+        }
+        const memberShipStatus = await memberStatusService.getStatusById(memberData.MemberShipStatus);
+        if (!memberShipStatus) {
+            return { error: 'MemberShipStatus not found! Provide valid MemberShipStatus' };
+        }
+
+        const deptSrNo = await departmentService.findById(memberData.DeptSrNo);
+        if (!deptSrNo) {
+            return { error: 'DeptSrNo not found! Provide valid DeptSrNo' };
+        }
+        const depo_No = await depoService.getDepoById(memberData.Depo_No);
+        if (!depo_No) {
+            return { error: 'Depo_No not found! Provide valid Depo_No' };
+        }
         if (!['1', '2', '3'].includes(memberData.Mem_Gender)) {
             return ({ error: 'Invalid gender. Please select from 1, 2, or 3' });
         }
 
-        
         const newMember = await memberInformationService.createMember({ EntryNo, mem_SrNo, ...memberData }, transaction);
         return newMember;
     } catch (error) {
@@ -82,6 +101,32 @@ exports.getMemberWithStat = async (filter) => {
 
 exports.updateMember = async (EntryNo, memberData, transaction) => {
     try {
+        const branch = await branchService.getBranchById(memberData.Mem_Branch);
+        if (!branch) {
+            return { error: 'Branch not found! Provide valid Branch' };
+        }
+        const memberShipType = await memberShipTypeService.getMembershipTypeById(memberData.MemberShipType);
+        if (!memberShipType) {
+            return { error: 'memberShipType not found! Provide valid memberShipType' };
+        }
+        const memberShipStatus = await memberStatusService.getStatusById(memberData.MemberShipStatus);
+        if (!memberShipStatus) {
+            return { error: 'MemberShipStatus not found! Provide valid MemberShipStatus' };
+        }
+
+        const deptSrNo = await departmentService.findById(memberData.DeptSrNo);
+        if (!deptSrNo) {
+            return { error: 'DeptSrNo not found! Provide valid DeptSrNo' };
+        }
+        const depo_No = await depoService.getDepoById(memberData.Depo_No);
+        if (!depo_No) {
+            return { error: 'Depo_No not found! Provide valid Depo_No' };
+        }
+        if (!['1', '2', '3'].includes(memberData.Mem_Gender)) {
+            return ({ error: 'Invalid gender. Please select from 1, 2, or 3' });
+        }
+
+
         const updatedMember = await memberInformationService.updateMember(EntryNo, memberData, transaction);
         return updatedMember;
     } catch (error) {

@@ -13,6 +13,16 @@ exports.createNominee = async (data, transaction) => {
             transaction
         );
         console.log(EntryNo);
+
+        const relation = await memberRelationService.getById(data.Nom_Rel);
+        if (!relation) {
+            return { error: 'Nominee Relation not found! Provide valid Nominee Relation' };
+        }
+        if (!['1', '2', '3'].includes(memberData.Mem_Gender)) {
+            return ({ error: 'Invalid gender. Please select from 1, 2, or 3' });
+        }
+        
+
         const newNominee = await memberNomineeService.create({ ...data, EntryNo, }, transaction);
 
         return newNominee;

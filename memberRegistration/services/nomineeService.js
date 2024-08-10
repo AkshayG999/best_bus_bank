@@ -62,7 +62,7 @@ exports.delete = async (Mem_EntryNo, transaction = null) => {
             ...options
         });
 
-        if (deleted === 0) throw new Error(`No nominee found with EntryNo ${Mem_EntryNo}`);
+        if (deleted === 0) //throw new Error(`No nominee found with EntryNo ${Mem_EntryNo}`);
         return deleted;
     } catch (error) {
         throw new Error(`Failed to delete member nominee: ${error.message}`);
