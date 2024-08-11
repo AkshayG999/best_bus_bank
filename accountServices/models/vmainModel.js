@@ -174,7 +174,7 @@ module.exports = function (sequelize) {
         },
         mysrno: {
             type: DataTypes.DECIMAL(18,0),
-            allowNull: false,
+            allowNull: true,
         },
         PinNo: {
             type: DataTypes.STRING(100),

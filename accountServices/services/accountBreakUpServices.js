@@ -11,6 +11,19 @@ exports.create = async (data, transaction) => {
     }
 }
 
+exports.bulkCreate = async (data,transaction) => {
+    try {
+        const breakUp = await accountBreakupModel.bulkCreate(data,{
+            validate: true,
+            returning: true,
+            transaction: transaction,
+        });
+        return breakUp;
+    } catch (error) {
+        throw error;
+    }
+}
+
 exports.findByFilter = async (filter, populate = false) => {
     try {
         const breakUp = await accountBreakupModel.findOne({
@@ -33,22 +46,21 @@ exports.getAll = async (filter) => {
 }
 
 
-exports.update = async (TransNo, dataForUpdate, transaction) => {
+exports.update = async (filter, dataForUpdate, transaction) => {
     try {
-        const result = await accountBreakupModel.update(dataForUpdate, { where: { TransNo: TransNo }, returning: true }, { transaction });
+        const result = await accountBreakupModel.update(dataForUpdate, { where: filter, returning: true,transaction: transaction });
         if (result[0] === 0) {
-            throw new Error(`No record found with TransNo ${TransNo}.`);
+            throw new Error(`No record found with TransNo ${filter.TransNo}.`);
         }
         return result[1];
-
     } catch (error) {
         throw error;
     }
 }
 
-exports.delete = async (TransNo, transaction) => {
+exports.delete = async (filter, transaction) => {
     try {
-        return await accountBreakupModel.destroy({ where: { TransNo: TransNo } }, { transaction });
+        return await accountBreakupModel.destroy({ where: filter,transaction: transaction });
     } catch (error) {
         throw error;
     }

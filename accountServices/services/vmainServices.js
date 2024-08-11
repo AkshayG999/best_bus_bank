@@ -22,11 +22,9 @@ exports.findByFilter = async (filter, populate = false) => {
     }
 }
 
-exports.getAll = async (filter) => {
+exports.getAll = async (options) => {
     try {
-        return await vmainModel.findAll({
-            where: filter,
-        });
+        return await vmainModel.findAll(options);
     } catch (error) {
         throw error;
     }
@@ -35,7 +33,7 @@ exports.getAll = async (filter) => {
 
 exports.update = async (TransNo, dataForUpdate, transaction) => {
     try {
-        const result = await vmainModel.update(dataForUpdate, { where: { TransNo: TransNo }, returning: true }, { transaction });
+        const result = await vmainModel.update(dataForUpdate, { where: { TransNo: TransNo }, returning: true, transaction: transaction });
         if (result[0] === 0) {
             throw new Error(`No record found with TransNo ${TransNo}.`);
         }
@@ -47,7 +45,7 @@ exports.update = async (TransNo, dataForUpdate, transaction) => {
 
 exports.delete = async (TransNo, transaction) => {
     try {
-        return await vmainModel.destroy({ where: { TransNo: TransNo } }, { transaction });
+        return await vmainModel.destroy({ where: { TransNo: TransNo }, transaction: transaction});
     } catch (error) {
         throw error;
     }

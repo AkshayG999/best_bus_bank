@@ -61,7 +61,7 @@ module.exports = function (sequelize) {
         },
         Reco_InsNo: {
             type: DataTypes.DECIMAL(18,0),
-            allowNull: false,
+            allowNull: true,
         },
     }, {
         tableName: 'account_breakup',

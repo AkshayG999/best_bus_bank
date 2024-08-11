@@ -31,6 +31,7 @@ const accountRunningNo = require("../accountServices/models/accountRunningNoMode
 const accountBreakup = require("../accountServices/models/accountBreakupModel");
 const vmain = require("../accountServices/models/vmainModel");
 const vmainRel = require("../accountServices/models/vmainRelModel");
+const accountTransType = require("../accountServices/models/accountTransTypeModel");
 
 
 
@@ -104,6 +105,7 @@ const accountRunningNoModel = accountRunningNo(sequelize);
 const accountBreakupModel = accountBreakup(sequelize);
 const vmainModel = vmain(sequelize);
 const vmainRelModel = vmainRel(sequelize);
+const accountTransTypeModel = accountTransType(sequelize);
 
 
 // Associations between models here
@@ -148,5 +150,6 @@ module.exports = {
     db, sequelize, Sequelize, userModel, bankModel, groupModel, parentGroupModel, individualAccountModel,
     bankBranchModel, branchModel, departmentModel, features, rolePermissions, zoneModel, depoModel, auditLogModel,
     memberInformationModel, memberAddressModel, memberBankInfoModel, memberDocumentModel, memberNomineeModel, memberInstallmentModel,
-    memberShipTypeModel, memberStatusModel, autoNoForAllModel, accountRunningNoModel, accountBreakupModel, vmainModel, vmainRelModel, memberRelationModel, genderModel
+    memberShipTypeModel, memberStatusModel, autoNoForAllModel, accountRunningNoModel, accountBreakupModel, vmainModel, vmainRelModel, memberRelationModel, genderModel,
+    accountTransTypeModel,
 };
