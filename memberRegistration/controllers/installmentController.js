@@ -29,7 +29,7 @@ exports.createInstallment = async (data, transaction) => {
 exports.getInstallment = async (MNO) => {
     try {
         const installment = await memberInstallmentService.get(MNO);
-        if (!installment) return {};
+        if (!installment) return null;
         return installment;
     } catch (error) {
         throw new Error(error);
@@ -54,8 +54,15 @@ exports.getAllInstallments = async (req, res, next) => {
     }
 };
 
-exports.updateInstallment = async (MNO, installment, transaction) => {
+exports.updateInstallment = async (MNO, MemCode, installment, transaction) => {
     try {
+        const findInstallment = await memberInstallmentService.get(MNO);
+
+        if (!findInstallment) {
+            const newInstallment = await this.createInstallment({ "MNO": MNO, "CHECKNO": MemCode, ...installment }, transaction);
+            return newInstallment;
+        };
+
         const updatedInstallment = await memberInstallmentService.update(MNO, installment, transaction);
 
         // await AuditLogRepository.log({

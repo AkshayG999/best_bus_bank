@@ -63,7 +63,7 @@ exports.delete = async (EntryNo, transaction = null) => {
             ...options
         });
 
-        if (deleted === 0) throw new Error(`No document found with EntryNo ${EntryNo}`);
+        if (deleted === 0) return null;// throw new Error(`No document found with EntryNo ${EntryNo}`);
         return deleted;
     } catch (error) {
         throw new Error(`Failed to delete member document: ${error.message}`);

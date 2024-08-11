@@ -21,13 +21,13 @@ app.use(cors());
 
 app.use(express.json());
 
-// Rate limiting to prevent DDOS attacks
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100
-});
+// // Rate limiting to prevent DDOS attacks
+// const limiter = rateLimit({
+//     windowMs: 15 * 60 * 1000, // 15 minutes
+//     max: 100
+// });
 
-app.use(limiter);
+// app.use(limiter);
 
 app.use('/', routes);
 app.use(errorHandler);
@@ -45,7 +45,7 @@ app.get('/test', (req, res) => {
 //         console.error('Error synchronizing database:', err);
 //     });
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

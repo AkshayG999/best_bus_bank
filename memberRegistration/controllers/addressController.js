@@ -17,7 +17,7 @@ exports.getMemberAddressById = async (EntryNo) => {
     try {
         const address = await memberAddressService.getByEntryNo(EntryNo);
         if (!address) {
-            return {};
+            return null;
         }
         return address;
     } catch (error) {
@@ -37,6 +37,13 @@ exports.getAllMemberAddresses = async (req, res, next) => {
 
 exports.updateMemberAddress = async (EntryNo, address, transaction) => {
     try {
+        const findAddress = await memberAddressService.getByEntryNo(EntryNo);
+
+        if (!findAddress) {
+            const newAddress = await this.createMemberAddress({ EntryNo, ...address }, transaction);
+            return newAddress;
+        }
+
         const updatedAddress = await memberAddressService.update(EntryNo, address, transaction);
         return updatedAddress;
     } catch (error) {

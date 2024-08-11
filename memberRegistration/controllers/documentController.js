@@ -46,7 +46,7 @@ exports.getDocumentByEntryNo = async (EntryNo) => {
     try {
         const document = await memberDocumentService.getByEntryNo(EntryNo);
         if (!document) {
-            return {};
+            return null;
         }
         return document;
     } catch (error) {
@@ -68,6 +68,13 @@ exports.getDocumentById = async (req, res, next) => {
 
 exports.updateDocument = async (EntryNo, document, transaction) => {
     try {
+        const existingDocument = await memberDocumentService.getByEntryNo(EntryNo);
+
+        if (!existingDocument) {
+            const newDocument = await this.createDocument({ EntryNo, ...document }, transaction);
+            return newDocument;
+        }
+        
         const updatedDocument = await memberDocumentService.update(EntryNo, document, transaction);
 
         // await AuditLogRepository.log({

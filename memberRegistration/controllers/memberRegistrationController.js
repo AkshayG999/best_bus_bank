@@ -1,6 +1,6 @@
 const { sequelize } = require("../../db/db");
 const { Sequelize } = require("sequelize");
-const { basicDetailsCreate, basicDetailsGet, personalInfoGet, updateMember, deleteMember, getMember } = require("./informationController");
+const { basicDetailsCreate, basicDetailsGet, personalInfoGet, getMemberWithStat, updateMember, deleteMember, getMember } = require("./informationController");
 const { createMemberAddress, getMemberAddressById, updateMemberAddress, deleteMemberAddress } = require("./addressController");
 const { createBankInfo, getBankInfo, updateBankInfo, deleteBankInfo } = require("./bankInfoController");
 const { createDocument, getDocumentByEntryNo, updateDocument, deleteDocument } = require("./documentController");
@@ -21,39 +21,63 @@ exports.createMember = async (req, res, next) => {
         let { basicDetails, personalInfo, address, bankDetails, document, nominee, installment } = req.body;
 
         if (!basicDetails || !personalInfo || !address || !bankDetails || !document || !nominee || !installment) {
-            next("All member details must be provided.");
+            return next({ status: 400, message: "All member details must be provided." });
         }
 
         // Create basic details
         const newMember = await basicDetailsCreate({ ...basicDetails, ...personalInfo }, transaction);
-        if (!newMember) throw new Error("Failed to create basic details.");
+        if (newMember && newMember.error) {
+            await transaction.rollback();
+            return next({ status: 400, message: newMember.error });
+        }
+
+        if (!newMember) {
+            await transaction.rollback();
+            return next({ status: 500, message: "Failed to create basic details." });
+        }
+
         const EntryNo = newMember.dataValues.EntryNo;
         const MNO = newMember.dataValues.mem_SrNo;
         const MemCode = newMember.dataValues.MemCode;
 
         // Create address
         const newAddress = await createMemberAddress({ EntryNo, ...address }, transaction);
-        if (!newAddress) throw new Error("Failed to create address.");
+        if (!newAddress) {
+            await transaction.rollback();
+            return next({ status: 400, message: "Failed to create address." });
+        }
 
         // Create bank details
         const newBankInfo = await createBankInfo({ EntryNo, ...bankDetails }, transaction);
-        if (!newBankInfo) throw new Error("Failed to create bank details.");
+        if (!newBankInfo) {
+            await transaction.rollback();
+            return next({ status: 400, message: "Failed to create bank details." });
+        }
 
         // Create document
         const newDocument = await createDocument({ EntryNo, ...document }, transaction);
-        if (!newDocument) throw new Error("Failed to create document.");
+        if (!newDocument) {
+            await transaction.rollback();
+            return next({ status: 400, message: "Failed to create document." });
+        }
 
         // Create nominee
         const newNominee = await createNominee({ "Mem_EntryNo": EntryNo, "mno": MNO, ...nominee }, transaction);
-        if (!newNominee) throw new Error("Failed to create nominee.");
+        if (newNominee.error) {
+            await transaction.rollback();
+            return next({ status: 400, message: newNominee.error });
+        }
 
         // Create installment
         const newInstallment = await createInstallment({ "MNO": MNO, "CHECKNO": MemCode, ...installment }, transaction);
-        if (!newInstallment) throw new Error("Failed to create installment.");
+        if (!newInstallment) {
+            await transaction.rollback();
+            return next({ status: 400, message: "Failed to create installment." });
+        }
 
         // Commit transaction
-        console.log("transaction commited...");
         await transaction.commit();
+        console.log("Transaction committed...");
 
         res.status(201).json({
             success: true,
@@ -68,12 +92,12 @@ exports.createMember = async (req, res, next) => {
             installment: newInstallment
         });
     } catch (error) {
-        console.log("transaction rollback...");
+        console.log("Transaction rollback...");
         if (transaction) {
             await transaction.rollback();
         }
-        console.log(error)
-        next(error);
+        console.error(error);
+        next({ status: 500, message: error.message });
     }
 };
 
@@ -85,9 +109,15 @@ exports.getMemberInformations = async (req, res, next) => {
         if (EntryNo) {
 
             const basicDetails = await basicDetailsGet(EntryNo);
+            if (!basicDetails) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Member not found",
+                });
+            }
             const MNO = basicDetails.dataValues.mem_SrNo;
 
-            const personalInfo = await personalInfoGet(EntryNo);
+            // const personalInfo = await personalInfoGet(EntryNo);
 
             const address = await getMemberAddressById(EntryNo);
 
@@ -99,16 +129,18 @@ exports.getMemberInformations = async (req, res, next) => {
 
             const installment = await getInstallment(MNO);
 
-            return res.status(201).json({
+            return res.status(200).json({
                 success: true,
                 message: "Member fetch successfully",
-                basicDetails,
-                personalInfo,
-                address,
-                bankDetails,
-                document,
-                nominee,
-                installment
+                membersData: [{
+                    member: basicDetails,
+                    personalInfo: basicDetails,
+                    address,
+                    bankDetails,
+                    document,
+                    nominee,
+                    installment
+                }]
             });
         }
         else {
@@ -117,7 +149,13 @@ exports.getMemberInformations = async (req, res, next) => {
             if (mem_SrNo) filter.mem_SrNo = mem_SrNo;
             if (MemCode) filter.MemCode = MemCode;
 
-            const basicDetails = await getMember(filter);
+            const basicDetails = await getMemberWithStat(filter);
+            if (basicDetails.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Member not found",
+                });
+            }
             const membersData = await Promise.all(basicDetails.map(async (member) => {
                 const EntryNo = member.dataValues.EntryNo;
                 const MNO = member.dataValues.mem_SrNo;
@@ -140,7 +178,7 @@ exports.getMemberInformations = async (req, res, next) => {
                 };
             }));
 
-            return res.status(201).json({
+            return res.status(200).json({
                 success: true,
                 message: "Member fetched successfully",
                 membersData
@@ -155,7 +193,7 @@ exports.getMemberInformations = async (req, res, next) => {
 
 exports.updateMember = async (req, res, next) => {
     let transaction;
-    const { EntryNo } = req.params;
+    const { EntryNo, mem_SrNo } = req.params;
     let { basicDetails, personalInfo, address, bankDetails, document, nominee, installment } = req.body;
 
     try {
@@ -164,33 +202,53 @@ exports.updateMember = async (req, res, next) => {
         });
 
         if (!basicDetails || !personalInfo || !address || !bankDetails || !document || !nominee || !installment) {
-            throw new Error("All member details must be provided.");
+            return next({ status: 400, message: "All member details must be provided." });
         }
 
         // Update basic details
         const updatedBasicDetails = await updateMember(EntryNo, { ...basicDetails, ...personalInfo }, transaction);
-        if (!updatedBasicDetails) throw new Error("Failed to update basic details.");
+        if (updatedBasicDetails && updatedBasicDetails.error) {
+            await transaction.rollback();
+            return next({ status: 400, message: updatedBasicDetails.error });
+        }
+
         const MNO = updatedBasicDetails.dataValues.mem_SrNo;
+        const MemCode = updatedBasicDetails.dataValues.MemCode;
 
         // Update address
         const updatedAddress = await updateMemberAddress(EntryNo, address, transaction);
-        if (!updatedAddress) throw new Error("Failed to update address.");
+        if (!updatedAddress) {
+            await transaction.rollback();
+            return next({ status: 400, message: "Failed to update address." });
+        }
 
         // Update bank details
         const updatedBankInfo = await updateBankInfo(EntryNo, bankDetails, transaction);
-        if (!updatedBankInfo) throw new Error("Failed to update bank details.");
+        if (!updatedBankInfo) {
+            await transaction.rollback();
+            return next({ status: 400, message: "Failed to update bank details." });
+        }
 
         // Update document
         const updatedDocument = await updateDocument(EntryNo, document, transaction);
-        if (!updatedDocument) throw new Error("Failed to update document.");
+        if (!updatedDocument) {
+            await transaction.rollback();
+            return next({ status: 400, message: "Failed to update document." });
+        }
 
         // Update nominee
-        const updatedNominee = await updateNominee(EntryNo, nominee, transaction);
-        if (!updatedNominee) throw new Error("Failed to update nominee.");
+        const updatedNominee = await updateNominee(EntryNo, MNO, nominee, transaction);
+        if (updatedNominee.error) {
+            await transaction.rollback();
+            return next({ status: 400, message: updatedNominee.error });
+        }
 
         // Update installment
-        const updatedInstallment = await updateInstallment(MNO, installment, transaction);
-        if (!updatedInstallment) throw new Error("Failed to update installment.");
+        const updatedInstallment = await updateInstallment(MNO, MemCode, installment, transaction);
+        if (!updatedInstallment) {
+            await transaction.rollback();
+            return next({ status: 400, message: "Failed to update installment." });
+        }
 
         // Commit transaction
         console.log("transaction committed...");

@@ -61,9 +61,9 @@ const sequelize = new Sequelize(
             // ssl: dbConfig.options.ssl // Optionally provide SSL configuration
         },
         pool: {
-            max: 10,
+            max: 20,
             min: 0,
-            acquire: 30000,
+            acquire: 60000,
             idle: 10000
         }
     }
@@ -110,6 +110,8 @@ const accountTransTypeModel = accountTransType(sequelize);
 
 // Associations between models here
 userModel.belongsTo(rolePermissions, { foreignKey: 'roleId', as: 'role_permissions' });
+userModel.belongsTo(branchModel, { foreignKey: 'branchId', as: 'branch' });
+userModel.belongsTo(departmentModel, { foreignKey: 'departmentId', as: 'department' });
 
 groupModel.belongsTo(parentGroupModel, { foreignKey: "GroupUnder", as: "parent_group" });
 parentGroupModel.hasMany(groupModel, { foreignKey: 'GroupUnder' });
@@ -143,6 +145,7 @@ memberInformationModel.belongsTo(memberStatusModel, { foreignKey: 'MemberShipSta
 memberInformationModel.belongsTo(genderModel, { foreignKey: 'Mem_Gender', as: 'gender' });
 
 memberNomineeModel.belongsTo(memberRelationModel, { foreignKey: 'Nom_Rel', as: 'member_relation' });
+memberNomineeModel.belongsTo(genderModel, { foreignKey: 'Nom_Gender', as: 'gender' });
 
 
 

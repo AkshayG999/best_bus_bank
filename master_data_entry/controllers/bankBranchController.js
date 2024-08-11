@@ -48,7 +48,7 @@ exports.createBranch = async (req, res, next) => {
         const log = await AuditLogRepository.log({
             SystemID: req.systemID,
             entityName: "bank-branch",
-            entityId: newBranch.TrNo,
+            entityId: newBranch.dataValues.TrNo,
             action: "CREATE",
             beforeAction: null,
             afterAction: newBranch,
@@ -83,13 +83,21 @@ exports.getAllBranches = async (req, res, next) => {
     try {
         const { TrNo, BankCode, BankName, ParentBank } = req.query;
         let filter = {};
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
 
         if (TrNo) filter.TrNo = TrNo;
         if (BankCode) filter.BankCode = BankCode;
         if (BankName) filter.BankName = { [Op.iLike]: `%${BankName}%` };
         if (ParentBank) filter.ParentBank = ParentBank;
-        const branches = await bankBranchService.getAll(filter);
-        return res.status(200).send({ success: true, message: "Fetched successfully", result: branches });
+        const branches = await bankBranchService.getAll(filter, page, limit);
+        return res.status(200).send({
+            success: true, message: "Fetched successfully",
+            currentPage: page,
+            totalItems: branches.count,
+            totalPages: Math.ceil(branches.count / limit),
+            result: branches.rows
+        });
     } catch (error) {
         next(error);
     }

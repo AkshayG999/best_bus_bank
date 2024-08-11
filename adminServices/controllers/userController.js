@@ -13,7 +13,7 @@ exports.signUp = async (req, res) => {
         isolationLevel: Sequelize.Transaction.SERIALIZABLE,
     });
     try {
-        let { name, email, password } = req.body;
+        let { name, email, password, branchId, departmentId } = req.body;
 
         if (!name) {
             return errorMid(400, "Name is required", req, res);
@@ -52,7 +52,7 @@ exports.signUp = async (req, res) => {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        const createdPerson = await userService.createPerson({ name, email, password: hashedPassword, systemID });
+        const createdPerson = await userService.createPerson({ name, email, password: hashedPassword, systemID, branchId, departmentId });
         createdPerson['password'] = password;
 
         const log = await AuditLogRepository.log({
@@ -98,14 +98,13 @@ exports.getAll = async (req, res) => {
 }
 
 
-
 exports.updateUser = async (req, res) => {
     const transaction = await sequelize.transaction({
         isolationLevel: Sequelize.Transaction.SERIALIZABLE,
     });
     try {
         const { systemID } = req.params;
-        const { name, email, password, bankId, branchId, departmentId } = req.body;
+        const { name, email, password, branchId, departmentId } = req.body;
 
         const userIsExist = await userService.findPersonBySystemID(systemID);
         if (!userIsExist) {
@@ -127,18 +126,17 @@ exports.updateUser = async (req, res) => {
             const saltRounds = 10;
             dataForUpdate.password = await bcrypt.hash(password, saltRounds);
         }
-        if (bankId) dataForUpdate.bankId = bankId;
         if (branchId) dataForUpdate.branchId = branchId;
         if (departmentId) dataForUpdate.departmentId = departmentId;
 
         if (!dataForUpdate) return errorMid(400, "Please provide valid data to update", req, res);
 
-        const updatedPerson = await userService.updateUser(systemID, dataForUpdate);
-
+        const updatedPerson = await userService.updateUser(systemID, dataForUpdate, transaction);
+        // console.log(updatedPerson);
         const log = await AuditLogRepository.log({
             SystemID: req.systemID,
             entityName: "user",
-            entityId: updatedPerson.systemID,
+            entityId: updatedPerson.dataValues.systemID,
             action: "UPDATE",
             beforeAction: userIsExist,
             afterAction: updatedPerson,
@@ -153,7 +151,6 @@ exports.updateUser = async (req, res) => {
         return handleErrors(error, req, res);
     }
 }
-
 
 
 exports.deleteByID = async (req, res) => {

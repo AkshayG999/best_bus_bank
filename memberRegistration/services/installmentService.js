@@ -48,7 +48,7 @@ exports.update = async (MNO, updateData, transaction = null) => {
             ...options
         });
 
-        if (rowsUpdate === 0) throw new Error(`No installment found with MNO ${MNO}`);
+        if (rowsUpdate === 0) return null;
 
         return updatedData;
     } catch (error) {
@@ -64,7 +64,7 @@ exports.delete = async (MNO, transaction) => {
             ...options
         });
 
-        if (deleted === 0) throw new Error(`No installment found with MNO ${MNO}`);
+        if (deleted === 0) return null;//throw new Error(`No installment found with MNO ${MNO}`);
         return deleted;
     } catch (error) {
         throw new Error(`Failed to delete member installment: ${error.message}`);

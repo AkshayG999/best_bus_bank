@@ -12,10 +12,13 @@ module.exports = {
     },
 
     // Get all branches
-    async getAllBranches(filter) {
+    async getAllBranches(filter, page = 1, limit = 10) {
         try {
-            const branches = await branchModel.findAll({
-                where: filter
+            const offset = (page - 1) * limit;
+            const branches = await branchModel.findAndCountAll({
+                where: filter,
+                offset: offset,
+                limit: limit,
             });
             return branches;
         } catch (error) {

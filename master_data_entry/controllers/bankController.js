@@ -18,8 +18,9 @@ exports.createBank = async (req, res, next) => {
 
         // console.log(new Date());
         if (!TrDt) {
-            data.TrDt = new Date();
+            TrDt = new Date();
         }
+        data.TrDt = TrDt;
 
         const TrNo = await procedureStoreController.createRecordWithSrNo(
             "bank_tr_no",
@@ -33,11 +34,11 @@ exports.createBank = async (req, res, next) => {
         // console.log(data);
 
         const newBank = await bankService.createBank(data, transaction);
-
+        console.log(newBank);
         const log = await AuditLogRepository.log({
             SystemID: req.systemID,
             entityName: "bank",
-            entityId: newBank.TrNo,
+            entityId: newBank.dataValues.TrNo,
             action: "CREATE",
             beforeAction: null,
             afterAction: newBank,
@@ -54,6 +55,7 @@ exports.createBank = async (req, res, next) => {
         if (transaction) {
             await transaction.rollback();
         }
+        console.log(error);
         next(error);
     }
 }

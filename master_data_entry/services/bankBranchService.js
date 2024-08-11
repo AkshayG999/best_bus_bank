@@ -10,9 +10,12 @@ exports.create = async (data, transaction) => {
     }
 }
 
-exports.getAll = async (filter) => {
-    return await bankBranchModel.findAll({
+exports.getAll = async (filter, page = 1, limit = 10) => {
+    const offset = (page - 1) * limit;
+    return await bankBranchModel.findAndCountAll({
         where: filter,
+        offset: offset,
+        limit: limit,
         include: [{ model: bankModel, as: 'bank' }]
     });
 }

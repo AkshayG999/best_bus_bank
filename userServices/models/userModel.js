@@ -4,18 +4,11 @@ module.exports = model;
 
 function model(sequelize) {
   const attributes = {
-    // firstName: {
-    //   type: DataTypes.STRING,
-    //   allowNull: false,
-    // },
-    // middleName: {
-    //   type: DataTypes.STRING,
-    //   allowNull: false,
-    // },
-    // lastName: {
-    //   type: DataTypes.STRING,
-    //   allowNull: false,
-    // },
+    systemID: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      primaryKey: true,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false
@@ -28,12 +21,6 @@ function model(sequelize) {
       type: DataTypes.STRING,
       allowNull: false
     },
-    systemID: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      primaryKey: true,
-      autoIncrement: false,
-    },
     roleId: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -42,16 +29,12 @@ function model(sequelize) {
       type: DataTypes.JSONB,
       allowNull: true
     },
-    bankId: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
     branchId: {
       type: DataTypes.STRING,
       allowNull: true
     },
     departmentId: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     allocatedBy: {

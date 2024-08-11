@@ -2,6 +2,7 @@ const memberNomineeService = require('../services/nomineeService');
 const { sequelize, Sequelize } = require('../../db/db');
 const AuditLogRepository = require('../../auditServices/auditLogService');
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
+const memberRelationService = require('../services/memberRelationService');
 
 
 
@@ -13,6 +14,16 @@ exports.createNominee = async (data, transaction) => {
             transaction
         );
         console.log(EntryNo);
+
+        const relation = await memberRelationService.getById(data.Nom_Rel);
+        if (!relation) {
+            return { error: 'Nominee Relation not found! Provide valid Nominee Relation' };
+        }
+        if (!['1', '2', '3'].includes(data.Nom_Gender)) {
+            return ({ error: 'Invalid gender in Nominee. Please select from 1, 2, or 3' });
+        }
+        
+
         const newNominee = await memberNomineeService.create({ ...data, EntryNo, }, transaction);
 
         return newNominee;
@@ -25,12 +36,13 @@ exports.createNominee = async (data, transaction) => {
 exports.getNomineeByMem_EntryNo = async (Mem_EntryNo) => {
     try {
         const nominee = await memberNomineeService.getByMem_EntryNo(Mem_EntryNo);
-        if (!nominee) return {}
+        if (!nominee) return null
         return nominee;
     } catch (error) {
         throw new Error(error);
     }
 };
+
 exports.getNomineeById = async (req, res, next) => {
     try {
         const nominee = await memberNomineeService.getById(req.params.EntryNo);
@@ -49,8 +61,21 @@ exports.getAllNominees = async (req, res, next) => {
     }
 };
 
-exports.updateNominee = async (Mem_EntryNo, nominee, transaction) => {
+exports.updateNominee = async (Mem_EntryNo, MNO, nominee, transaction) => {
     try {
+        const findNominee = await memberNomineeService.getByMem_EntryNo(Mem_EntryNo);
+        if (!findNominee) {
+            const newNominee = await this.createNominee({ "Mem_EntryNo": Mem_EntryNo, "mno": MNO, ...nominee }, transaction);
+            return newNominee;
+        }
+        const relation = await memberRelationService.getById(nominee.Nom_Rel);
+        if (!relation) {
+            return { error: 'Nominee Relation not found! Provide valid Nominee Relation' };
+        }
+        if (!['1', '2', '3'].includes(nominee.Nom_Gender)) {
+            return ({ error: 'Invalid gender in Nominee. Please select from 1, 2, or 3' });
+        }
+        
         const updatedNominee = await memberNomineeService.update(Mem_EntryNo, nominee, transaction);
 
         // await AuditLogRepository.log({
