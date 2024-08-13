@@ -50,7 +50,7 @@ exports.update = async (filter, dataForUpdate, transaction) => {
     try {
         const result = await accountBreakupModel.update(dataForUpdate, { where: filter, returning: true,transaction: transaction });
         if (result[0] === 0) {
-            throw new Error(`No record found with TransNo ${filter.TransNo}.`);
+            throw new Error(`No record found with TransNo and SrNo ${filter}.`);
         }
         return result[1];
     } catch (error) {

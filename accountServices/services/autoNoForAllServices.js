@@ -22,3 +22,27 @@ exports.getOne = async (filter) => {
     throw error;
   }
 };
+
+exports.updateByTypeAndFYear = async (type, fYear, transaction, autoID) => {
+  try {
+    const record = await autoNoForAllModel.update(
+      { autoId: autoID },
+      {
+        where: {
+          type: type,
+          fYear: fYear,
+        },
+        returning: true,
+        transaction: transaction, 
+      },
+    );
+    if (record[0] === 0) {
+      throw new Error(
+        `No record found with type ${type} and fYear ${fYear}.`
+      );
+    }
+    return record[1];
+  } catch (error) {
+    throw error;
+  }
+};

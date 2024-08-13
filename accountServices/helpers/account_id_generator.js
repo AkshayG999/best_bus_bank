@@ -1,7 +1,7 @@
 const autoNoServices = require("../services/autoNoForAllServices");
 const accountRunningNumberServices = require("../services/accountRunningNoServices");
 
-exports.createEntryNo = async (type, branch,BranchAccSrNo) => {
+exports.createEntryNo = async (type,transaction) => {
     try {
         let entryNo = "";
         const autoNo = await autoNoServices.getOne({
@@ -11,7 +11,9 @@ exports.createEntryNo = async (type, branch,BranchAccSrNo) => {
         if(autoNo===null){
             return null;
         } else{
-            entryNo = `${autoNo.type}${autoNo.fYear}${autoNo.autoId}${autoNo.cId}-${branch.Branch_Code}${BranchAccSrNo}`;
+            let autoID = parseInt(autoNo.autoId) + 1;
+            await autoNoServices.updateByTypeAndFYear(type, autoNo.fYear, transaction, autoID);
+            entryNo = `${autoNo.type}${autoNo.fYear}${pad(autoNo.cId,2)}-${pad(autoID,6)}`;
             return entryNo;
         }
     } catch (error) {
@@ -27,7 +29,7 @@ exports.createTransNo = async (initNo,Branch_Tr,transaction) => {
         if(runningNo===null){
             return null;
         }else{
-            transNo = runningNo.RunningNo + 1;
+            transNo = parseInt(runningNo.RunningNo) + 1;
             await accountRunningNumberServices.updateByBranchAndInit(initNo,Branch_Tr, transaction,transNo);
             transNo = parseInt(`${initNo}00000`)+transNo;
             return transNo;
@@ -66,3 +68,8 @@ exports.accountInitNo = (type,payType) => {
     }
 };
 
+function pad(num, size) {
+    num = num.toString();
+    while (num.length < size) num = "0" + num;
+    return num;
+}

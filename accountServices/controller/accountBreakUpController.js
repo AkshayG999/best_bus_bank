@@ -56,7 +56,6 @@ exports.createBulk = async (
   Tr_Type,
   EntryDate,
   TransDate,
-  DRCR,
   accountRecords,
   transaction,
   req,
@@ -64,16 +63,13 @@ exports.createBulk = async (
 ) => {
   try {
     var storeRecords = [];
-    if (DRCR && !["DR", "CR"].includes(DRCR)) {
-      return errorMid(400, "DRCR can only be DR or CR", req, res);
-    }
     for (i = 0; i < accountRecords.length; i++) {
       var currentRecord = accountRecords[i];
-      if (!currentRecord.SrNo) {
-        return errorMid(400, "SrNo is required", req, res);
+      if (!currentRecord.SrNo  || typeof currentRecord.SrNo!="number") {
+        return errorMid(400, "SrNo is required and it should be a number", req, res);
       } 
-      if (!currentRecord.AccCode || "") {
-        return errorMid(400, "AccCode is required", req, res);
+      if (!currentRecord.AccCode || typeof currentRecord.AccCode!="string" || "") {
+        return errorMid(400, "AccCode is required and it should be string", req, res);
       } 
       if (
         !currentRecord.AccSrNo ||
@@ -97,6 +93,9 @@ exports.createBulk = async (
           res
         );
       }
+      if (!currentRecord.DRCR && !["DR", "CR"].includes(currentRecord.DRCR)) {
+        return errorMid(400, "DRCR is required and can only be 'DR' or 'CR'", req, res);
+      }
       storeRecords.push({
         TransNo: TransNo,
         Tr_Type: Tr_Type,
@@ -105,7 +104,7 @@ exports.createBulk = async (
         SrNo: currentRecord.SrNo,
         AccCode: currentRecord.AccSrNo,
         Amount: currentRecord.Amount,
-        DRCR: DRCR,
+        DRCR: currentRecord.DRCR,
         PartyCode: currentRecord.AccCode,
       });
     }
@@ -170,7 +169,7 @@ exports.updateByTransNoAndSrNo = async (
     }
     const breakUpRecord = await accountBreakUp.update(
       {
-        EntryNo,
+        TransNo: EntryNo,
         SrNo,
       },
       updatedFields,
@@ -187,7 +186,7 @@ exports.delete = async (EntryNo, SrNo, transaction) => {
   try {
     const breakUpRecord = await accountBreakUp.delete(
       {
-        EntryNo,
+        TransNo: EntryNo,
         SrNo,
       },
       transaction
@@ -203,7 +202,7 @@ exports.deleteByEntryNo = async (EntryNo, transaction) => {
   try {
     const breakUpRecord = await accountBreakUp.delete(
       {
-        EntryNo,
+        TransNo: EntryNo,
       },
       transaction
     );

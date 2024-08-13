@@ -33,7 +33,7 @@ exports.create = async (req, res, next) => {
       //Array of amount breakup info.
       //{ "SrNo": number, "AccCode": string Code from Account, "AccDesc": string AccountName from Account,
       // "TrType": Debit or Credit Mostly null, "Amount": Number, "Debit": Number mostly null,
-      // "Credit": Number mostly null, "Remarks": string mostly null,
+      // "Credit": Number mostly null, "Remarks": string mostly null,"UserNam": Same value as lcode above
       // "AccSrNo": Number accsrno from Account, "TRMode": string 1 or 2,}
       accountInfo,
       // 0 for no and 1 for yes
@@ -59,7 +59,7 @@ exports.create = async (req, res, next) => {
         res
       );
     }
-    if (!["CB", "PC", "BB", "JE", "CE"].includes(type)) {
+    if (!["CB", "PC", "BB", "JV", "CE"].includes(type)) {
       return errorMid(400, "type provided is not valid", req, res);
     }
     if (![1, 2].includes(Transtype)) {
@@ -79,13 +79,20 @@ exports.create = async (req, res, next) => {
     }
     if (
       typeof Branch_Tr != "string" ||
-      typeof Narration != "string" ||
       typeof LCode != "string"
       //  || (AppBy && typeof AppBy != "string")
     ) {
       return errorMid(
         400,
-        "Branch_Tr,Narration and LCode provided should be string",
+        "Branch_Tr and LCode provided should be string",
+        req,
+        res
+      );
+    }
+    if(Narration && typeof Narration != "string"){
+      return errorMid(
+        400,
+        "Narration provided should be string",
         req,
         res
       );
@@ -108,17 +115,40 @@ exports.create = async (req, res, next) => {
         );
       }
     }
-    if (
-      Amount !=
-      accountInfo.reduce((total, currentVal) => total + currentVal.Amount, 0)
-    ) {
-      return errorMid(
-        400,
-        "Amount provided is not equal to the sum of amount breakup",
-        req,
-        res
-      );
+
+    if(type=="CB" || type=="PC" || type=="BB"){
+      if (
+        Amount !=
+        accountInfo.reduce((total, currentVal) => total + currentVal.Amount, 0)
+      ) {
+        return errorMid(
+          400,
+          "Amount provided is not equal to the sum of amount breakup",
+          req,
+          res
+        );
+      }
+    }else if(type=="JV" || type=="CE"){
+      if (
+        accountInfo.reduce((total, currentVal) => total + currentVal.Debit, 0)!=accountInfo.reduce((total, currentVal) => total + currentVal.Credit, 0)
+      ) {
+        return errorMid(
+          400,
+          "Credit and the debit amount provided in the amount breakup does not match",
+          req,
+          res
+        );
+      }
+      if(Amount!=accountInfo.reduce((total, currentVal) => total + currentVal.Debit, 0)){
+        return errorMid(
+          400,
+          "Overall amount does not match up with the amount breakup",
+          req,
+          res
+        );
+      }
     }
+
     // if(AppYesNo && ![0,1].includes(AppYesNo)){
     //   return errorMid(
     //     400,
@@ -136,18 +166,8 @@ exports.create = async (req, res, next) => {
     //   );
     // }
 
-    const branch = await branchServices.getBranchById(Branch_Tr);
-    if (branch === null) {
-      return errorMid(
-        400,
-        `No branch exists with Branch_Tr: [${Branch_Tr}]`,
-        req,
-        res
-      );
-    }
-
     //Calling function to create EntryNo
-    const entryNo = await helpers.createEntryNo(type, branch,BranchAccSrNo);
+    const entryNo = await helpers.createEntryNo(type,transaction);
     if (entryNo === null) {
       return errorMid(400, `No autoNo record to create EntryNo`, req, res);
     }
@@ -160,6 +180,9 @@ exports.create = async (req, res, next) => {
     const accountRecord = await accountServices.findByFilter({
       AccSrNo: BranchAccSrNo,
     });
+    if(!accountRecord){
+      return errorMid(400, `No account record with BrachAccSrNo: ${BranchAccSrNo}`, req, res);
+    }
 
     const vmainRecord = await vmain.create(
       {
@@ -192,6 +215,7 @@ exports.create = async (req, res, next) => {
       entryNo,
       accountInfo,
       transaction,
+      type,
       req,
       res
     );
@@ -199,35 +223,53 @@ exports.create = async (req, res, next) => {
     if (!vmainRelRecords) {
       return errorMid(400, `Failed to create vmainRel records`, req, res);
     }
-    const createAccountBreakupWithSrno0 = await accountBreakUp.createOne(
-      entryNo,
-      initNo,
-      new Date(EntryDate),
-      new Date(TransDate),
-      0,
-      BranchAccSrNo,
-      Amount,
-      Transtype == 1 ? "DR" : "CR",
-      accountRecord.Code,
-      transaction,
-      req,
-      res
-    );
-    if (!createAccountBreakupWithSrno0) {
-      return errorMid(
-        400,
-        `Failed to create accountBreakUp records with SrNo 0`,
+    if(type=="CB" || type=="PC" || type=="BB"){
+      const createAccountBreakupWithSrno0 = await accountBreakUp.createOne(
+        entryNo,
+        initNo,
+        new Date(EntryDate),
+        new Date(TransDate),
+        0,
+        BranchAccSrNo,
+        Amount,
+        Transtype == 1 ? "DR" : "CR",
+        accountRecord.Code,
+        transaction,
         req,
         res
       );
+      if (!createAccountBreakupWithSrno0) {
+        return errorMid(
+          400,
+          `Failed to create accountBreakUp records with SrNo 0`,
+          req,
+          res
+        );
+      }
+    }
+
+    let newAccountInfo;
+    if(type=="CB" || type=="PC" || type=="BB"){
+      newAccountInfo = accountInfo.map((item) => {
+        return {
+          ...item,
+          DRCR: Transtype == 1 ? "CR" : "DR",
+        };
+      });
+    }else if(type=="JV" || type=="CE"){
+      newAccountInfo = accountInfo.map((item) => {
+        const {TrType,Debit,Credit,...rec} = item;
+        rec.DRCR = TrType=="Debit"?"DR":"CR";
+        rec.Amount = TrType=="Debit"?Debit:Credit; 
+        return rec
+      });
     }
     const createAccountBreakupRecords = await accountBreakUp.createBulk(
       entryNo,
       initNo,
       new Date(EntryDate),
       new Date(TransDate),
-      Transtype == 1 ? "CR" : "DR",
-      accountInfo,
+      newAccountInfo,
       transaction,
       req,
       res
@@ -259,7 +301,7 @@ exports.create = async (req, res, next) => {
     return res.status(201).send({
       success: true,
       message: "Account record saved successfully",
-      result: vmainRecord,
+      result: {vmainRecord,vmainRelRecords},
     });
   } catch (error) {
     if (transaction) {
@@ -310,6 +352,28 @@ exports.getAll = async (req, res, next) => {
   }
 };
 
+exports.getUnapprovedRecords = async (req, res, next) => {
+  try {
+    const vmainRecordsUnapprovedRecords = await vmain.getAll({
+      order: [["TransDt", "DESC"]],
+      where: {
+        AppYesNo: null,
+        AppDate: null,
+        AppBy: null,
+      },
+    });
+
+    res.status(200).send({
+      success: true,
+      message: "Records Fetched successfully",
+      result: vmainRecordsUnapprovedRecords,
+    });
+  } catch (error) {
+    console.error("Error fetching account records:", error);
+    return next(error, req, res);
+  }
+};
+
 exports.getByEntryNo = async (req, res, next) => {
   try {
     const { EntryNo } = req.params;
@@ -328,7 +392,7 @@ exports.getByEntryNo = async (req, res, next) => {
         res
       );
     }
-    if (!accountBreakUpRecords) {
+    if (!accountBreakUpRecords || accountBreakUpRecords.length<1) {
       return errorMid(
         400,
         `Account break up of the overall amount featured in account record with TransNo: [${EntryNo}] not found`,
@@ -336,7 +400,7 @@ exports.getByEntryNo = async (req, res, next) => {
         res
       );
     }
-    if (!vmainRelRecords) {
+    if (!vmainRelRecords|| vmainRelRecords.length<1) {
       return errorMid(
         400,
         `Vmain_Rel account break up of the overall amount featured in account record with TransNo: [${EntryNo}] not found`,
@@ -381,7 +445,7 @@ exports.update = async (req, res, next) => {
       //Array of amount breakup info.
       //{ "SrNo": number mandatory, "AccCode": string Code from Account if updated, "AccDesc": string AccountName from Account if updated,
       // "AccSrNo": Number AccSrNo from Account if updated, "TrType": Debit or Credit Mostly null if updated, "Amount": Number if updated, "Debit": Number mostly null if updated,
-      // "Credit": Number mostly null if updated, "Remarks": string mostly null if updated,
+      // "Credit": Number mostly null if updated, "Remarks": string mostly null if updated,"UserNam": Same value as lcode above
       // "TRMode": string 1 or 2 if TransType changed,isCreate: true if a new record added with breakup,
       //isUpdate: if this is going to be updated, isDelete: if this is going to be deleted.}
       accountInfo,
@@ -407,7 +471,7 @@ exports.update = async (req, res, next) => {
       dataToUpdate.V_DT = new Date(TransDate);
       accountBreakUpSrNo0UpdateData.Vs_Dt = new Date(TransDate);
     }
-    if (!["CB", "PC", "BB", "JE", "CE"].includes(type)) {
+    if (!["CB", "PC", "BB", "JV", "CE"].includes(type)) {
       return errorMid(400, "type provided is not valid", req, res);
     }
     if (Transtype) {
@@ -532,53 +596,82 @@ exports.update = async (req, res, next) => {
         res
       );
     }
-    var tot = vmainRelRecordsBefore.reduce(
-      (sum, currentVal) => sum + parseInt(currentVal.Amount),
-      0
-    );
-    for (i = 0; i < accountInfo.length; i++) {
-      var currentRecord = accountInfo[i];
-      if (currentRecord.isCreate) {
-        tot += currentRecord.Amount;
-      } else if (currentRecord.isDelete) {
-        tot -= currentRecord.Amount;
-      } else if (currentRecord.isUpdate) {
-        const prev = vmainRelRecordsBefore.find(
-          (record) => record.SrNo == currentRecord.SrNo
-        );
-        tot -= prev.Amount;
-        tot += currentRecord.Amount;
-      }
-    }
-
-    if (tot != Amount) {
-      return errorMid(
-        400,
-        `Amount provided is not equal to the sum of account break up records`,
-        req,
-        res
+    if(type=="CB" || type=="PC" || type=="BB"){
+      var tot = vmainRelRecordsBefore.reduce(
+        (sum, currentVal) => sum + parseInt(currentVal.Amount),
+        0
       );
-    }
-    for (i = 0; i < accountInfo.length; i++) {
-      var currentRecord = accountInfo[i];
-      if (currentRecord.isCreate) {
-        const { isCreate, ...rec } = currentRecord;
-        const vmainRelRecords = await vmainRel.createBulk(
-          EntryNo,
-          rec,
-          transaction,
+      for (i = 0; i < accountInfo.length; i++) {
+        var currentRecord = accountInfo[i];
+        if (currentRecord.isCreate) {
+          tot += currentRecord.Amount;
+        } else if (currentRecord.isDelete) {
+          tot -= currentRecord.Amount;
+        } else if (currentRecord.isUpdate) {
+          const prev = vmainRelRecordsBefore.find(
+            (record) => record.SrNo == currentRecord.SrNo
+          );
+          tot -= prev.Amount;
+          tot += currentRecord.Amount;
+        }
+      }
+  
+      if (tot != Amount) {
+        return errorMid(
+          400,
+          `Amount provided is not equal to the sum of account break up records`,
           req,
           res
         );
-        if (!vmainRelRecords) {
-          return errorMid(
-            400,
-            `Failed to create new vmainRel record`,
-            req,
-            res
+      }
+    }else if(type=="JV" || type=="CE"){
+      var credTot = vmainRelRecordsBefore.reduce(
+        (sum, currentVal) => sum + parseInt(currentVal.Credit),
+        0
+      );
+      var debTot = vmainRelRecordsBefore.reduce(
+        (sum, currentVal) => sum + parseInt(currentVal.Debit),
+        0
+      );
+      for (i = 0; i < accountInfo.length; i++) {
+        var currentRecord = accountInfo[i];
+        if (currentRecord.isCreate) {
+          credTot += currentRecord.Credit;
+          debTot += currentRecord.Debit;
+        } else if (currentRecord.isDelete) {
+          credTot -= currentRecord.Credit;
+          debTot -= currentRecord.Debit;
+        } else if (currentRecord.isUpdate) {
+          const prev = vmainRelRecordsBefore.find(
+            (record) => record.SrNo == currentRecord.SrNo
           );
+          credTot -= prev.Credit;
+          debTot -= prev.Debit;
+          credTot += currentRecord.Credit;
+          debTot += currentRecord.Debit;
         }
-      } else if (currentRecord.isDelete) {
+      }
+      if(credTot!=debTot){
+        return errorMid(
+          400,
+          `Total credit is not equal to the total debit provided for the account breakup`,
+          req,
+          res
+        );
+      }
+      if (credTot != Amount) {
+        return errorMid(
+          400,
+          `Overall Amount provided is not equal to the sum of account break up records`,
+          req,
+          res
+        );
+      }
+    }
+    
+    for (var i = 0; i < accountInfo.length; i++) {
+      var currentRecord = accountInfo[i];
+      if (currentRecord.isDelete) {
         const result = await vmainRel.delete(
           EntryNo,
           currentRecord.SrNo,
@@ -598,6 +691,7 @@ exports.update = async (req, res, next) => {
           EntryNo,
           SrNo,
           rec,
+          type,
           transaction
         );
         if (!result) {
@@ -608,24 +702,44 @@ exports.update = async (req, res, next) => {
             res
           );
         }
-      }
-    }
-
-    if (Object.keys(accountBreakUpSrNo0UpdateData).length > 0) {
-      const updateeAccountBreakupWithSrno0 =
-        await accountBreakUp.updateByTransNoAndSrNo(
+      } else if (currentRecord.isCreate) {
+        const { isCreate, ...rec } = currentRecord;
+        const vmainRelRecords = await vmainRel.createBulk(
           EntryNo,
-          0,
-          accountBreakUpSrNo0UpdateData,
-          transaction
-        );
-      if (!updateeAccountBreakupWithSrno0) {
-        return errorMid(
-          400,
-          `Failed to create accountBreakUp records with SrNo 0`,
+          [rec],
+          transaction,
+          type,
           req,
           res
         );
+        if (!vmainRelRecords) {
+          return errorMid(
+            400,
+            `Failed to create new vmainRel record`,
+            req,
+            res
+          );
+        }
+      }
+    }
+
+    if(type=="CB" || type=="PC" || type=="BB"){
+      if (Object.keys(accountBreakUpSrNo0UpdateData).length > 0) {
+        const updateeAccountBreakupWithSrno0 =
+          await accountBreakUp.updateByTransNoAndSrNo(
+            EntryNo,
+            0,
+            accountBreakUpSrNo0UpdateData,
+            transaction
+          );
+        if (!updateeAccountBreakupWithSrno0) {
+          return errorMid(
+            400,
+            `Failed to create accountBreakUp records with SrNo 0`,
+            req,
+            res
+          );
+        }
       }
     }
 
@@ -643,31 +757,7 @@ exports.update = async (req, res, next) => {
 
     for (i = 0; i < accountInfo.length; i++) {
       var currentRecord = accountInfo[i];
-      if (currentRecord.isCreate) {
-        const { isCreate, ...rec } = currentRecord;
-        const createNewBreakUpRecord = await accountBreakUp.createOne(
-          EntryNo,
-          initNo,
-          accountBreakUpRecordsBefore[0].EntryDate,
-          accountBreakUpRecordsBefore[0].Vs_Dt,
-          rec.SrNo,
-          rec.AccSrNo,
-          rec.Amount,
-          rec.TRMODE == 1 ? "CR" : "DR",
-          rec.AccCode,
-          transaction,
-          req,
-          res
-        );
-        if (!createNewBreakUpRecord) {
-          return errorMid(
-            400,
-            `Failed to create new accountBreakUp records for updated amount`,
-            req,
-            res
-          );
-        }
-      } else if (currentRecord.isDelete) {
+      if (currentRecord.isDelete) {
         const deleteBreakUpRecord = await accountBreakUp.delete(
           EntryNo,
           currentRecord.SrNo,
@@ -690,8 +780,13 @@ exports.update = async (req, res, next) => {
         if (accountBreakUpSrNo0UpdateData.Vs_Dt) {
           dataFieldToUpdate.Vs_Dt = accountBreakUpSrNo0UpdateData.Vs_Dt;
         }
-        if (currentRecord.TRMODE) {
-          dataFieldToUpdate.DRCR = currentRecord.TRMODE == 1 ? "CR" : "DR";
+        if(type=="CB" || type=="PC" || type=="BB"){
+          if (currentRecord.TRMODE) {
+            dataFieldToUpdate.DRCR = currentRecord.TRMODE == 1 ? "CR" : "DR";
+          }
+        }else if(type=="JV" || type=="CE"){
+          dataFieldToUpdate.DRCR = rec.TrType=="Debit"?"DR":"CR";
+          dataFieldToUpdate.Amount = rec.TrType=="Debit"?rec.Debit:rec.Credit;
         }
         const result = await accountBreakUp.updateByTransNoAndSrNo(
           EntryNo,
@@ -707,11 +802,44 @@ exports.update = async (req, res, next) => {
             res
           );
         }
+      } else if (currentRecord.isCreate) {
+        const { isCreate, ...rec } = currentRecord;
+        let DRCR;
+        let amount;
+        if(type=="CB" || type=="PC" || type=="BB"){
+          DRCR = rec.TRMODE == 1 ? "CR" : "DR";
+          amount = rec.Amount;
+        }else if(type=="JV" || type=="CE"){
+          DRCR = rec.TrType=="Debit"?"DR":"CR";
+          amount = rec.TrType=="Debit"?rec.Debit:rec.Credit;
+        }
+        const createNewBreakUpRecord = await accountBreakUp.createOne(
+          EntryNo,
+          initNo,
+          accountBreakUpRecordsBefore[0].EntryDate,
+          accountBreakUpRecordsBefore[0].Vs_Dt,
+          rec.SrNo,
+          rec.AccSrNo,
+          amount,
+          DRCR,
+          rec.AccCode,
+          transaction,
+          req,
+          res
+        );
+        if (!createNewBreakUpRecord) {
+          return errorMid(
+            400,
+            `Failed to create new accountBreakUp records for updated amount`,
+            req,
+            res
+          );
+        }
       }
     }
 
     const vmainRecordAfterUpdate = await vmain.update(
-      TransNo,
+      EntryNo,
       dataToUpdate,
       transaction
     );
@@ -734,7 +862,7 @@ exports.update = async (req, res, next) => {
     return res.status(200).send({
       success: true,
       message: "Account record updated successfully",
-      result: vmainRecordUpdated,
+      result: vmainRecordAfterUpdate,
     });
   } catch (error) {
     if (transaction) {

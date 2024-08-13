@@ -1,52 +1,74 @@
 const vmainRelServices = require("../services/vmainRelServices");
 const { errorMid } = require("../../middlewareServices/errorMid");
 
-exports.createBulk = async (EntryNo, accountRecords, transaction, req, res) => {
+exports.createBulk = async (EntryNo, accountRecords, transaction,type, req, res) => {
   try {
     var storeRecords = [];
     for (i = 0; i < accountRecords.length; i++) {
       var currentRecord = accountRecords[i];
-      if (!currentRecord.SrNo) {
-        return errorMid(400, "SrNo is required", req, res);
+      if (!currentRecord.SrNo || typeof currentRecord.SrNo!="number") {
+        return errorMid(400, "SrNo is required and it should be a number", req, res);
       } 
-      if (!currentRecord.AccCode || "") {
-        return errorMid(400, "AccCode is required", req, res);
+      if (!currentRecord.AccCode || typeof currentRecord.AccCode!="string" || "" ) {
+        return errorMid(400, "AccCode is required and it should be string", req, res);
       }
-      if (!currentRecord.AccDesc || "") {
-        return errorMid(400, "AccDesc is required", req, res);
-      } 
+      if (!currentRecord.AccDesc || typeof currentRecord.AccCode!="string" || "") {
+        return errorMid(400, "AccDesc is required and it should be string", req, res);
+      }
       if (
-        currentRecord.TrType &&
-        currentRecord.TrType != "" &&
-        !["Debit", "Credit"].includes(currentRecord.TrType)
-      ) {
-        return errorMid(400, "TrType can only be Debit or Credit", req, res);
-      } 
-      if (
-        (currentRecord.Amount && typeof currentRecord.Amount != "number") ||
-        (currentRecord.Debit && typeof currentRecord.Debit != "number") ||
-        (currentRecord.Credit && typeof currentRecord.Credit != "number") ||
-        (currentRecord.AccSrNo && typeof currentRecord.AccSrNo != "number")
-      ) {
-        return errorMid(
-          400,
-          "Amount, Debit, Credit,AccSrNo showuld be a number",
-          req,
-          res
-        );
-      } 
-      if (
-        currentRecord.TRMode &&
+        !currentRecord.TRMode ||
         typeof currentRecord.TRMode != "string"
       ) {
-        return errorMid(400, "TRMode should be a string", req, res);
-      } 
+        return errorMid(400, "TRMode is required and it should be a string", req, res);
+      }
+      if (
+        !currentRecord.AccSrNo || typeof currentRecord.AccSrNo != "number"
+      ) {
+        return errorMid(400, "AccSrNo is required and it should be number", req, res);
+      }
       if (
         currentRecord.Remarks &&
         typeof currentRecord.Remarks != "string"
       ) {
         return errorMid(400, "Remarks should be a string", req, res);
       }
+      if (
+        currentRecord.UserNam &&
+        typeof currentRecord.UserNam != "string"
+      ) {
+        return errorMid(400, "UserNam should be a string", req, res);
+      }
+      if(type=="JV" || type=="CE"){
+        if (
+          !currentRecord.TrType ||
+          !["Debit", "Credit"].includes(currentRecord.TrType)
+        ) {
+          return errorMid(400, "TrType is required and can only be 'Debit' or 'Credit'", req, res);
+        } 
+        if (
+          (currentRecord.Debit==null || typeof currentRecord.Debit != "number") ||
+          (currentRecord.Credit==null || typeof currentRecord.Credit != "number")
+        ) {
+          return errorMid(
+            400,
+            "Debit and Credit is required and it should be a number",
+            req,
+            res
+          );
+        }
+      }else if(type=="PC" || type=="CB" || type=="BB"){
+        if (
+          (!currentRecord.Amount || typeof currentRecord.Amount != "number")
+        ) {
+          return errorMid(
+            400,
+            "Amount is required and should be a number",
+            req,
+            res
+          );
+        }
+      } 
+      
       storeRecords.push({
         EntryNo: EntryNo,
         SrNo: currentRecord.SrNo,
@@ -59,6 +81,7 @@ exports.createBulk = async (EntryNo, accountRecords, transaction, req, res) => {
         Remarks: currentRecord.Remarks,
         Acc_No: currentRecord.AccSrNo,
         TRMode: currentRecord.TRMode,
+        UserNam: currentRecord.UserNam,
       });
     }
     const vRelRecords = await vmainRelServices.bulkCreate(
@@ -99,6 +122,7 @@ exports.updateByEntryNoAndSrNo = async (
   EntryNo,
   SrNo,
   updatedFields,
+  type,
   transaction
 ) => {
   try {
@@ -127,33 +151,6 @@ exports.updateByEntryNoAndSrNo = async (
       }
       fieldToUpdate.AccDesc = updatedFields.AccDesc;
     }
-    if (updatedFields.TrType) {
-      if (
-        updatedFields.TrType != "" &&
-        !["Debit", "Credit"].includes(updatedFields.TrType)
-      ) {
-        return errorMid(400, "TrType can only be Debit or Credit", req, res);
-      }
-      fieldToUpdate.TrType = updatedFields.TrType;
-    }
-    if (updatedFields.Amount) {
-      if (typeof updatedFields.Amount != "number") {
-        return errorMid(400, "Amount provided should be a number", req, res);
-      }
-      fieldToUpdate.Amount = updatedFields.Amount;
-    }
-    if (updatedFields.Debit) {
-      if (typeof updatedFields.Debit != "number") {
-        return errorMid(400, "Debit provided should be a number", req, res);
-      }
-      fieldToUpdate.Debit = updatedFields.Debit;
-    }
-    if (updatedFields.Credit) {
-      if (typeof updatedFields.Credit != "number") {
-        return errorMid(400, "Credit provided should be a number", req, res);
-      }
-      fieldToUpdate.Credit = updatedFields.Credit;
-    }
     if (updatedFields.TRMode) {
       if (
         typeof updatedFields.TRMode != "string" ||
@@ -171,6 +168,45 @@ exports.updateByEntryNoAndSrNo = async (
         return errorMid(400, "Remarks should be a string", req, res);
       }
       fieldToUpdate.Remarks = updatedFields.Remarks;
+    }
+    if (updatedFields.UserNam) {
+      if (
+        typeof updatedFields.UserNam != "string" ||
+        updatedFields.UserNam == ""
+      ) {
+        return errorMid(400, "UserNam should be a string", req, res);
+      }
+      fieldToUpdate.UserNam = updatedFields.UserNam;
+    }
+    if(type=="JV" || type=="CE"){
+      if (updatedFields.TrType) {
+        if (
+          updatedFields.TrType != "" &&
+          !["Debit", "Credit"].includes(updatedFields.TrType)
+        ) {
+          return errorMid(400, "TrType can only be Debit or Credit", req, res);
+        }
+        fieldToUpdate.TrType = updatedFields.TrType;
+      }
+      if (updatedFields.Debit) {
+        if (typeof updatedFields.Debit != "number") {
+          return errorMid(400, "Debit provided should be a number", req, res);
+        }
+        fieldToUpdate.Debit = updatedFields.Debit;
+      }
+      if (updatedFields.Credit) {
+        if (typeof updatedFields.Credit != "number") {
+          return errorMid(400, "Credit provided should be a number", req, res);
+        }
+        fieldToUpdate.Credit = updatedFields.Credit;
+      }
+    }else if(type=="PC" || type=="CB" || type=="BB"){
+      if (updatedFields.Amount) {
+        if (typeof updatedFields.Amount != "number") {
+          return errorMid(400, "Amount provided should be a number", req, res);
+        }
+        fieldToUpdate.Amount = updatedFields.Amount;
+      }
     }
     const vmainRelRecords = await vmainRelServices.update(
       {
