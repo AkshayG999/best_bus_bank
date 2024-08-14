@@ -67,12 +67,11 @@ exports.create = async (req, res, next) => {
     }
     if (
       typeof Amount != "number" ||
-      typeof mem_srno != "number" ||
-      typeof BranchAccSrNo != "number"
+      typeof mem_srno != "number"
     ) {
       return errorMid(
         400,
-        "Amount, BranchAccSrNo and mem_srno provided should be number",
+        "Amount and mem_srno provided should be number",
         req,
         res
       );
@@ -220,6 +219,16 @@ exports.create = async (req, res, next) => {
       return errorMid(400, `Failed to create vmainRel records`, req, res);
     }
     if (type == "CB" || type == "PC" || type == "BB") {
+    if (
+      typeof BranchAccSrNo != "number"
+    ) {
+      return errorMid(
+        400,
+        "BranchAccSrNo provided should be number",
+        req,
+        res
+      );
+    }
       const accountRecord = await accountServices.findByFilter({
         AccSrNo: BranchAccSrNo,
       });
