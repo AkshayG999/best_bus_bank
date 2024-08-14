@@ -89,13 +89,8 @@ exports.create = async (req, res, next) => {
         res
       );
     }
-    if(Narration && typeof Narration != "string"){
-      return errorMid(
-        400,
-        "Narration provided should be string",
-        req,
-        res
-      );
+    if (Narration && typeof Narration != "string") {
+      return errorMid(400, "Narration provided should be string", req, res);
     }
     if (type == "BB") {
       if (!V_CHKNO || typeof V_CHKNO != "string") {
@@ -116,7 +111,7 @@ exports.create = async (req, res, next) => {
       }
     }
 
-    if(type=="CB" || type=="PC" || type=="BB"){
+    if (type == "CB" || type == "PC" || type == "BB") {
       if (
         Amount !=
         accountInfo.reduce((total, currentVal) => total + currentVal.Amount, 0)
@@ -128,9 +123,13 @@ exports.create = async (req, res, next) => {
           res
         );
       }
-    }else if(type=="JV" || type=="CE"){
+    } else if (type == "JV" || type == "CE") {
       if (
-        accountInfo.reduce((total, currentVal) => total + currentVal.Debit, 0)!=accountInfo.reduce((total, currentVal) => total + currentVal.Credit, 0)
+        accountInfo.reduce(
+          (total, currentVal) => total + currentVal.Debit,
+          0
+        ) !=
+        accountInfo.reduce((total, currentVal) => total + currentVal.Credit, 0)
       ) {
         return errorMid(
           400,
@@ -139,7 +138,10 @@ exports.create = async (req, res, next) => {
           res
         );
       }
-      if(Amount!=accountInfo.reduce((total, currentVal) => total + currentVal.Debit, 0)){
+      if (
+        Amount !=
+        accountInfo.reduce((total, currentVal) => total + currentVal.Debit, 0)
+      ) {
         return errorMid(
           400,
           "Overall amount does not match up with the amount breakup",
@@ -167,7 +169,7 @@ exports.create = async (req, res, next) => {
     // }
 
     //Calling function to create EntryNo
-    const entryNo = await helpers.createEntryNo(type,transaction);
+    const entryNo = await helpers.createEntryNo(type, transaction);
     if (entryNo === null) {
       return errorMid(400, `No autoNo record to create EntryNo`, req, res);
     }
@@ -176,12 +178,6 @@ exports.create = async (req, res, next) => {
     const transNo = await helpers.createTransNo(initNo, Branch_Tr, transaction);
     if (transNo === null) {
       return errorMid(400, `No runningNo record to create TransNo`, req, res);
-    }
-    const accountRecord = await accountServices.findByFilter({
-      AccSrNo: BranchAccSrNo,
-    });
-    if(!accountRecord){
-      return errorMid(400, `No account record with BrachAccSrNo: ${BranchAccSrNo}`, req, res);
     }
 
     const vmainRecord = await vmain.create(
@@ -223,7 +219,18 @@ exports.create = async (req, res, next) => {
     if (!vmainRelRecords) {
       return errorMid(400, `Failed to create vmainRel records`, req, res);
     }
-    if(type=="CB" || type=="PC" || type=="BB"){
+    if (type == "CB" || type == "PC" || type == "BB") {
+      const accountRecord = await accountServices.findByFilter({
+        AccSrNo: BranchAccSrNo,
+      });
+      if (!accountRecord) {
+        return errorMid(
+          400,
+          `No account record with BrachAccSrNo: ${BranchAccSrNo}`,
+          req,
+          res
+        );
+      }
       const createAccountBreakupWithSrno0 = await accountBreakUp.createOne(
         entryNo,
         initNo,
@@ -249,19 +256,19 @@ exports.create = async (req, res, next) => {
     }
 
     let newAccountInfo;
-    if(type=="CB" || type=="PC" || type=="BB"){
+    if (type == "CB" || type == "PC" || type == "BB") {
       newAccountInfo = accountInfo.map((item) => {
         return {
           ...item,
           DRCR: Transtype == 1 ? "CR" : "DR",
         };
       });
-    }else if(type=="JV" || type=="CE"){
+    } else if (type == "JV" || type == "CE") {
       newAccountInfo = accountInfo.map((item) => {
-        const {TrType,Debit,Credit,...rec} = item;
-        rec.DRCR = TrType=="Debit"?"DR":"CR";
-        rec.Amount = TrType=="Debit"?Debit:Credit; 
-        return rec
+        const { TrType, Debit, Credit, ...rec } = item;
+        rec.DRCR = TrType == "Debit" ? "DR" : "CR";
+        rec.Amount = TrType == "Debit" ? Debit : Credit;
+        return rec;
       });
     }
     const createAccountBreakupRecords = await accountBreakUp.createBulk(
@@ -283,7 +290,7 @@ exports.create = async (req, res, next) => {
       );
     }
     //Have to work on creating vmain record here Signing off
-    
+
     const log = await AuditLogRepository.log(
       {
         SystemID: req.systemID,
@@ -301,7 +308,7 @@ exports.create = async (req, res, next) => {
     return res.status(201).send({
       success: true,
       message: "Account record saved successfully",
-      result: {vmainRecord,vmainRelRecords},
+      result: { vmainRecord, vmainRelRecords },
     });
   } catch (error) {
     if (transaction) {
@@ -392,7 +399,7 @@ exports.getByEntryNo = async (req, res, next) => {
         res
       );
     }
-    if (!accountBreakUpRecords || accountBreakUpRecords.length<1) {
+    if (!accountBreakUpRecords || accountBreakUpRecords.length < 1) {
       return errorMid(
         400,
         `Account break up of the overall amount featured in account record with TransNo: [${EntryNo}] not found`,
@@ -400,7 +407,7 @@ exports.getByEntryNo = async (req, res, next) => {
         res
       );
     }
-    if (!vmainRelRecords|| vmainRelRecords.length<1) {
+    if (!vmainRelRecords || vmainRelRecords.length < 1) {
       return errorMid(
         400,
         `Vmain_Rel account break up of the overall amount featured in account record with TransNo: [${EntryNo}] not found`,
@@ -596,7 +603,7 @@ exports.update = async (req, res, next) => {
         res
       );
     }
-    if(type=="CB" || type=="PC" || type=="BB"){
+    if (type == "CB" || type == "PC" || type == "BB") {
       var tot = vmainRelRecordsBefore.reduce(
         (sum, currentVal) => sum + parseInt(currentVal.Amount),
         0
@@ -615,7 +622,7 @@ exports.update = async (req, res, next) => {
           tot += currentRecord.Amount;
         }
       }
-  
+
       if (tot != Amount) {
         return errorMid(
           400,
@@ -624,7 +631,7 @@ exports.update = async (req, res, next) => {
           res
         );
       }
-    }else if(type=="JV" || type=="CE"){
+    } else if (type == "JV" || type == "CE") {
       var credTot = vmainRelRecordsBefore.reduce(
         (sum, currentVal) => sum + parseInt(currentVal.Credit),
         0
@@ -651,7 +658,7 @@ exports.update = async (req, res, next) => {
           debTot += currentRecord.Debit;
         }
       }
-      if(credTot!=debTot){
+      if (credTot != debTot) {
         return errorMid(
           400,
           `Total credit is not equal to the total debit provided for the account breakup`,
@@ -668,7 +675,7 @@ exports.update = async (req, res, next) => {
         );
       }
     }
-    
+
     for (var i = 0; i < accountInfo.length; i++) {
       var currentRecord = accountInfo[i];
       if (currentRecord.isDelete) {
@@ -723,7 +730,7 @@ exports.update = async (req, res, next) => {
       }
     }
 
-    if(type=="CB" || type=="PC" || type=="BB"){
+    if (type == "CB" || type == "PC" || type == "BB") {
       if (Object.keys(accountBreakUpSrNo0UpdateData).length > 0) {
         const updateeAccountBreakupWithSrno0 =
           await accountBreakUp.updateByTransNoAndSrNo(
@@ -780,13 +787,14 @@ exports.update = async (req, res, next) => {
         if (accountBreakUpSrNo0UpdateData.Vs_Dt) {
           dataFieldToUpdate.Vs_Dt = accountBreakUpSrNo0UpdateData.Vs_Dt;
         }
-        if(type=="CB" || type=="PC" || type=="BB"){
+        if (type == "CB" || type == "PC" || type == "BB") {
           if (currentRecord.TRMODE) {
             dataFieldToUpdate.DRCR = currentRecord.TRMODE == 1 ? "CR" : "DR";
           }
-        }else if(type=="JV" || type=="CE"){
-          dataFieldToUpdate.DRCR = rec.TrType=="Debit"?"DR":"CR";
-          dataFieldToUpdate.Amount = rec.TrType=="Debit"?rec.Debit:rec.Credit;
+        } else if (type == "JV" || type == "CE") {
+          dataFieldToUpdate.DRCR = rec.TrType == "Debit" ? "DR" : "CR";
+          dataFieldToUpdate.Amount =
+            rec.TrType == "Debit" ? rec.Debit : rec.Credit;
         }
         const result = await accountBreakUp.updateByTransNoAndSrNo(
           EntryNo,
@@ -806,12 +814,12 @@ exports.update = async (req, res, next) => {
         const { isCreate, ...rec } = currentRecord;
         let DRCR;
         let amount;
-        if(type=="CB" || type=="PC" || type=="BB"){
+        if (type == "CB" || type == "PC" || type == "BB") {
           DRCR = rec.TRMODE == 1 ? "CR" : "DR";
           amount = rec.Amount;
-        }else if(type=="JV" || type=="CE"){
-          DRCR = rec.TrType=="Debit"?"DR":"CR";
-          amount = rec.TrType=="Debit"?rec.Debit:rec.Credit;
+        } else if (type == "JV" || type == "CE") {
+          DRCR = rec.TrType == "Debit" ? "DR" : "CR";
+          amount = rec.TrType == "Debit" ? rec.Debit : rec.Credit;
         }
         const createNewBreakUpRecord = await accountBreakUp.createOne(
           EntryNo,
