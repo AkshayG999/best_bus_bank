@@ -11,10 +11,14 @@ const { isValid, parseISO } = require('date-fns');
 // Helper function to validate dates
 function validateDate(dateStr) {
     if (!dateStr) return true;
+
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(dateStr)) {
+        return false;
+    }
     const date = parseISO(dateStr);
     return isValid(date);
 }
-
 
 exports.basicDetailsCreate = async (memberData, transaction) => {
     try {
@@ -22,7 +26,7 @@ exports.basicDetailsCreate = async (memberData, transaction) => {
         const dateFields = ['EntryDT', 'DOB', 'DOJBest', 'DojSoc', 'DOR'];
         for (const field of dateFields) {
             if (!validateDate(memberData[field])) {
-                return { error: `${field} is not a valid date.` };
+                return { error: `${field} is not a valid date. Please provide it in YYYY-MM-DD format.` };
             }
         }
 
