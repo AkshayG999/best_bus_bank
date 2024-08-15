@@ -110,7 +110,7 @@ async function getNextSrNo(name, transaction) {
 }
 
 // Function to create a new record with Sr No
-async function createRecordWithSrNo(name, transaction) {
+async function createRecordWithSrNo(name, transaction, increment = 100) {
     let t;
     if (transaction) {
         t = { transaction };
@@ -119,7 +119,7 @@ async function createRecordWithSrNo(name, transaction) {
         const find = await procedure_store_model.findOne({ where: { name: name }, ...t, lock: transaction.LOCK.UPDATE });
         // console.log({ find });
         if (!find) {
-            const newRecord = await procedure_store_model.create({ name, increment: 100 }, t);
+            const newRecord = await procedure_store_model.create({ name, increment }, t);
             console.log(newRecord.dataValues);
         }
 

@@ -35,6 +35,11 @@ exports.basicDetailsCreate = async (memberData, transaction) => {
         console.log(EntryNo);
         console.log(mem_SrNo);
 
+        // Check if ShareFolio is null, undefined, or not present, and generate if necessary
+        if (!memberData.SHFOLIO) {
+            memberData.SHFOLIO = await procedureStoreController.createRecordWithSrNo("member_information_SHFOLIO", transaction,100000);
+        }
+
         const branch = await branchService.getBranchById(memberData.Mem_Branch);
         if (!branch) {
             return { error: 'Branch not found! Provide valid Branch' };
