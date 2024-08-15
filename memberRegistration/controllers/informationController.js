@@ -6,10 +6,26 @@ const memberShipTypeService = require('../services/memberShipTypeService');
 const memberStatusService = require('../services/memberStatusService');
 const departmentService = require('../../master_data_entry/services/departmentService');
 const depoService = require('../../master_data_entry/services/depoService');
+const { isValid, parseISO } = require('date-fns');
+
+// Helper function to validate dates
+function validateDate(dateStr) {
+    if (!dateStr) return true;
+    const date = parseISO(dateStr);
+    return isValid(date);
+}
 
 
 exports.basicDetailsCreate = async (memberData, transaction) => {
     try {
+        // Validate dates
+        const dateFields = ['EntryDT', 'DOB', 'DOJBest', 'DojSoc', 'DOR'];
+        for (const field of dateFields) {
+            if (!validateDate(memberData[field])) {
+                return { error: `${field} is not a valid date.` };
+            }
+        }
+
         const EntryNo = await procedureStoreController.generateGroupUniqueCode("member_information_EntryNo", "MEM", transaction);
         const mem_SrNo = await procedureStoreController.createRecordWithSrNo("member_information_mem_SrNo", transaction);
         console.log(EntryNo);
