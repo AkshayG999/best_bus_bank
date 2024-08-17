@@ -1,12 +1,12 @@
+const { Op } = require('sequelize');
+const { isValid, parseISO } = require('date-fns');
 const memberInformationService = require('../services/informationService');
 const procedureStoreController = require("../../procedureStoreServices/controller/procedureStoreController");
-const { Op } = require('sequelize');
 const branchService = require('../../master_data_entry/services/branchService');
 const memberShipTypeService = require('../services/memberShipTypeService');
 const memberStatusService = require('../services/memberStatusService');
 const departmentService = require('../../master_data_entry/services/departmentService');
 const depoService = require('../../master_data_entry/services/depoService');
-const { isValid, parseISO } = require('date-fns');
 
 // Helper function to validate dates
 function validateDate(dateStr) {
@@ -19,15 +19,33 @@ function validateDate(dateStr) {
     const date = parseISO(dateStr);
     return isValid(date);
 }
+// Calculate DOR based on DOB
+const calculateDOR = (dob) => {
+    return moment(dob).add(60, 'years').format('YYYY-MM-DD');
+};
+
 
 exports.basicDetailsCreate = async (memberData, transaction) => {
     try {
         // Validate dates
-        const dateFields = ['EntryDT', 'DOB', 'DOJBest', 'DojSoc', 'DOR'];
+        const dateFields = ['EntryDT', 'DOB', 'DOJBest', 'DojSoc'];
         for (const field of dateFields) {
             if (!validateDate(memberData[field])) {
                 return { error: `${field} is not a valid date. Please provide it in YYYY-MM-DD format.` };
             }
+        }
+
+        // Validate or generate DOR
+        if (memberData.DOR) {
+            if (!validateDate(memberData.DOR)) {
+                return { error: `DOR is not a valid date. Please provide it in YYYY-MM-DD format.` };
+            }
+        } else {
+            // Generate DOR based on DOB + 60 years
+            if (!validateDate(memberData.DOB)) {
+                return { error: `DOB is not a valid date. Please provide it in YYYY-MM-DD format` };
+            }
+            memberData.DOR = calculateDOR(memberData.DOB);
         }
 
         const EntryNo = await procedureStoreController.generateGroupUniqueCode("member_information_EntryNo", "MEM", transaction);
