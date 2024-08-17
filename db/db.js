@@ -23,6 +23,7 @@ const memberShipType = require("../memberRegistration/models/memberShipTypeModel
 const memberStatus = require("../memberRegistration/models/memberStatusModel");
 const memberRelation = require("../memberRegistration/models/relationModel");
 const gender = require("../memberRegistration/models/genderModel");
+const ifsc = require("../memberRegistration/models/ifscModel");
 
 //Account Services Database Registrations
 
@@ -98,6 +99,7 @@ const memberShipTypeModel = memberShipType(sequelize);
 const memberStatusModel = memberStatus(sequelize);
 const memberRelationModel = memberRelation(sequelize);
 const genderModel = gender(sequelize);
+const ifscModel = ifsc(sequelize);
 
 //Account Services
 const autoNoForAllModel = autoNoForAll(sequelize);
@@ -153,6 +155,6 @@ module.exports = {
     db, sequelize, Sequelize, userModel, bankModel, groupModel, parentGroupModel, individualAccountModel,
     bankBranchModel, branchModel, departmentModel, features, rolePermissions, zoneModel, depoModel, auditLogModel,
     memberInformationModel, memberAddressModel, memberBankInfoModel, memberDocumentModel, memberNomineeModel, memberInstallmentModel,
-    memberShipTypeModel, memberStatusModel, autoNoForAllModel, accountRunningNoModel, accountBreakupModel, vmainModel, vmainRelModel, memberRelationModel, genderModel,
+    memberShipTypeModel, memberStatusModel, ifscModel, autoNoForAllModel, accountRunningNoModel, accountBreakupModel, vmainModel, vmainRelModel, memberRelationModel, genderModel,
     accountTransTypeModel,
 };

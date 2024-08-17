@@ -45,11 +45,11 @@ const syncAllTables = async () => {
  */
 const syncSpecificTables = async () => {
     try {
-        await db.userModel.sync({ alter: true, logging: console.log });
-        console.log("User table synchronized successfully.");
+        // await db.userModel.sync({ alter: true, logging: console.log });
+        // console.log("User table synchronized successfully.");
 
-        // await db.bankModel.sync({ alter: true, logging: console.log });
-        // console.log("Bank table synchronized successfully.");
+        await db.ifscModel.sync({ alter: true, logging: console.log });
+        console.log("ifscModel table synchronized successfully.");
     } catch (error) {
         console.error("Error synchronizing specific tables:", error);
     } finally {
