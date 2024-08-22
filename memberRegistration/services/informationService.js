@@ -129,12 +129,12 @@ exports.getMember = async (filter = {}, options = {}) => {
 };
 
 // Get all members
-exports.getAllMembers = async (page = 1, limit = 10) => {
+exports.getAllMembers = async (filters = {}, offset, limit) => {
     try {
-        const offset = (page - 1) * limit;
         const members = await memberInformationModel.findAndCountAll({
-            offset: offset,
-            limit: limit,
+            where: filters,
+            offset,
+            limit,
             include: [
                 {
                     model: branchModel, as: 'branch',

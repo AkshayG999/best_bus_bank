@@ -55,7 +55,7 @@ exports.basicDetailsCreate = async (memberData, transaction) => {
 
         // Check if ShareFolio is null, undefined, or not present, and generate if necessary
         if (!memberData.SHFOLIO) {
-            memberData.SHFOLIO = await procedureStoreController.createRecordWithSrNo("member_information_SHFOLIO", transaction,100000);
+            memberData.SHFOLIO = await procedureStoreController.createRecordWithSrNo("member_information_SHFOLIO", transaction, 100000);
         }
 
         const branch = await branchService.getBranchById(memberData.Mem_Branch);
@@ -229,10 +229,22 @@ exports.getMemberById = async (req, res, next) => {
 
 exports.getAllMembers = async (req, res, next) => {
     try {
+        const { EntryNo, MemCode, Mem_Name, mem_SrNo, SHFOLIO, STAT } = req.query;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
 
-        const result = await memberInformationService.getAllMembers(page, limit);
+        // Create a filter object
+        const filters = {};
+        if (EntryNo) filters.EntryNo = EntryNo;
+        if (MemCode) filters.MemCode = MemCode;
+        if (Mem_Name) filters.Mem_Name = { [Op.like]: `%${Mem_Name}%` };
+        if (mem_SrNo) filters.mem_SrNo = mem_SrNo;
+        if (SHFOLIO) filters.SHFOLIO = SHFOLIO;
+        if (STAT) filters.STAT = STAT;
+
+        // Pass filters to the service layer
+        const result = await memberInformationService.getAllMembers(filters, offset, limit);
 
         res.status(200).json({
             message: 'Members fetched successfully',
@@ -245,6 +257,7 @@ exports.getAllMembers = async (req, res, next) => {
         next(error);
     }
 };
+
 
 // exports.updateMember = async (req, res, next) => {
 //     try {
